@@ -393,3 +393,79 @@ BACKUP_ROLLBACK.md, MAINTENANCE_PLAN.md, TODO_PRODUCTION.md),
     Web3Forms (UE, recommande) vs Formspree (USA) — decision avec le
     1er client reel (backend + legal + Noah). Impacte le registre RGPD,
     pas le pipeline.
+
+## Decisions Phase 4 — Security Engineer (2026-09-15)
+
+Statut : **ACTEES** — decisions de securite basees sur la revue du code source,
+npm audit, verification des flux de donnees RGPD et conformite aux ADR.
+Reference : ADR-003 (formulaires), ADR-008 (cookies), ADR-009 (pas de DB),
+ADR-010 (polices), D-DB-04 (registre), REGISTRE_DONNEES.md,
+PRIVACY_REQUIREMENTS_TEMPLATE.md, LEGAL_SITE_TEMPLATES.md.
+Livrables : project/docs/SECURITY_AUDIT.md, project/docs/VERDICT.md,
+project/docs/RECOMMENDATIONS.md.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-SEC-01 | **Verdict : OK SOUS CONDITIONS** | Le deploiement reel (Gate 4) est conditionne a 6 correctifs (C-01 a C-06). La base systeme peut continuer a etre developpee/testee sans bloquer. | OUI (validateur final Gate 4) |
+| D-SEC-02 | **Dependances critiques** | `npm audit` identifie astro@5.18.2 comme aggregate critique (RCE AVIF, SSRF Host, XSS define:vars). Correctif = astro >= 7.3.2 (breaking change). Le code genere (statique) n'expose pas les chemins critiques en production, mais le build est vulnerable si images AVIF malveillantes fournies. Condition C-01. | — |
+| D-SEC-03 | **JSON-LD : injection XSS via set:html** | `BaseLayout.astro:83` — `JSON.stringify(schema)` n'echappe pas `<` → possible injection `</script>` dans les champs texte du YAML (description, reviews, FAQ). Meme classe que GHSA-j687-52p2-xcff. Condition C-02 : echapper `<` vers `\u003c`. | — |
+| D-SEC-04 | **Google Fonts CDN sans consentement** | `BaseLayout.astro:79-81` charge inconditionnellement les polices Google (IP → Google/USA, precedent CNIL SAN-2022-004). Les polices self-hebergees existent (ADR-010, fetch-fonts.mjs) mais le CDN est encore present. Condition C-03 : retirer les liens CDN. | OUI (self-host par defaut ou consentement) |
+| D-SEC-05 | **Headers HTTP non configures** | Aucun fichier `_headers` Cloudflare Pages ni documentation HSTS/CSP/X-Frame-Options. Condition C-04 : configurer via `public/_headers` (CSP, HSTS, nosniff, DENY). security.txt absent (condition C-07). | OUI (config deploiement) |
+| D-SEC-06 | **Sous-traitant formulaire non declare** | Le choix Web3Forms (UE recommandee) vs Formspree (USA) conditionne les transferts hors UE. Le registre des traitements (D-DB-04) le signale comme « a determiner ». Condition C-05. | OUI (avec 1er client) |
+| D-SEC-07 | **Bouton de retrait consentement absent** | Le consentement cookie (localStorage `ds_consent`) ne peut pas etre modifie apres choix. La CNIL exige un mecanisme de retrait. Le lien « Gerer les cookies » est dans les templates legaux mais pas implemente frontend. Condition C-06. | — |
+| D-SEC-08 | **Registre des traitements : coherant** | `REGISTRE_DONNEES.md` est conforme au RGPD (finalites, bases legales, durees, sous-traitant). Les 4 points de vigilance pour le 1er client sont documentes dans SECURITY_AUDIT.md §14 (sous-traitant formulaire, herbergeur, polices CDN, durees conservation). | — |
+| D-SEC-09 | **Formulaires : conformes, sans protection anti-spam serveur** | Honeypot (2 champs), validation client, endpoints tiers, fallback mailto. Pas de reCAPTCHA (decision ADR-003, budget 0). Spam = risque documente, depend du service tiers. Le mailto utilise encodeURIComponent → pas d'injection mailto. | OUI (service de formulaire concret) |
+| D-SEC-10 | **Secrets : aucun secret expose** | Grep systematique = zero secret dans le depot. GitHub Secrets uniquement pour CLOUDFLARE_*. `.env.example` = placeholders. Historique git propre (8 commits). | — |
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 4, Security)
+
+58. **Conditions C-01 a C-06** : a resoudre en Phase 6 (corrections) avant
+    Gate 4 du 1er client reel. Les correctifs sont detailles dans
+    `RECOMMENDATIONS.md`.
+59. **Upgrade Astro 5 → 7** (C-01 / D-SEC-02) : breaking change majeur.
+    Le frontend-engineer doit planifier la migration, corriger les
+    deprecations, et valider les 30 tests + build. Estimation : 1-2 jours.
+60. **Polices definitives** : si Noah choisit des polices hors Google
+    (ex : System-ui uniquement), les CDN peuvent etre retires definitivement.
+    Sinon, le self-host (ADR-010) est la voie par defaut.
+61. **Compte Cloudflare** : la configuration `_headers` depend du compte
+    Cloudflare (PO-DEVOPS-02). Le fichier `public/_headers` peut etre
+    ajoute sans compte, mais les headers ne seront effectifs qu'apres
+    deploiement.
+
+## Decisions Phase 4 — Accessibility + Performance Engineer (2026-09-15)
+
+Audit complet : `project/docs/ACCESSIBILITY_AUDIT.md`, `project/docs/PERFORMANCE_AUDIT.md`.
+Perimetre : build `dist/exemple-restaurant/` (16 pages) + composants sources.
+Toutes les corrections ci-dessous sont a realiser en **Phase 6 (frontend)** ;
+aucune ne remet en cause l'architecture (ADR-001..008). Critere cible : WCAG 2.2 AA.
+
+| ID | Decision | Justification | Statut |
+| -- | -------- | ------------- | ------ |
+| D-A11Y-01 | **Libeller distinctement les 2 landmarks nav** : desktop `aria-label="Navigation principale"` (nouvelle cle i18n `ui.header.navLabel` FR/EN) ; burger mobile `aria-label` **dynamique** openMenu/closeMenu + `aria-expanded` + `aria-controls` | Les 2 `<nav>` portent aujourd'hui `aria-label="Ouvrir le menu de navigation"` (duplique + trompeur) ; le nom accessible du burger est ecrase en `×`/`☰` apres 1 clic (innerText sur le span sr-only) — echec WCAG 1.3.1/4.1.2 | A faire (Phase 6) |
+| D-A11Y-02 | **Focus trap + gestion de focus sur tous les overlays** (menu mobile, cookie banner) : utilitaire `focusTrap(el, returnFocus)` partage dans `src/utils/` ou `<dialog>` natif + `showModal()` (coherence : deja utilise dans Gallery) ; Echap = fermer + rendre le focus ; focus initial sur le 1er lien/bouton ; fermeture = retour au declencheur | Absence de piege de focus actuel : Tab sort de l'overlay (menu mobile, banner cookies) — non conforme UX.md §2.5/§4.7 et WCAG 2.1.1/2.4.3 | A faire (Phase 6) |
+| D-A11Y-03 | **BackToTop** : rendre non focusable quand cache (`visibility:hidden` ou `[inert]` a la place d'`opacity:0` seul) ; le scroll `smooth` JS doit respecter `prefers-reduced-motion` (`matchMedia`) | Le bouton cache reste atteignable au Tab (focus invisible) — WCAG 2.4.3 ; smooth JS ignore le media query (2.3.3) | A faire (Phase 6) |
+| D-A11Y-04 | **Formulaires** : lier chaque erreur a son champ (`aria-describedby="<id>-error"` positionne a l'etat d'erreur), focus sur le 1er champ invalide au submit, `role=status`/`aria-live` pour le resume global, le message « Envoi en cours... » et l'etat « Aucun creneau » | Erreurs posees (`aria-invalid`) mais non annoncees ; UX.md §4.4 exige le focus sur le premier champ en erreur — WCAG 3.3.1/4.1.3 | A faire (Phase 6) |
+| D-A11Y-05 | **Tokens contraste** : `--color-gray-400` reserve aux elements decoratifs uniquement (texte « Ferme » -> gray-500 #6B7280) ; nouvelle paire `--color-success-dark` #047857 (5.48:1) pour le statut « Ouvert » ; `--color-warning` accompagne d'une regle d'usage + `--color-warning-dark` #92400E pour tout texte | gray-400 2.54:1 et success 3.77:1 sous 4.5:1 (texte) ; warning sur warning-light 2.86:1 (etoiles decoratives : non soumis, mais piege a venir) — WCAG 1.4.3 | A faire (Phase 6) |
+| D-A11Y-06 | **Cibles tactiles** : min-height 24px (WCAG 2.5.8) a defaut, 44px mobile (D-UX-04) pour les liens footer (`ds-footer__link`) et le selecteur de langue (`ds-lang`) ; bloquer le scroll du body quand le menu mobile est ouvert | Liens 14px ~20px de haut < 24px ; contenu derriere le menu plein ecran defile — WCAG 2.5.8 / UX.md §2.5 | A faire (Phase 6) |
+| D-A11Y-07 | **Controle continu** : integrer `scripts/contrast-check.mjs` a la CI (workflow `ci.yml`) et ajouter un grep de regression « pages 404/500 chargent un bundle contenant `ds-btn` » | Eviter toute regression de contraste/du BUG bundle CSS (D-PERF-02) entre phases | A faire (Phase 6/CI) |
+| D-PERF-01 | **Fonts self-host obligatoires avant le 1er client reel** : utiliser `scripts/fetch-fonts.mjs` (deja livre, D-FE-07), sortir le lien render-blocking Google Fonts de `BaseLayout.astro`, aligner les graisses self-host avec le CDN (Inter 400/600/700 + Playfair 700 — retirer Inter 500 non utilise), `font-display: swap` conserve, preload des 2 fonts critiques | Google Fonts CDN = 1 requete render-blocking tierce + ~170 Ko woff2 + IP visiteurs transmise a Google (RGPD : a mentionner sinon) ; `/fonts/` declare dans fonts.css mais absent du dist (incoherence) | A faire (Phase 6) |
+| D-PERF-02 | **BUG bundle CSS 404/500** : les pages 404/500 ne chargent que le bundle global (15 Ko) ; le bundle hero/boutons `CPazk4Lc.css` (4 Ko, contient `.ds-btn`) n'est pas charge -> CTA/header non styles sur ces 2 pages. Correctif : styles partages importes via BaseLayout + test de regression CI (D-A11Y-07). Priorite : avant mise en service | Constat statique (regression visuelle probable sur 404/500) — a confirmer au navigateur par QA | A faire (Phase 6) |
+| D-PERF-03 | **Regles images production (PO-FE-03)** : 3 tailles (640w/1024w/1600w) en AVIF/WebP (80-90% de gain), `srcset`+`sizes`, hero seul en eager/fetchpriority/high (plafond 250 Ko), galerie lazy (plafond 120 Ko/photo), toujours `width`/`height` ; noter la dependance sharp >= 0.35 (SECURITY_AUDIT §1.1 : upgrade Astro requise) | L'exemple n'a aucune image ; le risque CWV principal (LCP/CLS) arrive avec les vraies photos client | A faire (Phase 6) |
+| D-PERF-04 | **Verification deploiement (Phase 8)** : `curl -I` des headers Cloudflare Pages (br/gzip + `immutable` sur `_astro/`, `no-cache` sur HTML) + `npx lighthouse` sur l'URL publique + scan `npx lychee` (deja au programme CI) | Estimations CWV statiques (LCP < 1.5 s, INP < 100 ms, CLS < 0.02 attendus) a confirmer en production reelle | A faire (Phase 8, DevOps/QA) |
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 4, A11y/Perf)
+
+58. **Inter 500** (PO-A11YPERF-01) : graisse chargee par le CDN mais non
+    utilisee dans les styles ni declaree en self-host — a confirmer avec
+    ui-art-director (design system) avant le self-host definitif.
+59. **Rendus 404/500** (PO-A11YPERF-02 = QA) : confirmer visuellement au
+    navigateur le BUG bundle CSS (D-PERF-02) avant correction — le constat
+    statique est fort mais non rendu.
+60. **Note chiffree des avis** (PO-A11YPERF-03) : les etoiles sont
+    `aria-hidden` (decoratives) — si une note « 4.8/5 » est affichee en texte
+    chez un client, la faire porter par un texte sr-only (a acter avec
+    content-seo-legal).
+61. **Mention Google Fonts** (PO-A11YPERF-04 = legal) : tant que le CDN Google
+    est actif, mentionner le service tiers (adresse IP transmise) dans la
+    politique de confidentialite ; le self-host (D-PERF-01) supprime ce besoin.
