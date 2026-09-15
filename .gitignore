@@ -1,0 +1,24 @@
+# Secrets - jamais commites
+.env
+.env.*
+!.env.example
+
+# Dependances
+node_modules/
+dist/
+build/
+.pnpm-store/
+
+# Logs et artefacts
+*.log
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage/
+.playwright-report/
+test-results/
+
+# Divers
+*.tmp
+.tmp/
