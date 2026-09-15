@@ -178,3 +178,37 @@ client, systeme SEO, bibliotheque de contenus).
 | **Fichier client** | **Format YAML/JSON, structure du client_data.yaml (D-CS-01)** |
 | **Map provider** | **OpenStreetMap ou Google Maps (D-CS-03, cookies D-LG-05)** |
 | **Analytics** | **GA4 / Plausible / Umami / aucun (cookies, consentement)** |
+
+## Decisions Phase 1 — Solution Architect (2026-09-15)
+
+Statut : **PROPOSEES** — decisions techniques a valider par Noah (Gate 1/2) ;
+details dans architecture/STACK.md, TECHNICAL_ARCHITECTURE.md, ADR.md,
+MAINTENANCE_PLAN.md.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-ARC-01 | **Stack : Astro en SSG statique** — sortie 100 % statique, zero JS par defaut (islands), aucun framework UI, Node LTS ; pas de DB/API/Docker/CMS (ADR-001, ADR-009) | STACK.md | OUI (approche technique) |
+| D-ARC-02 | **Generation multi-clients** : base unique + template + client_data.yaml -> `validate -> generate (src/sites/<slug>) -> build -> dist/<slug> -> deploy` ; un build Astro par client ; fichier client = source unique (ADR-002) | TECHNICAL_ARCHITECTURE.md §4 | OUI |
+| D-ARC-03 | **Formulaires : endpoint tiers gratuit configurable** (contact/reservation/devis POST vers service de forme, reference Formspree/Web3Forms) ; progressive enhancement ; honeypot, pas de reCAPTCHA par defaut ; fallback serverless documente ; reservation v1 = formulaire + validation statique des creneaux (ADR-003) | TECHNICAL_ARCHITECTURE.md §8 | OUI (service concret avec le 1er client) |
+| D-ARC-04 | **i18n : FR racine, EN /en sur pages cles (option)** — hreflang, canonical FR, LanguageSwitcher header, persistance localStorage (pas de cookie) (ADR-004) | TECHNICAL_ARCHITECTURE.md §9 | OUI (si EN activee) |
+| D-ARC-05 | **Deploiement : statique, hebergeur gratuit** — Cloudflare Pages en reference (Netlify/GitHub Pages documentes) ; Gate 4 humaine obligatoire ; rollback = redeploiement build precedent (ADR-005) | TECHNICAL_ARCHITECTURE.md §13 | OUI (hebergeur final avec devops) |
+| D-ARC-06 | **Theming : tokens CSS custom properties** — tokens fondationnels fixes (tokens.css), tokens de marque generes par client (theme.css depuis branding), composants inchanges (ADR-006) | TECHNICAL_ARCHITECTURE.md §6 | — |
+| D-ARC-07 | **Map : OpenStreetMap par defaut (pas de cookie)** (iframe/Leaflet + fallback coordonnees texte) ; Google Maps uniquement sur demande client explicite (consentement cookies) — arbitre les points ouverts UX n°14 / Content n°29 | ADR-007 | OUI (Google Maps le cas echeant) |
+| D-ARC-08 | **Analytics : aucun par defaut** ; outil sans cookie (Plausible/Umami) uniquement si un client le demande, avec validation Noah — arbitre le point ouvert n°30 | ADR-008 | OUI (le cas echeant) |
+| D-ARC-09 | **Pas de base de donnees en v1** (ADR-009) — a confirmer par AGENT 07 (database-engineer) | ADR-009 | — (validation AGENT 07) |
+| D-ARC-10 | **Polices self-hosted + icones SVG inline** (zero requete tiers, zero dependance) — tranche les points ouverts UX n°12/19, support performance/RGPD | ADR-010 | OUI (familles finales Gate 2) |
+| D-ARC-11 | **Plan de maintenance v1** — technique/contenu/SEO, frequence mensuelle par defaut, flux incident avec validation Noah obligatoire (FR-MAINT-04) | MAINTENANCE_PLAN.md | OUI (perimetre offre maintenance) |
+
+## Points ouverts — arbitrage Noah / autres agents (Phase 1, Architect)
+
+37. **Ajout `seo.domain` au client_data.yaml** : necessaire pour canonical,
+    sitemap.xml et Open Graph (proposition a content-seo, D-CS-01).
+38. **Service de formulaire concret** : choix du prestataire (Formspree/Web3Forms)
+    avec le 1er client ; RGPD du prestataire a verifier (sous-traitant).
+39. **Hebergeur final des sites clients** : decision devops (Cloudflare Pages
+    reference, ADR-005) ; identite de l'hebergeur pour les mentions legales.
+40. **Validation AGENT 07** : confirmation « pas de base de donnees » (D-ARC-09).
+41. **Polices definitives** : validation Gate 2 (Inter + Playfair Display
+    recommandes, implementation self-hosted).
+42. **Google Maps / Analytics** : ne sont actives que si un client le demande et
+    Noah le valide (D-ARC-07/08) — sinon OSM + aucun analytics par defaut.
