@@ -154,6 +154,23 @@ client, systeme SEO, bibliotheque de contenus).
 36. **Keywords research** : outil recommande pour la recherche de mots-cles
     locaux ? (Google Keyword Planner, Ubersuggest, AnswerThePublic)
 
+## Gate 1/2 — Validation Noah (2026-09-15)
+
+Statut : **VALIDEES « pour l'instant »** — Noah confirme les recommandations
+des agents comme hypotheses de travail pour la Phase 2. Toute decision reste
+reversible avant livraison (Gate 3) et avant production (Gate 4).
+
+| ID | Decision validee | Condition |
+| -- | ---------------- | --------- |
+| D-PM-02 + D-PM-06 + D-PM-07 | **Offre & prix** : fourchettes PM (vitrine 1 200-2 000 €, +reservation 1 800-2 800 €, +e-commerce leger 2 500-4 000 €, maintenance 40-100 €/mois) | Prix finaux fixes par Noah avant tout devis |
+| D-PM-03 + D-LG-03 | **CLIENT_TYPE : B2B prioritaire**, cas B2C documente | Confirmation finale avant documents contractuels |
+| D-PM-06 + D-UX-12 | **Template v1 : restaurant** (flagship) ; artisan + autres en SHOULD | — |
+| D-PM-10 + D-ARC-01..11 | **Budget 0 € et stack Astro valides comme hypotheses** de developpement | Tout cout payant documente avant engagement |
+
+> Rappel Gate 1 du cahier des charges : la validation « pour l'instant » permet
+> de demarrer le developpement ; les decisions engageantes (prix, delais,
+> contrats) restent 100 % Noah jusqu'a la Gate 3.
+
 ## Decisions a venir (Phase 0)
 
 | Point | Attendu |
