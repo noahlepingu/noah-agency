@@ -433,6 +433,40 @@ project/docs/RECOMMENDATIONS.md.
     ajoute sans compte, mais les headers ne seront effectifs qu'apres
     deploiement.
 
+## Decisions Phase 4 — QA Engineer (2026-09-15)
+
+Statut : **ACTEES** — campagne de tests systeme (unitaire + pipeline + audit
+statique du build) sur la base de production et le site exemple.
+Reference : ADR-002 (generation), ADR-003 (formulaires), ADR-008 (cookies),
+UX.md §4 (etats speciaux), FORMS_ARCHITECTURE.md, CLIENT_DATA_VALIDATION.md,
+SEO_SYSTEM.md, cahier des charges sections 22-23 (validation humaine).
+Livrables : project/tests/ (TEST_PLAN.md, TEST_RESULTS.md, BUGS.md).
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-QA-01 | **Verdict systeme : FONCTIONNEL et reproductible** | `npm test` 30/30, `validate:example` exit 0, `build:example` 16 pages OK, aucun lien interne casse, aucun placeholder residuel, 1 h1/page, skip-link 16/16, sitemap/robots/JSON-LD/hreflang verifies. Le pipeline validation->generation->build est stable (ADR-002) | — |
+| D-QA-02 | **Multilingue EN = non exploitable (BUG-QA-01/03, majeurs)** | `data.texts_en` rempli mais jamais consomme par les pages ; nav et CTA EN en francais. Contredit FR-I18N / D-PM-08. **Bloque toute version EN livrable avant correction Phase 6.** | OUI (confirmation priorite multilingue) |
+| D-QA-03 | **Test multi-categorie : validation conforme, build monotype** | Fixture artisan (category/template artisan) : validation = 24 REQUIRED manquants correctement detectes (machine conforme schema) ; mais `generate-site.mjs` charge `templates/restaurant` en dur -> un artisan valide produirait un site restaurant (BUG-QA-07). Conforme au perimetre v1, a documenter + traiter a la livraison du 2e template | — |
+| D-QA-04 | **SEO : patterns `seo_title` inutilises + descriptions = titre (BUG-QA-04/05/08)** | Titles construits depuis `texts.title` (7-20 car., sans ville/activite) au lieu des patterns `seo_title` du template ; 5 pages (contact, reservation, faq, galerie, temoignages) ont `description={title}` ; description accueil 105 car. < 120-160. A corriger en Phase 6 avec buildDescription et fallback `seo.meta_description` | — |
+| D-QA-05 | **Nettoyage : script cookies charge sans tiers (BUG-QA-06)** | `<script>` du bandeau inclus sur les 16 pages meme sans tiers actifs (~0,9 kB JS mort par page) — comportement inoffensif mais a optimiser (condition SSG). Doublon de texte « cuisine cuisine » dans a-propos (BUG-QA-02) a reformuler cote template | — |
+| D-QA-06 | **Tests responsifs/navigateurs reels Hors Perimetre v1** | Environnement sans navigateur (WSL). Breakpoints CSS verifies statiquement ; verification Chrome/Firefox/Safari/Edge a la Gate 4 via TODO_PRODUCTION.md (checklist déploiement). L'accessibilite WCAG est portee par accessibility-specialist (audit dedie) | — |
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 4, QA)
+
+62. **Corrections Phase 6** (BUG-QA-01 a 08) : a planifier par les
+    developpeurs frontend (routes `data.texts[lang]`, labels nav via
+    `ui.nav`, patterns `seo_title`, `buildDescription` manquant, script
+    cookies conditionnel) ; textes de la page a-propos reformules par
+    content-seo (BUG-QA-02). Test de non-regression : re-run `npm test`
+    + `build:example` + audit statique.
+63. **Verification navigateurs (Gate 4)** (PO-QA-02) : Chrome/Firefox/
+    Safari/Edge + mobile a executer au deploiement du 1er client reel —
+    checklist TODO_PRODUCTION.md a completer avec les cases responsives.
+64. **2e template secteur** (PO-QA-03) : quand le template artisan (ou
+    autre) sera livre (roadmap), refactorer `generate-site.mjs` pour
+    lire `templates/<template.type>` (BUG-QA-07) et re-tester avec la
+    fixture type `qa-artisan-test` (validation + build).
+
 ## Decisions Phase 4 — Accessibility + Performance Engineer (2026-09-15)
 
 Audit complet : `project/docs/ACCESSIBILITY_AUDIT.md`, `project/docs/PERFORMANCE_AUDIT.md`.
