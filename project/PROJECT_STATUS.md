@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Gate 1/2 Noah : validation des decisions cles, lancement Phase 2).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 — Database Engineer : validation « pas de base de donnees » D-ARC-09, specs de validation client_data.yaml, registre RGPD).
 
 ## Vue d'ensemble
 
@@ -28,13 +28,14 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Gate 1/2 No
 | 2026-09-15 | Phase 0 — Livrables Content/SEO | Content/SEO | FAIT (PROPOSE) | CLIENT_DATA_SCHEMA, SEO_SYSTEM, CONTENT_LIBRARY, CONTENT_GUIDELINES livres dans content/ ; decisions D-CS-01 a 10 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1/2) sur : format fichier client (YAML), structure du schema, types schema.org, patterns metadata, FAQ sectorielle, ton/limites textes, map provider, analytics.** |
 | 2026-09-15 | Phase 1 — Livrables Solution Architect | Architect | FAIT (PROPOSE) | STACK (Astro SSG statique), TECHNICAL_ARCHITECTURE (structure base, generation multi-clients, composants, tokens, SEO, formulaires, i18n, cookies, conventions), ADR-01 a 10, MAINTENANCE_PLAN livres dans architecture/ ; decisions D-ARC-01 a 11 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1/2) : stack, generation, formulaires, deploiement, map, analytics, maintenance.** Points ouverts n°37-42. |
 | 2026-09-15 | **Gate 1/2 — Validation Noah** | Noah / Tech Lead | **FAIT (hypotheses validees « pour l'instant »)** | Noah valide : offre & prix PM (D-PM-02/06/07), CLIENT_TYPE B2B prioritaire (D-PM-03, D-LG-03), template flagship restaurant (D-PM-06, D-UX-12), budget 0 € + stack Astro (D-PM-10, D-ARC-01..11). Validation reversible avant Gate 3/4. Section dediee ajoutee dans DECISIONS.md. |
+| 2026-09-15 | Phase 2 — Livrables Database Engineer | Database | FAIT (ACTE) | DATA_DECISION (validation formelle « pas de base de donnees », D-ARC-09 confirmee, conditions limites), CLIENT_DATA_VALIDATION (specs de validation YAML : types, formats, 18 contraintes croisees C-01..C-18, rapport Noah), REGISTRE_DONNEES (registre RGPD pratique : flux de donnees, durees de conservation, sous-traitant formulaire) livres dans database/ ; decisions D-DB-01 a 05 actees dans DECISIONS.md. Points ouverts n°43-45 (service de formulaire concret, durees exactes, niveau seo.domain). |
 
 ## Prochaine etape
 
 **Phase 2 — Developpement** : lancer en cascade
-- **database-engineer** : valider « pas de base de donnees » (D-ARC-09 / ADR-009),
+- ~~**database-engineer** : valider « pas de base de donnees » (D-ARC-09 / ADR-009)~~ — **FAIT (D-DB-01..05)**
 - **frontend-engineer** : base `src/` Astro (layouts, composants 15+specifiques, tokens, template restaurant flagship, etats speciaux, bandeau cookies, selecteur langue),
-- **backend-engineer** : formulaire contact + reservation (validation statique creneaux, cas « aucun creneau », fallback), endpoints tiers configurables,
+- **backend-engineer** : formulaire contact + reservation (validation statique creneaux, cas « aucun creneau », fallback), endpoints tiers configurables, implementation `validate-client.mjs` conforme CLIENT_DATA_VALIDATION.md,
 - integration des livrables content-seo (placeholders, JSON-LD, meta, client_data.yaml) et du design system UX.
 
 Les decisions en suspens (prix finaux, statut juridique reel, TVA reelle,
@@ -49,8 +50,9 @@ developpement de la base de production.
   dans PRIVACY_REQUIREMENTS ; hebergeur final a nommer dans les mentions legales.
 - **devops-engineer** : choix de l'hebergeur statique (Cloudflare Pages en
   reference, ADR-005), domaine, HTTPS, rollback.
-- **database-engineer (AGENT 07)** : confirmation « pas de base de donnees »
-  (D-ARC-09 / ADR-009).
+- ~~**database-engineer (AGENT 07)** : confirmation « pas de base de donnees »
+  (D-ARC-09 / ADR-009)~~ — **FAIT** : D-DB-01 a 05, livrables dans database/
+  (DATA_DECISION, CLIENT_DATA_VALIDATION, REGISTRE_DONNEES).
 - **security-engineer** : validation zero-cookie par defaut, anti-spam, headers.
 - **frontend/backend-engineer** : implementation Astro conforme (STACK.md,
   TECHNICAL_ARCHITECTURE.md), contrat de generation et de formulaires.
@@ -109,3 +111,8 @@ developpement de la base de production.
   statique, domaine) ; database-engineer (validation « pas de DB », D-ARC-09) ;
   security (zero-cookie, anti-spam) ; frontend/backend (implementation Phase 2
   conforme STACK/TECHNICAL_ARCHITECTURE).
+- Dependances Database vers les autres agents : content-seo (schema source
+  CLIENT_DATA_SCHEMA, ajout seo.domain niveau definitif — regle C-17 en attente) ;
+  backend-engineer (implementation validate-client.mjs conforme
+  CLIENT_DATA_VALIDATION.md) ; legal (durees de conservation, sous-traitant
+  formulaire concret PO-DB-01) ; devops (hebergeur du depot pour sauvegardes git).

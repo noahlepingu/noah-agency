@@ -220,12 +220,43 @@ MAINTENANCE_PLAN.md.
 
 37. **Ajout `seo.domain` au client_data.yaml** : necessaire pour canonical,
     sitemap.xml et Open Graph (proposition a content-seo, D-CS-01).
+    Traite en spec par l'AGENT 07 : regle C-17, REQUIRED au build tant que
+    content-seo n'a pas valide son niveau (CLIENT_DATA_VALIDATION.md section 7).
 38. **Service de formulaire concret** : choix du prestataire (Formspree/Web3Forms)
     avec le 1er client ; RGPD du prestataire a verifier (sous-traitant).
+    Recommandation AGENT 07 : preferer Web3Forms (UE, zero transfert hors UE).
 39. **Hebergeur final des sites clients** : decision devops (Cloudflare Pages
     reference, ADR-005) ; identite de l'hebergeur pour les mentions legales.
 40. **Validation AGENT 07** : confirmation « pas de base de donnees » (D-ARC-09).
+    **FAIT — voir D-DB-01 a 04 (Decisions Phase 2, Database Engineer).**
 41. **Polices definitives** : validation Gate 2 (Inter + Playfair Display
     recommandes, implementation self-hosted).
 42. **Google Maps / Analytics** : ne sont actives que si un client le demande et
     Noah le valide (D-ARC-07/08) — sinon OSM + aucun analytics par defaut.
+
+## Decisions Phase 2 — Database Engineer (2026-09-15)
+
+Statut : **ACTEES** — decisions validees par le Tech Lead (hypotheses de
+travail Phase 2, reversibles avant Gate 3/4).
+Reference : ADR-009 (D-ARC-09), CLIENT_DATA_SCHEMA.md (D-CS-01/02),
+TECHNICAL_ARCHITECTURE.md, PRIVACY_REQUIREMENTS_TEMPLATE.md (D-LG-06).
+Livrables : project/database/DATA_DECISION.md, CLIENT_DATA_VALIDATION.md,
+REGISTRE_DONNEES.md.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-DB-01 | **Pas de base de donnees en v1 — VALIDATION FORMELLE** | La decision ADR-009 / D-ARC-09 est confirmee : aucun besoin fonctionnel ne requiert de stockage serveur (contenu statique + YAML unique + formulaires tiers + localStorage). Une DB ajouterait cout, complexite et risque sans benefice. Reversibilite preservee si besoin reel (DATA_DECISION.md section 4) | — (validation AGENT 07 demandee par D-ARC-09) |
+| D-DB-02 | **Strategie de donnees : YAML source unique, sauvegardes = git** | `client_data.yaml` (content/clients/<slug>/) est l'unique source de verite ; versionne dans le depot (historique complet = sauvegarde). Aucun stockage cote systeme des donnees de formulaires (endpoint tiers uniquement) | — |
+| D-DB-03 | **Validation du client_data.yaml : REQUIRED bloquent** | Specs de validation livrees (CLIENT_DATA_VALIDATION.md) : types, formats (email, phone FR, hex, time, lat/lng, siren/siret), 18 contraintes croisees (C-01 a C-18), rapport structure pour Noah (bloquants/recommandes/optionnels/regles). Codes de sortie scripts (0-4) | OUI (spec de validation) |
+| D-DB-04 | **Registre des donnees (RGPD pratique)** | Registre des flux de donnees du systeme : donnees des sites (professionnelles, git), donnees de formulaires (tier, durees max. recommendees : contact 6 mois, devis 3 mois, reservation = duree du service), donnees navigateur (localStorage). Aucune table, aucune migration. Sous-traitant formulaire declare (Web3Forms recommande : UE) | — |
+| D-DB-05 | **Conditions limites de reevaluation** | 5 situations imposent un nouvel ADR + validation Noah avant d'introduire une DB ou un stockage serveur : e-commerce complet, comptes utilisateurs, CMS/en ligne, reservation temps reel, newsletter > 500 contacts (cette derniere via service tiers, sans DB maison) | OUI (conditions de reevaluation) |
+
+## Points ouverts — arbitrage Noah / autres agents (Phase 2, Database)
+
+43. **Service de formulaire concret** (PO-DB-01) : Formspree (USA, CCT a verifier)
+    vs Web3Forms (UE, preferable RGPD). Decision avec le 1er client — backend +
+    legal + Noah.
+44. **Durees de conservation exactes** (PO-DB-02) : les durees du registre sont
+    des maxima recommendes ; a ajuster selon le service tiers choisi.
+45. **`seo.domain` au schema** : REQUIRED au build en attendant la decision de
+    niveau de content-seo (CLIENT_DATA_VALIDATION.md section 7).
