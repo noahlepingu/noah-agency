@@ -349,3 +349,47 @@ tests/ (node:test), project/backend/FORMS_ARCHITECTURE.md.
     `services`, `template`, `reviews.items`, `reservation.slots` conformes a
     CLIENT_DATA_SCHEMA.md (le legacy `reviews.reviews` / `time_slots` reste
     lu en compatibilite par les scripts) — a entériner par content-seo.
+
+## Decisions Phase 3 — DevOps Engineer (2026-09-15)
+
+Statut : **ACTEES** — decisions validees par le Tech Lead (hypotheses de
+travail Phase 3, reversibles avant Gate 3/4).
+Reference : ADR-002 (generation multi-clients), ADR-005 (deploiement statique,
+Gate 4), ADR-009 (pas de DB), MAINTENANCE_PLAN.md (architecte, v0.1),
+cahier des charges sections 17-18/23/25-27.
+Livrables : project/infrastructure/ (CI_CD.md, DEPLOYMENT.md, MONITORING.md,
+BACKUP_ROLLBACK.md, MAINTENANCE_PLAN.md, TODO_PRODUCTION.md),
+.github/workflows/ (ci.yml, deploy-site.yml), .env.example.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-DEVOPS-01 | **CI : GitHub Actions, gratuit, sur push main + PR** | Workflow `ci.yml` : checkout -> Node 20 LTS -> `npm ci` -> `npm test` (30 tests) -> `validate:example` (code 0) -> `build:example` (16 pages) -> artefact `dist/` (7 j). **La CI ne deploie jamais** : elle garantit la sante du systeme. Depot prive recommande (2 000 min/mois gratuites, suffisant) | — |
+| D-DEVOPS-02 | **CD : deploiement manuel par client (Gate 4) sur Cloudflare Pages** | Workflow `deploy-site.yml` : declenchement **uniquement manuel** (`workflow_dispatch`, saisie du slug) — le declenchement humain est la **Gate 4** (cahier des charges sections 23/25). Etapes : test -> validation client (code 0) -> `build:site` -> `wrangler pages deploy dist/<slug> --project-name=<slug>` -> ping HTTPS. Environnement « production » avec reviewer Noah = couche supplementaire optionnelle | OUI (hebergeur final) |
+| D-DEVOPS-03 | **Hebergeur de reference : Cloudflare Pages** (ADR-005 applique) | Gratuit, HTTPS automatique (Let's Encrypt gere), domaine custom, rollback 1-clic (dashboard), deploiement CLI (wrangler) adapte au multi-clients (un projet Pages par slug). Identite legale : Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA (a integrer dans les mentions legales des sites clients — LEGAL_SITE_TEMPLATES.md §1). Netlify / GitHub Pages documentes en alternatives (DEPLOYMENT.md §8). | OUI (identite hebergeur pour mentions legales) |
+| D-DEVOPS-04 | **Strategie multi-clients : dossiers, pas de branches** | Un seul depot, une seule branche `main` ; chaque client vit dans `content/clients/<slug>/` (client_data.yaml + assets). Le build d'un client est isole (`dist/<slug>/`, ADR-002 — un client casse n'affecte pas les autres). Pas de branche par client (duplication historique, mises a jour communes compliquees). Deploy par workflow manuel par slug | — |
+| D-DEVOPS-05 | **Monitoring : UptimeRobot (reference), zero serveur** | Statique sans serveur = pas de logs serveur ni de processus a surveiller. UptimeRobot (plan gratuit, 50 monitors, checks 5 min, alertes email) sur l'URL de chaque site client ; alternative Better Stack (5 monitors) documentee. Statut des deploiements via GitHub Actions + dashboard Cloudflare. Analytics/404 : aucun traceur par defaut (ADR-008) ; scan de liens periodique (`npx lychee`) + Google Search Console optionnelle | — |
+| D-DEVOPS-06 | **Sauvegardes : le depot git EST la sauvegarde** (ADR-009 applique) | Aucune sauvegarde de `dist/` (regenerable — propriete reproductible) ni de site deploye. Sauvegarde = commits + push regulier + tags (`v0.x.y` systeme, `client-<slug>-v1` livraison) + `git bundle` trimestriel optionnel hors-ligne. `npm ci` regenere tout depuis package-lock.json | — |
+| D-DEVOPS-07 | **Rollback = redeploiement d'un build precedent** (ADR-005 applique) | Reference : rollback 1-clic depuis le dashboard Cloudflare Pages (Deployments -> Retry) = restauration rapide du service. Rollback complet git (checkout d'un tag + rebuild) documente. Simplification : restaurer le service vite (rollback), corriger durablement via la procedure d'incident (validation Noah) | — |
+| D-DEVOPS-08 | **Variables d'environnement minimales ; endpoints formulaire dans le YAML** | Aucun secret au build : les endpoints de formulaires (contact.form_endpoint, reservation.form_endpoint) sont des URL publiques dans client_data.yaml (ADR-003), pas des variables. Secrets reels = `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (GitHub Secrets uniquement). `.env.example` a la racine documente ; `.env` gitignore | — |
+| D-DEVOPS-09 | **Maintenance operee : plan architecte applique** | MAINTENANCE_PLAN.md (infrastructure) reprend le plan de l'architecte : mises a jour mensuelles (`npm audit`), renouvellement domaine (alerte 60 j), monitoring continu, checklist mensuelle concrete (section 6), flux d'incident (Critique < 24 h / Majeur < 72 h / Mineur mensuel), rollback nocturne possible seul par Noah (1-clic) avant correction validee | — |
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 3, DevOps)
+
+53. **URL GitHub du depot** (PO-DEVOPS-01) : le push initial est impossible
+    sans remote (aucun configure). Noah cree le repo GitHub (prive
+    recommande) et fournit l'URL -> `git remote add origin <url>` +
+    `git push -u origin main`. Bloquant uniquement pour l'activation du
+    CI/CD reelle (le travail local est complet).
+54. **Compte Cloudflare + token** (PO-DEVOPS-02) : Noah cree le compte
+    Cloudflare Pages (gratuit), le token API (`CLOUDFLARE_API_TOKEN`) et
+    recupere `CLOUDFLARE_ACCOUNT_ID` -> secrets GitHub. Non bloquant pour
+    la Phase 3 (documentation complete).
+55. **Identite de l'hebergeur dans les mentions legales** (PO-DEVOPS-03) :
+    Cloudflare, Inc. documente (D-DEVOPS-03) ; legal-compliance l'integre
+    dans les templates (dependance legal). A confirmer lors du 1er client.
+56. **Compte UptimeRobot** (PO-DEVOPS-04) : a creer par Noah (gratuit) ;
+    email de notification a definir. Non bloquant.
+57. **Service de formulaire concret** (PO-DEVOPS-05 = PO-BE-01/PO-DB-01) :
+    Web3Forms (UE, recommande) vs Formspree (USA) — decision avec le
+    1er client reel (backend + legal + Noah). Impacte le registre RGPD,
+    pas le pipeline.

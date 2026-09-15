@@ -1,0 +1,92 @@
+# deploy-site.yml — Deploiement d'UN site client sur Cloudflare Pages.
+#
+# Declencheur : UNIQUEMENT manuel (workflow_dispatch) — joue le role de
+# GATE 4 humaine (cahier des charges sections 23/25 : aucun deploiement en
+# production sans validation explicite de Noah).
+#
+# Entree : slug du client (ex. exemple-restaurant) -> le workflow valide,
+# genere, build et deploie dist/<slug> sur le projet Cloudflare Pages de
+# nom identique.
+#
+# Secrets GitHub requis (Settings -> Secrets and variables -> Actions) :
+#   CLOUDFLARE_API_TOKEN  : token API Cloudflare (permission Pages:Edit)
+#   CLOUDFLARE_ACCOUNT_ID : identifiant du compte Cloudflare
+#
+# Reference : project/infrastructure/CI_CD.md, ADR-005.
+
+name: Deploy site client (Gate 4)
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Slug du client a deployer (ex. exemple-restaurant)'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.slug }} sur Cloudflare Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+
+    # L'environnement "production" est protege dans GitHub :
+    # Settings -> Environments -> production -> Required reviewers = Noah.
+    # Meme si le workflow est declenche manuellement, l'approbation finale
+    # de Noah sur l'environnement ajoute une couche de securite (Gate 4 bis).
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Valider le slug (regex anti path traversal)
+        run: |
+          if ! echo "${{ inputs.slug }}" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+            echo "::error::Slug invalide : ${{ inputs.slug }}"
+            exit 1
+          fi
+
+      - name: Installer Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dependances (reproductible)
+        run: npm ci
+
+      - name: Tests unitaires (le systeme doit etre sain)
+        run: npm test
+
+      - name: Valider le client (code 0 obligatoire)
+        run: npm run validate -- --client "${{ inputs.slug }}"
+
+      - name: Generer et builder le site client
+        run: npm run build:site -- --client "${{ inputs.slug }}"
+
+      - name: Deployer sur Cloudflare Pages (wrangler)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler pages deploy "dist/${{ inputs.slug }}" \
+            --project-name="${{ inputs.slug }}" \
+            --branch=production \
+            --commit-dirty=true
+
+      - name: Verifier la disponibilite (ping HTTPS)
+        id: verify
+        run: |
+          URL="https://${{ inputs.slug }}.pages.dev"
+          for i in $(seq 1 10); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL/" || echo 000)
+            echo "Tentative $i : HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "OK — $URL repond 200"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Verification echequee apres deploiement : $URL"
+          exit 1

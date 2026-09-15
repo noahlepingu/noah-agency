@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 — Backend Engineer : validation client conforme au contrat, logique formulaires/reservation, tests unitaires).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 3 — DevOps Engineer : CI/CD GitHub Actions, deploiement Cloudflare Pages (Gate 4), monitoring, sauvegardes/rollback, maintenance operationnelle).
 
 ## Vue d'ensemble
 
@@ -8,13 +8,13 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 —
 | ----- | -------- | ------ | --------------------- |
 | 0     | Discovery (PM, UX, Content/SEO, Legal) | FAIT (propositions validees Gate 1/2 partielles) | PM / UX / Content / Legal |
 | 1     | Design & Architecture (UX DA, Solution Architect) | FAIT (architecture PROPOSEE et validee comme hypothese) | UX / Architect |
-| 2     | Developpement (frontend, backend, database) | EN COURS | Developpeurs |
-| 3     | Infrastructure (DevOps) | EN ATTENTE | DevOps |
+| 2     | Developpement (frontend, backend, database) | FAIT (base Astro, validation, formulaires, 30 tests OK) | Developpeurs |
+| 3     | Infrastructure (DevOps) | FAIT (CI/CD GitHub Actions, hebergement Cloudflare Pages documente, monitoring, sauvegardes/rollback, maintenance operationnelle) | DevOps |
 | 4     | Qualite (QA, accessibilite/perf, securite) | EN ATTENTE | QA / Specialists |
 | 5     | Code Review | EN ATTENTE | Code Reviewer |
 | 6     | Corrections | EN ATTENTE | Developpeurs |
 | 7     | Final Review | EN ATTENTE | Final Reviewer |
-| 8     | Production | EN ATTENTE | DevOps |
+| 8     | Production | EN ATTENTE (depend de l'URL GitHub + compte Cloudflare) | DevOps |
 | 9     | Post-deploiement + maintenance | EN ATTENTE | QA / PM / DevOps |
 
 ## Historique des taches
@@ -31,19 +31,29 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 —
 | 2026-09-15 | Phase 2 — Livrables Database Engineer | Database | FAIT (ACTE) | DATA_DECISION (validation formelle « pas de base de donnees », D-ARC-09 confirmee, conditions limites), CLIENT_DATA_VALIDATION (specs de validation YAML : types, formats, 18 contraintes croisees C-01..C-18, rapport Noah), REGISTRE_DONNEES (registre RGPD pratique : flux de donnees, durees de conservation, sous-traitant formulaire) livres dans database/ ; decisions D-DB-01 a 05 actees dans DECISIONS.md. Points ouverts n°43-45 (service de formulaire concret, durees exactes, niveau seo.domain). |
 | 2026-09-15 | Phase 2 — Livrables Frontend Engineer | Frontend | FAIT (ACTE) | Base de production Astro livre : `src/` (3 layouts, 21 composants, utils SEO/schema/i18n/forms/hours/consent, translations FR/EN), `templates/restaurant/` (template.yaml + content FR/EN + 13 pages `$$LANG$$`), scripts (generate-site, validate-client, dev, preview, contrast, fetch-fonts), client exemple `exemple-restaurant` (La Table d'Essai, Lyon, données fictives). Verifications : `npm run generate:example` + `npx astro build` = **16 pages OK** (13 FR + 3 EN), `validate:example` exit 0, **aucun lien interne casse**, **aucun placeholder residuel** dans le HTML, 1 seul h1 par page. Bugs corriges en cours de livraison : CTA vides (Astro 5 `Astro.props.children` → `<slot />`), placeholders non remplis dans components (fillObject), routes `/en/*` cassees pour les pages non traduites (localizePath + translated_routes), doublon h1 pages legales (retrait heroTitle LegalLayout). Decisions D-FE-01 a 12 actees dans DECISIONS.md. Points ouverts n°46-48. |
 | 2026-09-15 | Phase 2 — Livrables Backend Engineer | Backend | FAIT (ACTE) | Validation client implementee conformement a CLIENT_DATA_VALIDATION.md : `validation-core.mjs` (moteur natif sans dependance, niveaux REQUIRED/SHOULD/COULD, regles C-01..C-18, derivations, rapport markdown) + CLI `validate-client.mjs` (codes 0/1/2/3/4, format > required, rapport `dist/<slug>/validation-report.md`) + `generate-site.mjs` (validation bloquante avant generation, endpoints formulaires, mapping reviews/slots/activityLabel, rapport). Logique formulaires : `src/utils/forms.js` etendu (email/tel FR-intl, `buildFormEndpoint` http/mailto/none, `submitForm`) + `src/utils/reservation.js` (creneaux statiques purs : jours fermes, periode de fermeture, filtrage/generation 30 min, etat « aucun creneau » C-05, prochaine date). Composants : ContactForm i18n via `data-json-form`, ReservationForm avec vraie logique (fini le simulateur). Exemple `client_data.yaml` rendu conforme (category restaurant, template, services, legal_name, siren/siret, meta_description 120-160, reviews.items, reservation.slots). Tests : `npm test` = **30 tests OK** (validation/reservation/forms). Verifications : `validate:example` exit 0, `build:example` = **16 pages OK**, aucun placeholder residuel. Documentation : `project/backend/FORMS_ARCHITECTURE.md`. Decisions D-BE-01 a 07 actees dans DECISIONS.md. Points ouverts n°49-52. |
+| 2026-09-15 | Phase 3 — Livrables DevOps Engineer | DevOps | FAIT (ACTE) | Infrastructure completee : **CI_CD.md** (pipeline Git -> CI -> artefact -> deploy, strategie branche unique + dossiers clients, quotas GitHub Actions gratuits), workflows **`.github/workflows/ci.yml`** (push main + PR : npm ci, 30 tests, validate:example, build:example, artefact) et **`deploy-site.yml`** (UNIQUEMENT manuel, workflow_dispatch avec slug — Gate 4 humaine : tests -> validation client code 0 -> build -> `wrangler pages deploy` -> ping HTTPS ; environment production + secrets CLOUDFLARE_*). **DEPLOYMENT.md** (Cloudflare Pages reference : config, DNS apex/www, HTTPS auto, env vars minimales, rollback dashboard, Netlify/GitHub Pages documentes, identite hebergeur Cloudflare Inc. pour mentions legales). **MONITORING.md** (UptimeRobot reference vs Better Stack compares, zero logs serveur, zero analytics par defaut ADR-008, scan liens lychee, frequences et responsabilites). **BACKUP_ROLLBACK.md** (git = sauvegarde, dist/ non sauvegarde justifie, tags releases, rollback 1-clic Cloudflare + rollback git complet, recouvrement depuis bundle). **MAINTENANCE_PLAN.md** (plan architecte applique : npm audit mensuel, renouvellement domaine alerte 60 j, checklist mensuelle concrete, procedure d'incident). **TODO_PRODUCTION.md** (checklist systeme + checklist client pre-Gate 4). **`.env.example`** a la racine. Decisions D-DEVOPS-01 a 09 actees dans DECISIONS.md. Points ouverts n°53-57 (URL GitHub, compte Cloudflare, UptimeRobot, service formulaire).
 
 ## Prochaine etape
 
-**Phase 2 — Developpement** : lancer en cascade
+**Phase 4 — Qualite** : a lancer en cascade
 - ~~**database-engineer** : valider « pas de base de donnees » (D-ARC-09 / ADR-009)~~ — **FAIT (D-DB-01..05)**
 - ~~**frontend-engineer** : base `src/` Astro (layouts, composants 15+specifiques, tokens, template restaurant flagship, etats speciaux, bandeau cookies, selecteur langue)~~ — **FAIT (D-FE-01..12, 16 pages build OK, client exemple valide)**
 - ~~**backend-engineer** : formulaire contact + reservation (validation statique creneaux, cas « aucun creneau », fallback mailto), endpoints tiers configurables, implementation `validate-client.mjs` conforme CLIENT_DATA_VALIDATION.md (moteur `validation-core.mjs`, codes 0/1/2/3/4, rapport dist), integration dans generate-site (validation bloquante)~~ — **FAIT (D-BE-01..07, 30 tests OK, build 16 pages OK, FORMS_ARCHITECTURE.md)**
-- validation du contrat de generation et des formulaires (QA Phase 4) et integration des livrables content-seo (placeholders, JSON-LD, meta, client_data.yaml) et du design system UX.
+- ~~**devops-engineer** : CI/CD GitHub Actions, hebergement Cloudflare Pages documente (Gate 4), monitoring, sauvegardes/rollback, maintenance operationnelle~~ — **FAIT (D-DEVOPS-01..09, workflows .github/, 6 docs infrastructure/, .env.example)**
+- **qa-engineer** : plan de tests systeme (navigation, formulaires, responsive, liens, accessibilite de base) + execution sur le build exemple
+- **accessibility-specialist** : audit WCAG 2.2 AA (contraste, clavier, focus, ARIA, structure)
+- **performance-engineer** : audit Core Web Vitals + optimisation images (astro:assets) sur le build exemple
+- **security-engineer** : zero-cookie par defaut, anti-spam, headers HTTP (security.txt, CSP), audit dependances
 
 Les decisions en suspens (prix finaux, statut juridique reel, TVA reelle,
 donnees identite, hebergeur nomme, service de formulaire concret, polices
 definitives) restent ouvertes jusqu'aux Gates 3/4 — elles ne bloquent pas le
 developpement de la base de production.
+
+**Dependances DevOps -> autres agents :**
+- **legal-compliance** : identite de l'hebergeur (Cloudflare, Inc. — D-DEVOPS-03) a integrer dans LEGAL_SITE_TEMPLATES.md §1 (mentions legales) ; identite Noah (SIREN/SIRET) toujours attendue (point ouvert n°24).
+- **security-engineer** : validation zero-cookie par defaut (ADR-008), headers, secrets GitHub.
+- **qa-engineer** : scan de liens `npx lychee` + tests finaux sur le build (Phase 4) ; le workflow CI execute deja validate:example + build:example (base de reference).
 
 **Dependances Architect -> autres agents :**
 - **content-seo** : ajout propose au schema `seo.domain` (canonical/sitemap/OG) +

@@ -1,0 +1,52 @@
+# ci.yml — Integration continue du systeme noah-agency.
+#
+# Declencheur : push sur main + PR vers main.
+# But : verifier que le systeme est sain (tests, validation client exemple,
+# build de reference). NE DEPLOIE JAMAIS : le deploiement est un workflow
+# manuel separe (deploy-site.yml), declenche par Noah (Gate 4).
+#
+# Reference : project/infrastructure/CI_CD.md.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Valider systeme + build exemple
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dependances (reproductible)
+        run: npm ci
+
+      - name: Tests unitaires (node:test)
+        run: npm test
+
+      - name: Valider le client exemple (code 0 obligatoire)
+        run: npm run validate:example
+
+      - name: Build du client exemple (generation + astro build)
+        run: npm run build:example
+
+      - name: Uploader l'artefact dist (inspection, 7 jours)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
