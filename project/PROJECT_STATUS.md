@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 — Frontend Engineer : base Astro livree, template restaurant flagship, generation multi-clients).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 — Backend Engineer : validation client conforme au contrat, logique formulaires/reservation, tests unitaires).
 
 ## Vue d'ensemble
 
@@ -30,14 +30,15 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (Phase 2 —
 | 2026-09-15 | **Gate 1/2 — Validation Noah** | Noah / Tech Lead | **FAIT (hypotheses validees « pour l'instant »)** | Noah valide : offre & prix PM (D-PM-02/06/07), CLIENT_TYPE B2B prioritaire (D-PM-03, D-LG-03), template flagship restaurant (D-PM-06, D-UX-12), budget 0 € + stack Astro (D-PM-10, D-ARC-01..11). Validation reversible avant Gate 3/4. Section dediee ajoutee dans DECISIONS.md. |
 | 2026-09-15 | Phase 2 — Livrables Database Engineer | Database | FAIT (ACTE) | DATA_DECISION (validation formelle « pas de base de donnees », D-ARC-09 confirmee, conditions limites), CLIENT_DATA_VALIDATION (specs de validation YAML : types, formats, 18 contraintes croisees C-01..C-18, rapport Noah), REGISTRE_DONNEES (registre RGPD pratique : flux de donnees, durees de conservation, sous-traitant formulaire) livres dans database/ ; decisions D-DB-01 a 05 actees dans DECISIONS.md. Points ouverts n°43-45 (service de formulaire concret, durees exactes, niveau seo.domain). |
 | 2026-09-15 | Phase 2 — Livrables Frontend Engineer | Frontend | FAIT (ACTE) | Base de production Astro livre : `src/` (3 layouts, 21 composants, utils SEO/schema/i18n/forms/hours/consent, translations FR/EN), `templates/restaurant/` (template.yaml + content FR/EN + 13 pages `$$LANG$$`), scripts (generate-site, validate-client, dev, preview, contrast, fetch-fonts), client exemple `exemple-restaurant` (La Table d'Essai, Lyon, données fictives). Verifications : `npm run generate:example` + `npx astro build` = **16 pages OK** (13 FR + 3 EN), `validate:example` exit 0, **aucun lien interne casse**, **aucun placeholder residuel** dans le HTML, 1 seul h1 par page. Bugs corriges en cours de livraison : CTA vides (Astro 5 `Astro.props.children` → `<slot />`), placeholders non remplis dans components (fillObject), routes `/en/*` cassees pour les pages non traduites (localizePath + translated_routes), doublon h1 pages legales (retrait heroTitle LegalLayout). Decisions D-FE-01 a 12 actees dans DECISIONS.md. Points ouverts n°46-48. |
+| 2026-09-15 | Phase 2 — Livrables Backend Engineer | Backend | FAIT (ACTE) | Validation client implementee conformement a CLIENT_DATA_VALIDATION.md : `validation-core.mjs` (moteur natif sans dependance, niveaux REQUIRED/SHOULD/COULD, regles C-01..C-18, derivations, rapport markdown) + CLI `validate-client.mjs` (codes 0/1/2/3/4, format > required, rapport `dist/<slug>/validation-report.md`) + `generate-site.mjs` (validation bloquante avant generation, endpoints formulaires, mapping reviews/slots/activityLabel, rapport). Logique formulaires : `src/utils/forms.js` etendu (email/tel FR-intl, `buildFormEndpoint` http/mailto/none, `submitForm`) + `src/utils/reservation.js` (creneaux statiques purs : jours fermes, periode de fermeture, filtrage/generation 30 min, etat « aucun creneau » C-05, prochaine date). Composants : ContactForm i18n via `data-json-form`, ReservationForm avec vraie logique (fini le simulateur). Exemple `client_data.yaml` rendu conforme (category restaurant, template, services, legal_name, siren/siret, meta_description 120-160, reviews.items, reservation.slots). Tests : `npm test` = **30 tests OK** (validation/reservation/forms). Verifications : `validate:example` exit 0, `build:example` = **16 pages OK**, aucun placeholder residuel. Documentation : `project/backend/FORMS_ARCHITECTURE.md`. Decisions D-BE-01 a 07 actees dans DECISIONS.md. Points ouverts n°49-52. |
 
 ## Prochaine etape
 
 **Phase 2 — Developpement** : lancer en cascade
 - ~~**database-engineer** : valider « pas de base de donnees » (D-ARC-09 / ADR-009)~~ — **FAIT (D-DB-01..05)**
 - ~~**frontend-engineer** : base `src/` Astro (layouts, composants 15+specifiques, tokens, template restaurant flagship, etats speciaux, bandeau cookies, selecteur langue)~~ — **FAIT (D-FE-01..12, 16 pages build OK, client exemple valide)**
-- **backend-engineer** : formulaire contact + reservation (validation statique creneaux, cas « aucun creneau », fallback), endpoints tiers configurables, implementation `validate-client.mjs` conforme CLIENT_DATA_VALIDATION.md,
-- integration des livrables content-seo (placeholders, JSON-LD, meta, client_data.yaml) et du design system UX.
+- ~~**backend-engineer** : formulaire contact + reservation (validation statique creneaux, cas « aucun creneau », fallback mailto), endpoints tiers configurables, implementation `validate-client.mjs` conforme CLIENT_DATA_VALIDATION.md (moteur `validation-core.mjs`, codes 0/1/2/3/4, rapport dist), integration dans generate-site (validation bloquante)~~ — **FAIT (D-BE-01..07, 30 tests OK, build 16 pages OK, FORMS_ARCHITECTURE.md)**
+- validation du contrat de generation et des formulaires (QA Phase 4) et integration des livrables content-seo (placeholders, JSON-LD, meta, client_data.yaml) et du design system UX.
 
 Les decisions en suspens (prix finaux, statut juridique reel, TVA reelle,
 donnees identite, hebergeur nomme, service de formulaire concret, polices
@@ -114,6 +115,7 @@ developpement de la base de production.
   conforme STACK/TECHNICAL_ARCHITECTURE).
 - Dependances Database vers les autres agents : content-seo (schema source
   CLIENT_DATA_SCHEMA, ajout seo.domain niveau definitif — regle C-17 en attente) ;
-  backend-engineer (implementation validate-client.mjs conforme
-  CLIENT_DATA_VALIDATION.md) ; legal (durees de conservation, sous-traitant
+  ~~backend-engineer (implementation validate-client.mjs conforme
+  CLIENT_DATA_VALIDATION.md)~~ — **FAIT (D-BE-01..03, D-BE-07, tests OK)** ;
+  legal (durees de conservation, sous-traitant
   formulaire concret PO-DB-01) ; devops (hebergeur du depot pour sauvegardes git).

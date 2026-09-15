@@ -46,8 +46,29 @@ npm run build:example
 
 ```bash
 npm run validate -- --client <slug>
-# Codes sortie : 0=valide, 2=erreurs, 3=warnings
+# Codes sortie (CLIENT_DATA_VALIDATION.md §2.2) :
+#   0 = VALIDATION OK          4 = FICHIER INTROUVABLE
+#   1 = ERREUR YAML            2 = EN ATTENTE DE DONNEES (REQUIRED manquants)
+#   3 = ERREUR FORMAT           (SHOULD/COULD ne changent jamais le code)
+# Rapport : dist/<slug>/validation-report.md (console + fichier)
 ```
+
+## Tests
+
+```bash
+npm test   # node --test tests/*.test.mjs (validation, reservation, forms)
+```
+
+## Formulaires (contact + reservation)
+
+- **Aucun backend serveur** (ADR-003) : envoi vers un endpoint tiers
+  (Formspree / Web3Forms) si configure, sinon **fallback mailto**.
+- Configuration par client dans `client_data.yaml` :
+  `contact.form_endpoint` et `reservation.form_endpoint` ("" = mailto).
+- Reservation : creneaux statiques (slots explicites filtres par les plages
+  d'ouverture, sinon generation 30 min) — etat « aucun creneau » dedie.
+- Logique partagee : `src/utils/forms.js` + `src/utils/reservation.js`
+  (fonctions pures). Documentation : `project/backend/FORMS_ARCHITECTURE.md`.
 
 ## Contraste
 
@@ -70,7 +91,7 @@ noah-agency/
 │   ├── layouts/             # BaseLayout, PageLayout, LegalLayout
 │   ├── styles/              # Design tokens, base, utilities
 │   ├── translations/        # ui.json (FR/EN)
-│   ├── utils/               # SEO, schema, forms, hours, etc.
+│   ├── utils/               # SEO, schema, forms, reservation, hours, etc.
 │   └── sites/<slug>/        # Sites generees (gitignore)
 ├── templates/
 │   └── restaurant/          # Template flagship
@@ -79,7 +100,8 @@ noah-agency/
 │       └── pages/           # Pages .astro avec $$LANG$$
 ├── content/
 │   └── clients/<slug>/      # client_data.yaml par client
-├── scripts/                 # generate, validate, fetch-fonts, etc.
+├── scripts/                 # generate, validate, validation-core, tests, etc.
+├── tests/                   # Tests unitaires node:test (forms, reservation, validation)
 ├── public/                  # Assets partages (favicon)
 └── fonts-cache/             # Polices telechargees (optionnel)
 ```

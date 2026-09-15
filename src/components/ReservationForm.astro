@@ -2,7 +2,10 @@
 /**
  * ReservationForm.astro — Formulaire de reservation (restaurant)
  * Champs : date, heure, nombre de personnes, nom, email, telephone, message.
- * Etat "Aucun creneau" : si tous les creneaux d'une date sont pris (simulateur).
+ * Etat "Aucun creneau" (UX.md §4.3) : jour ferme (horaire du jour absent ou
+ * periode de fermeture) ou aucun creneau valide pour la date — plus de
+ * simulateur : la logique est reelle et pure (utils/reservation.js).
+ * Envoi : endpoint tiers si configure, sinon mailto (FORMS_ARCHITECTURE.md §3).
  * CNIL : mention d'information sous le formulaire.
  */
 import Icon from './Icon.astro';
@@ -17,6 +20,27 @@ const { ui, data, lang } = Astro.props;
 const reserv = ui.reservation || {};
 const maxGuests = data.max_party_size || 8;
 const HONEYPOT = 'phone_confirm';
+
+// Donnees et messages passes au script (i18n + creneaux statiques)
+const uiJson = JSON.stringify({
+  nameError: ui.form?.nameError || 'Veuillez renseigner votre nom.',
+  emailError: ui.form?.emailError || 'Veuillez entrer un email valide.',
+  phoneError: ui.form?.phoneError || 'Veuillez entrer un numero de telephone valide.',
+  dateError: ui.form?.dateError || 'Veuillez choisir une date.',
+  timeError: ui.form?.timeError || 'Veuillez choisir un creneau.',
+  partySizeError: ui.form?.partySizeError || 'Veuillez indiquer le nombre de personnes.',
+  globalError: ui.form?.globalError || '',
+  loadError: ui.form?.loadError || "Erreur lors de l'envoi, veuillez reessayer.",
+  sending: ui.form?.sending || 'Envoi...',
+  submit: ui.form?.submit || 'Envoyer',
+  noSlot: ui.states?.noSlot || { title: 'Aucun creneau disponible', message: '', cta1: 'Choisir une autre date', cta2: 'Nous appeler' },
+  siteName: data.site_name || '',
+  emailAddress: data.email || '',
+  phone: data.phone || '',
+});
+const slotsJson = JSON.stringify(data.time_slots || []);
+const scheduleJson = JSON.stringify(data.schedule || []);
+const closedJson = JSON.stringify(data.closed_periods || []);
 ---
 
 <section class="ds-section">
@@ -26,7 +50,16 @@ const HONEYPOT = 'phone_confirm';
       {reserv.intro ? <p class="ds-section-head__subtitle">{reserv.intro}</p> : null}
     </div>
 
-    <form method="post" action={data.action || ''} data-form="reservation" novalidate>
+    <form
+      method="post"
+      action={data.action || ''}
+      data-form="reservation"
+      data-json-form={uiJson}
+      data-slots={slotsJson}
+      data-schedule={scheduleJson}
+      data-closed={closedJson}
+      novalidate
+    >
       <div class="ds-form__grid ds-form__grid--reservation">
         <div class="ds-form__field">
           <label for="r-date" class="ds-form__label">{ui.form.date} *</label>
@@ -36,7 +69,7 @@ const HONEYPOT = 'phone_confirm';
 
         <div class="ds-form__field">
           <label for="r-time" class="ds-form__label">{ui.form.time} *</label>
-          <select id="r-time" name="time" class="ds-form__input ds-form__select" required aria-required="true">
+          <select id="r-time" name="time" class="ds-form__input ds-form__select" required aria-required="true" data-time-select>
             <option value="">{ui.form.timeError}</option>
             {(data.time_slots || []).map((s: string) => <option value={s}>{s}</option>)}
           </select>
@@ -91,11 +124,11 @@ const HONEYPOT = 'phone_confirm';
         </button>
       </div>
 
-      <!-- Aucun creneau -->
+      <!-- Aucun creneau (UX.md §4.3) -->
       <div class="ds-form__empty" hidden data-no-slot>
         <Icon name="calendar" size={32} />
-        <p class="ds-form__empty-title">{ui.states?.noSlot?.title || 'Aucun creneau disponible'}</p>
-        <p class="ds-form__empty-msg">{ui.states?.noSlot?.message || ''}</p>
+        <p class="ds-form__empty-title" data-no-slot-title>{ui.states?.noSlot?.title || 'Aucun creneau disponible'}</p>
+        <p class="ds-form__empty-msg" data-no-slot-msg>{ui.states?.noSlot?.message || ''}</p>
         <div class="ds-form__empty-actions">
           <button type="button" class="ds-btn ds-btn--primary" data-retry-slot>{ui.states?.noSlot?.cta1 || 'Choisir une autre date'}</button>
           {data.phone ? (
@@ -117,35 +150,152 @@ const HONEYPOT = 'phone_confirm';
 </section>
 
 <script>
+  import { getSlotsForDate } from '../utils/reservation';
+  import { isValidEmail, isValidPhoneFr, submitForm } from '../utils/forms';
+
   const form = document.querySelector('[data-form="reservation"]') as HTMLFormElement | null;
   if (form) {
-    form.addEventListener('submit', (ev) => {
-      ev.preventDefault();
+    try {
+      const uiData = { ...JSON.parse((form.dataset as any).jsonForm || '{}') };
+      const staticSlots = JSON.parse((form.dataset as any).slots || '[]');
+      const schedule = JSON.parse((form.dataset as any).schedule || '[]');
+      const closedPeriods = JSON.parse((form.dataset as any).closed || '[]');
+      const action = form.getAttribute('action') || '';
+
       const date = form.querySelector('#r-date') as HTMLInputElement;
       const time = form.querySelector('#r-time') as HTMLSelectElement;
+      const guests = form.querySelector('#r-guests') as HTMLSelectElement;
       const name = form.querySelector('#r-name') as HTMLInputElement;
       const email = form.querySelector('#r-email') as HTMLInputElement;
-      const noSlot = form.querySelector('[data-no-slot]');
-      const success = form.querySelector('[data-form-success]');
-      // Simple validation
-      const errors = [!date.value, !time.value, !name.value, !/^\S+@\S+$/.test(email.value)].filter(Boolean).length;
-      if (errors > 0) { return; }
-      // Simulate creneau plein si date aujourd'hui ou demain
-      const today = new Date().toISOString().slice(0, 10);
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-      if (date.value === today || date.value === tomorrow) {
-        noSlot.hidden = false;
-        form.querySelectorAll('input, select, textarea, button').forEach((el) => { (el as HTMLElement).disabled = true; });
-      } else {
-        success.hidden = false;
-        form.hidden = true;
-      }
-    });
-    form.querySelector('[data-retry-slot]')?.addEventListener('click', () => {
-      const noSlot = form.querySelector('[data-no-slot]');
-      noSlot.hidden = true;
-      form.querySelectorAll('input, select, textarea, button').forEach((el) => { (el as HTMLElement).disabled = false; });
-    });
+      const phone = form.querySelector('#r-phone') as HTMLInputElement;
+      const honeypot = form.querySelector('input[name="phone_confirm"]') as HTMLInputElement;
+      const errorGlobal = form.querySelector('[data-form-error]') as HTMLElement;
+      const noSlot = form.querySelector('[data-no-slot]') as HTMLElement;
+      const noSlotTitle = form.querySelector('[data-no-slot-title]') as HTMLElement;
+      const noSlotMsg = form.querySelector('[data-no-slot-msg]') as HTMLElement;
+      const retrySlot = form.querySelector('[data-retry-slot]');
+      const success = form.querySelector('[data-form-success]') as HTMLElement;
+      const submit = form.querySelector('[data-form-submit]') as HTMLButtonElement;
+      const submitLabel = form.querySelector('[data-form-submit-label]') as HTMLElement;
+
+      const setFieldError = (field: HTMLInputElement | HTMLSelectElement, msg: string | null) => {
+        const err = document.getElementById(`${field.id}-error`);
+        if (msg) {
+          field.setAttribute('aria-invalid', 'true');
+          field.classList.add('ds-form__input--invalid');
+          if (err) { err.textContent = msg; err.hidden = false; }
+        } else {
+          field.removeAttribute('aria-invalid');
+          field.classList.remove('ds-form__input--invalid');
+          if (err) { err.hidden = true; }
+        }
+      };
+
+      const refreshSlots = () => {
+        const cfg = { schedule, closedPeriods, slots: staticSlots };
+        const result = date.value ? getSlotsForDate(date.value, cfg) : { slots: staticSlots, closed: false, reason: null };
+
+        // Reinsere les options (hors placeholder)
+        time.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = uiData.timeError || 'Veuillez choisir un creneau';
+        time.appendChild(placeholder);
+
+        if (result.closed) {
+          // Jour ferme / aucun creneau : etat dedie (UX.md §4.3)
+          time.disabled = true;
+          noSlotTitle.textContent = uiData.noSlot?.title || 'Aucun creneau disponible';
+          noSlotMsg.textContent = uiData.noSlot?.message || '';
+          noSlot.hidden = false;
+        } else {
+          for (const slot of result.slots) {
+            const opt = document.createElement('option');
+            opt.value = slot;
+            opt.textContent = slot;
+            time.appendChild(opt);
+          }
+          time.disabled = result.slots.length === 0;
+          noSlot.hidden = true;
+        }
+      };
+
+      date.addEventListener('change', refreshSlots);
+      retrySlot?.addEventListener('click', () => {
+        noSlot.hidden = true;
+        date.value = '';
+        time.disabled = false;
+        refreshSlots();
+      });
+
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        errorGlobal!.hidden = true;
+
+        // Honeypot : abandon silencieux
+        if (honeypot && honeypot.value.trim().length > 0) return;
+
+        // Validation des champs (utils/forms.js)
+        let count = 0;
+        const dateOk = !!date.value;
+        setFieldError(date, dateOk ? null : (uiData.dateError || 'Veuillez choisir une date.'));
+        if (!dateOk) count++;
+
+        const { slots: daySlots } = date.value
+          ? getSlotsForDate(date.value, { schedule, closedPeriods, slots: staticSlots })
+          : { slots: [] };
+        const timeOk = !!time.value && daySlots.includes(time.value);
+        setFieldError(time, timeOk ? null : (uiData.timeError || 'Veuillez choisir un creneau.'));
+        if (!timeOk) count++;
+
+        const guestsOk = !!guests.value;
+        setFieldError(guests, guestsOk ? null : (uiData.partySizeError || 'Veuillez indiquer le nombre de personnes.'));
+        if (!guestsOk) count++;
+
+        const nameOk = name.value.trim().length >= 2;
+        setFieldError(name, nameOk ? null : (uiData.nameError || 'Nom obligatoire'));
+        if (!nameOk) count++;
+
+        const emailOk = isValidEmail(email.value);
+        setFieldError(email, emailOk ? null : (uiData.emailError || 'Email invalide'));
+        if (!emailOk) count++;
+
+        const phoneOk = !phone.value || isValidPhoneFr(phone.value);
+        setFieldError(phone, phoneOk ? null : (uiData.phoneError || 'Telephone invalide'));
+        if (!phoneOk) count++;
+
+        if (count > 0) {
+          errorGlobal!.textContent = (uiData.globalError || '').replace('{n}', String(count));
+          errorGlobal!.hidden = false;
+          return;
+        }
+
+        submit!.disabled = true;
+        submitLabel!.textContent = uiData.sending || 'Envoi...';
+
+        try {
+          await submitForm({
+            endpoint: action,
+            email: uiData.emailAddress || '',
+            data: {
+              subject: `Reservation ${uiData.siteName || ''} — ${date.value} ${time.value} (${guests.value} pers.)`,
+              body: `Date: ${date.value}\nHeure: ${time.value}\nPersonnes: ${guests.value}\nNom: ${name.value}\nEmail: ${email.value}\nTelephone: ${phone.value || '—'}\n\n${(form.querySelector('#r-message') as HTMLTextAreaElement)?.value || ''}`,
+            },
+            formData: new FormData(form),
+          });
+          form.reset();
+          refreshSlots();
+          success!.hidden = false;
+        } catch {
+          errorGlobal!.textContent = uiData.loadError || "Erreur lors de l'envoi";
+          errorGlobal!.hidden = false;
+        }
+        submit!.disabled = false;
+        submitLabel!.textContent = uiData.submit || 'Envoyer';
+      });
+    } catch (e) {
+      console.error('ReservationForm init error:', e);
+    }
   }
 </script>
 

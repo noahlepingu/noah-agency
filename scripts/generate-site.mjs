@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * generate-site.mjs — Genere un site client dans src/sites/<slug>
- * Pipeline : valider -> creer data.json -> theme.css -> copier pages -> copier public
+ * generate-site.mjs — Genere un site client dans src/sites/<slug> puis build.
  *
- * Structure generee :
- *   src/sites/<slug>/
- *     pages/         (Astro srcDir/pages)
- *     public/        (Astro publicDir)
- *     data.json      (donnees fusionnees)
- *     theme.css      (custom properties du client)
+ * Pipeline (ADR-002, TECHNICAL_ARCHITECTURE.md §4) :
+ *   valider (REQUIRED bloquent) -> creer data.json -> theme.css ->
+ *   copier pages -> copier public -> robots/sitemap -> astro build
+ *
+ * Le contrat : un client_data.yaml VALIDE produit un site buildable.
+ * Si la validation echoue (code != 0), la generation est REFUSEE et un
+ * rapport est ecrit dans dist/<slug>/validation-report.md.
  *
  * Usage : node scripts/generate-site.mjs --client <slug> [--build]
  */
@@ -16,6 +16,8 @@ import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync, rmSync } fr
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { parse } from 'yaml';
+import { validateClientData, deriveClientData, buildValidationReport } from './validation-core.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -42,30 +44,47 @@ if (!existsSync(clientPath)) {
   process.exit(1);
 }
 
-let clientData;
+let rawData;
 try {
-  const yamlMod = await import('yaml');
-  const yaml = yamlMod.default;
-  clientData = yaml.parse(readFileSync(clientPath, 'utf8'));
+  rawData = parse(readFileSync(clientPath, 'utf8'));
 } catch (e) {
   console.error('Failed to parse client_data.yaml:', e.message);
   process.exit(1);
 }
 
-// --- 2. Load template ---
+// --- 2. VALIDATE (etape bloquante du pipeline) ---
+const { code: validationCode, result: validationResult } = validateClientData(rawData);
+const report = buildValidationReport({ slug, result: validationResult });
+const reportRel = join('dist', slug, 'validation-report.md');
+try {
+  mkdirSync(join(ROOT, 'dist', slug), { recursive: true });
+  writeFileSync(join(ROOT, reportRel), report, 'utf8');
+} catch {}
+if (validationCode !== 0) {
+  console.error(`\n  ${validationResult.blocking.length} champ(s) bloquant(s) — generation REFUSEE`);
+  console.error(`  Rapport : ${reportRel}\n`);
+  for (const b of validationResult.blocking) {
+    console.error(`    - ${b.path} : ${b.action}`);
+  }
+  process.exit(1);
+}
+console.log(`  Validation OK (${validationResult.validCount} champs valides)`);
+
+// Donnees derivees (address.full, phone_intl, defauts — §5.1)
+const clientData = deriveClientData(rawData);
+
+// --- 3. Load template ---
 const templateDir = join(ROOT, 'templates', 'restaurant');
 const templatePath = join(templateDir, 'template.yaml');
 let template;
 try {
-  const yamlMod = await import('yaml');
-  const yaml = yamlMod.default;
-  template = yaml.parse(readFileSync(templatePath, 'utf8'));
+  template = parse(readFileSync(templatePath, 'utf8'));
 } catch (e) {
   console.error('Failed to parse template.yaml:', e.message);
   process.exit(1);
 }
 
-// --- 3. Build placeholder map ---
+// --- 4. Build placeholder map ---
 function buildPlaceholders(client, tmpl) {
   const b = client.business || {};
   const s = client.seo || {};
@@ -73,7 +92,7 @@ function buildPlaceholders(client, tmpl) {
   const l = client.legal || {};
   return {
     'Nom': b.name || '',
-    'Activite': tmpl.activityLabel || (b.category || ''),
+    'Activite': s.activityLabel || client.template?.activityLabel || tmpl.activityLabel || b.category || '',
     'Ville': s.city || '',
     'Adresse_complete': c.address?.full || '',
     'Adresse': c.address?.full || '',
@@ -109,7 +128,7 @@ function fillObject(obj, placeholders) {
 
 const placeholders = buildPlaceholders(clientData, template);
 
-// --- 4. Build data.json ---
+// --- 5. Build data.json ---
 const siteUrl = `https://${clientData.seo?.domain || 'example.com'}`;
 
 // Deep merge template components with client components
@@ -145,9 +164,35 @@ if (clientData.contact?.map) {
   components.map = { ...components.map, lat: clientData.contact.map.lat, lng: clientData.contact.map.lng, address: clientData.contact.address?.full || '' };
 }
 if (clientData.menu?.categories) components.menu.categories = clientData.menu.categories;
-if (clientData.reviews?.reviews) components.testimonials.reviews = clientData.reviews.reviews;
+// Avis : schema = reviews.items (compat annee : reviews.reviews)
+components.testimonials = {
+  ...components.testimonials,
+  reviews: clientData.reviews?.items || clientData.reviews?.reviews || components.testimonials?.reviews || [],
+};
 if (clientData.faq?.questions) components.faq.questions = clientData.faq.questions;
 if (clientData.gallery?.images) components.gallery.images = clientData.gallery.images;
+
+// --- Formulaires : endpoints + config depuis client_data (ADR-003) ---
+// contact.form_endpoint / reservation.form_endpoint surchargent le template.
+if (!components.contact_form) components.contact_form = {};
+components.contact_form = {
+  ...components.contact_form,
+  action: clientData.contact?.form_endpoint || components.contact_form.action || '',
+  email: clientData.contact?.email || components.contact_form.email || '',
+  phone: clientData.contact?.phone || components.contact_form.phone || '',
+};
+
+if (!components.reservation_form) components.reservation_form = {};
+components.reservation_form = {
+  ...components.reservation_form,
+  action: clientData.reservation?.form_endpoint || components.reservation_form.action || '',
+  time_slots: clientData.reservation?.slots || clientData.reservation?.time_slots || components.reservation_form.time_slots || [],
+  max_party_size: clientData.reservation?.max_party_size ?? components.reservation_form.max_party_size ?? 8,
+  phone: clientData.contact?.phone || components.reservation_form.phone || '',
+  email: clientData.contact?.email || components.reservation_form.email || '',
+  schedule: clientData.opening_hours?.schedule || components.reservation_form.schedule || [],
+  closed_periods: clientData.opening_hours?.closed_periods || components.reservation_form.closed_periods || [],
+};
 
 // Fill placeholders in components (logo_text, address strings, etc.)
 const filledComponents = fillObject(components, placeholders);
@@ -170,7 +215,7 @@ const data = {
   translated_routes: (template.pages || []).filter(p => p.translate).map(p => p.route),
 };
 
-// --- 5. Create site directory ---
+// --- 6. Create site directory ---
 // Structure: src/sites/<slug>/  (this IS the srcDir for Astro)
 //   pages/           <- Astro pages
 //   public/          <- Astro publicDir
@@ -190,7 +235,7 @@ mkdirSync(publicDir, { recursive: true });
 writeFileSync(join(siteDir, 'data.json'), JSON.stringify(data, null, 2), 'utf8');
 console.log('  Created data.json');
 
-// --- 6. Generate theme.css ---
+// --- 7. Generate theme.css ---
 const branding = { ...(template.branding || {}), ...(clientData.branding || {}) };
 const themeCss = `/* Theme genere pour ${slug} — ne pas editer manuellement */
 :root {
@@ -213,10 +258,10 @@ const themeCss = `/* Theme genere pour ${slug} — ne pas editer manuellement */
 writeFileSync(join(siteDir, 'theme.css'), themeCss, 'utf8');
 console.log('  Created theme.css');
 
-// --- 7. Copy pages from template ---
+// --- 8. Copy pages from template ---
 // Pages are at templates/restaurant/pages/*.astro
 // They use $$LANG$$ marker, replaced with 'fr' or 'en'
-// They import: '../data.json', '../theme.css', '@components/...', '@layouts/...', '@utils/...', '../../translations/ui.json'
+// They import: '../data.json', '../theme.css', '@components/...', '@layouts/...', '@utils/...'
 
 const langConfig = (template.pages || []).filter(p => p.translate);
 const enDir = join(pagesDir, 'en');
@@ -249,7 +294,7 @@ for (const page of template.pages || []) {
 }
 console.log(`  Created ${(template.pages || []).length} FR pages + ${langConfig.length} EN pages`);
 
-// --- 8. Copy public assets ---
+// --- 9. Copy public assets ---
 const templatePublic = join(templateDir, 'public');
 if (existsSync(templatePublic)) cpSync(templatePublic, publicDir, { recursive: true });
 
@@ -265,14 +310,14 @@ if (existsSync(fontsCache)) {
 const faviconSrc = join(ROOT, 'public', 'favicon.svg');
 if (existsSync(faviconSrc)) cpSync(faviconSrc, join(publicDir, 'favicon.svg'));
 
-// --- 9. Generate robots.txt ---
+// --- 10. Generate robots.txt ---
 writeFileSync(join(publicDir, 'robots.txt'), `User-agent: *
 Allow: /
 Sitemap: ${siteUrl}/sitemap.xml
 `, 'utf8');
 console.log('  Created robots.txt');
 
-// --- 10. Generate sitemap.xml ---
+// --- 11. Generate sitemap.xml ---
 const sitemapUrls = (template.pages || [])
   .filter(p => !['404', '500'].includes(p.route.replace(/^\//, '')))
   .flatMap(p => {
@@ -288,7 +333,7 @@ console.log('  Created sitemap.xml');
 
 console.log(`\nSite "${slug}" generated in ${siteDir}`);
 
-// --- 11. Build (optional) ---
+// --- 12. Build (optional) ---
 if (shouldBuild) {
   console.log('\nBuilding with Astro...');
   try {
@@ -298,6 +343,7 @@ if (shouldBuild) {
       env: { ...process.env, CLIENT: slug, NODE_ENV: 'production' },
     });
     console.log(`\nBuild complete! Output: dist/${slug}/`);
+    console.log(`Validation report: dist/${slug}/validation-report.md`);
   } catch (e) {
     console.error('\nBuild failed. Check errors above.');
     process.exit(1);

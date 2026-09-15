@@ -1,19 +1,29 @@
 #!/usr/bin/env node
 /**
- * validate-client.mjs — Valide un fichier client_data.yaml
- * Referencement : project/database/CLIENT_DATA_VALIDATION.md
+ * validate-client.mjs — Valide un fichier client_data.yaml (CLI).
+ * Referencement : project/database/CLIENT_DATA_VALIDATION.md §2.2
  *
  * Codes de sortie :
- *   0 = valide (tous les champs REQUIRED remplis)
- *   1 = erreurs de syntaxe YAML
- *   2 = champs REQUIRED manquants
- *   3 = champs SHOULD manquants (warnings uniquement)
+ *   0 = VALIDATION OK          (aucun champ bloquant)
+ *   1 = ERREUR YAML            (erreur de parse)
+ *   2 = EN ATTENTE DE DONNEES  (champs REQUIRED manquants)
+ *   3 = ERREUR FORMAT          (regex / enum / type invalide)
+ *   4 = FICHIER INTROUVABLE
  *
- * Usage : node scripts/validate-client.mjs [--client <slug>] [--verbose]
+ * Usage : node scripts/validate-client.mjs --client <slug> [--verbose]
+ * Rapport : console + fichier dist/<slug>/validation-report.md
  */
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parse } from 'yaml';
+import {
+  validateClientData,
+  buildValidationReport,
+  EXIT_OK,
+  EXIT_YAML,
+  EXIT_NOT_FOUND,
+} from './validation-core.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -23,80 +33,73 @@ const clientArg = args.find((a, i) => args[i - 1] === '--client');
 const verbose = args.includes('--verbose');
 
 if (!clientArg) {
-  console.error('Usage: node scripts/validate-client.mjs --client <slug>');
+  console.error('Usage: node scripts/validate-client.mjs --client <slug> [--verbose]');
   process.exit(1);
 }
 
-const clientPath = join(ROOT, 'content', 'clients', clientArg, 'client_data.yaml');
+const slug = clientArg;
+const clientPath = join(ROOT, 'content', 'clients', slug, 'client_data.yaml');
 if (!existsSync(clientPath)) {
-  console.error(`Client data not found: ${clientPath}`);
-  process.exit(1);
+  console.error(`FICHIER INTROUVABLE : ${clientPath}`);
+  process.exit(EXIT_NOT_FOUND);
+}
+
+let rawText;
+try {
+  rawText = readFileSync(clientPath, 'utf8');
+} catch (e) {
+  console.error(`FICHIER INTROUVABLE : ${clientPath} (${e.message})`);
+  process.exit(EXIT_NOT_FOUND);
 }
 
 let data;
 try {
-  const yamlMod = await import('yaml');
-  const yaml = yamlMod.default;
-  data = yaml.parse(readFileSync(clientPath, 'utf8'));
+  data = parse(rawText);
 } catch (e) {
-  console.error(`YAML parsing error: ${e.message}`);
-  process.exit(1);
+  console.error(`ERREUR YAML : ${e.message}`);
+  process.exit(EXIT_YAML);
 }
 
-const errors = [];
-const warnings = [];
+const { code, result } = validateClientData(data);
 
-// REQUIRED fields
-const required = [
-  ['business.name', 'Nom du restaurant'],
-  ['business.description', 'Description'],
-  ['seo.city', 'Ville (seo.city)'],
-  ['seo.domain', 'Domaine (seo.domain)'],
-  ['contact.phone', 'Telephone'],
-  ['contact.email', 'Email'],
-  ['contact.address.street', 'Adresse'],
-  ['contact.address.city', 'Ville (adresse)'],
-  ['contact.address.postal_code', 'Code postal'],
-];
+// Rapport fichier : dist/<slug>/validation-report.md
+const distDir = join(ROOT, 'dist', slug);
+try {
+  mkdirSync(distDir, { recursive: true });
+  const report = buildValidationReport({ slug, result });
+  writeFileSync(join(distDir, 'validation-report.md'), report, 'utf8');
+} catch {
+  // Le rapport fichier est un plus ; ne fait pas echouer la validation.
+}
 
-for (const [path, label] of required) {
-  const val = path.split('.').reduce((o, k) => o?.[k], data);
-  if (!val || (typeof val === 'string' && val.trim() === '')) {
-    errors.push(`REQUIRED manquant: ${label} (${path})`);
+// Rapport console
+const message = code === EXIT_OK
+  ? 'VALIDATION OK'
+  : result.status === 'ERREUR FORMAT' ? 'ERREUR FORMAT' : `EN ATTENTE DE DONNEES : ${result.blocking.length} champ(s) bloquant(s)`;
+
+console.log(`\n  ${message}`);
+console.log(`  Projet : ${slug}`);
+console.log(`  Champs valides : ${result.validCount} / ${result.total}`);
+console.log(`  Secteur : ${result.category} | Package : ${result.package}`);
+
+if (result.blocking.length > 0) {
+  console.error(`\n  ${result.blocking.length} champ(s) bloquant(s) :`);
+  for (const b of result.blocking) {
+    console.error(`    - ${b.path} : ${b.action}`);
+  }
+}
+if (result.recommended.length > 0) {
+  console.warn(`\n  ${result.recommended.length} champ(s) recommande(s) :`);
+  for (const r of result.recommended) {
+    console.warn(`    - ${r.path} : ${r.action}`);
+  }
+}
+if (verbose && result.optional.length > 0) {
+  console.log(`\n  ${result.optional.length} champ(s) optionnel(s) :`);
+  for (const o of result.optional) {
+    console.log(`    - ${o.path}`);
   }
 }
 
-// SHOULD fields
-const should = [
-  ['opening_hours.schedule', 'Horaires (opening_hours.schedule)'],
-  ['contact.map.lat', 'Latitude'],
-  ['contact.map.lng', 'Longitude'],
-  ['contact.phone_intl', 'Telephone international'],
-  ['socials.facebook', 'Facebook'],
-  ['reviews.reviews', 'Avis clients'],
-  ['legal.siret', 'SIRET'],
-];
-
-for (const [path, label] of should) {
-  const val = path.split('.').reduce((o, k) => o?.[k], data);
-  if (!val) {
-    warnings.push(`SHOULD manquant: ${label} (${path})`);
-  }
-}
-
-// Display results
-if (errors.length > 0) {
-  console.error('\n  VALIDATION FAILED\n');
-  errors.forEach(e => console.error(`  ${e}`));
-  console.error(`\n  ${errors.length} erreur(s) critique(s)`);
-}
-if (warnings.length > 0) {
-  console.warn('\n  WARNINGS\n');
-  warnings.forEach(w => console.warn(`  ${w}`));
-  console.warn(`\n  ${warnings.length} avertissement(s)`);
-}
-if (errors.length === 0 && warnings.length === 0) {
-  console.log('\n  VALIDATION PASSED - Tous les champs sont renseignes\n');
-}
-
-process.exit(errors.length > 0 ? 2 : warnings.length > 0 ? 3 : 0);
+console.log(`\n  Rapport : dist/${slug}/validation-report.md`);
+process.exit(code);

@@ -310,3 +310,42 @@ changement de contrat frontend.
 48. **Images/hero** (PO-FE-03) : hero_image et gallery.images attendent le
     chemin d'images reelles du client (placeholders vides actuellement) ;
     optimisation astro:assets avec le performance-engineer au 1er client reel.
+
+## Decisions Phase 2 — Backend Engineer (2026-09-15)
+
+Statut : **ACTEES** — decisions validees par le Tech Lead (hypotheses de
+travail Phase 2, reversibles avant Gate 3/4).
+Reference : ADR-003 (formulaires), D-DB-03 (specs validation),
+CLIENT_DATA_VALIDATION.md, CLIENT_DATA_SCHEMA.md, UX.md §4.3,
+TECHNICAL_ARCHITECTURE.md §8, REGISTRE_DONNEES.md.
+Livrables : scripts/validation-core.mjs, scripts/validate-client.mjs (CLI),
+scripts/generate-site.mjs (pipeline valider->generer->build),
+src/utils/forms.js (etendu), src/utils/reservation.js (nouveau),
+composants ContactForm/ReservationForm (i18n + creneaux reels),
+content/clients/exemple-restaurant/client_data.yaml (conforme),
+tests/ (node:test), project/backend/FORMS_ARCHITECTURE.md.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-BE-01 | **Validation native, pas d'ajv** | Le moteur de validation (`validation-core.mjs`) est implemente **sans dependance** : les besoins (niveaux REQUIRED/SHOULD/COULD, derivations, regles croisees C-01..C-18, rapport markdown) depassent un JSON Schema ; zero dependance ajoutee (budget 0 EUR, D3). ajv reste l'alternative documentee (STACK.md) si le besoin grandit | — |
+| D-BE-02 | **CLI validate-client conforme au contrat** | `npm run validate -- --client <slug>` : codes de sortie **0/1/2/3/4** conformes a CLIENT_DATA_VALIDATION.md §2.2 (le stub frontend 3=warnings est corrige) ; priorite **FORMAT (3) > REQUIRED (2)** ; SHOULD/COULD ne changent jamais le code ; rapport ecrit dans `dist/<slug>/validation-report.md` (console + fichier, meme en echec) | — |
+| D-BE-03 | **Generation refuse si validation != 0** | `generate-site.mjs` execute la validation en **etape bloquante** (etape 2 du pipeline ADR-002) : un client_data.yaml avec champ bloquant ne genere pas le site ; rapport de validation cree dans `dist/<slug>/` avant refus. Donnees derivees (`deriveClientData`) appliquees (address.full, phone_intl C-18, seo.region/country, map.zoom, package defaut, EI capital) | — |
+| D-BE-04 | **Partage de validation : utils plutot que package @schemas** | Le point de coherence frontend/backend (« @schemas sera branche Phase 2 ») est resolu par **modules JS partages** : `src/utils/forms.js` (regex email/tel FR/intl, validateField/Form, honeypot, buildFormEndpoint, submitForm) et `src/utils/reservation.js` (creneaux statiques purs) importes par les composants Astro ; les regex restent alignees sur FORMATS de validation-core.mjs (une seule source de verite). Le contrat de reponse serveur `{ ok, message?, errors? }` est documente dans FORMS_ARCHITECTURE.md §2 — aucun changement de contrat frontend requis | — |
+| D-BE-05 | **Reservation : logique statique reelle (plus de simulateur)** | ReservationForm remplace le simulateur frontend : creneaux = `reservation.slots` filtres par les plages d'ouverture du jour, sinon generation 30 min depuis `opening_hours.schedule` ; etat « aucun creneau » dedie (UX.md §4.3 : jour ferme / periode de fermeture / no_slot / aucune source C-05) avec CTA « Choisir une autre date » + « Nous appeler » ; validation de l'heure par rapport aux creneaux calcules de la date choisie | — |
+| D-BE-06 | **Formulaires : endpoints configurables + fallback mailto** | `contact.form_endpoint` / `reservation.form_endpoint` (limite au fichier client) surchargent les defauts template.json ; `buildFormEndpoint()` : endpoint tiers (POST urlencoded) sinon mailto (email du client) sinon aucun ; honeypot (website / phone_confirm) sans reCAPTCHA par defaut (ADR-003) ; correction i18n ContactForm (data-json-form) : plus de messages en dur | OUI (service de formulaire concret avec le 1er client) |
+| D-BE-07 | **Tests unitaires node:test** | `npm test` : 3 fichiers (validation : codes 0/2/3/4 + C-01/C-04/C-06 + derivations + rapport ; reservation : fermetures/filtrage/generation/C-05 ; forms : validators/honeypot/endpoints). 30 tests, aucune dependance | — |
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 2, Backend)
+
+49. **Service de formulaire concret** (PO-BE-01 = PO-DB-01) : Web3Forms (UE,
+    recommande) vs Formspree (USA) — decision avec le 1er client reel
+    (backend + legal + Noah).
+50. **Confirmation email cote serveur** (PO-BE-03) : impossible en statique
+    v1 ; a traiter via un service externe si le 1er client le demande
+    (meme arbitrage que PO-BE-01).
+51. **Niveau de `seo.domain`** (PO-DB-02 = PO-46) : REQUIRED au build en
+    attendant la decision de niveau de content-seo (C-17).
+52. **coordination content/database** : l'exemple `client_data.yaml` utilise
+    `services`, `template`, `reviews.items`, `reservation.slots` conformes a
+    CLIENT_DATA_SCHEMA.md (le legacy `reviews.reviews` / `time_slots` reste
+    lu en compatibilite par les scripts) — a entériner par content-seo.

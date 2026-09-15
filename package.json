@@ -9,6 +9,7 @@
   },
   "scripts": {
     "setup": "node scripts/fetch-fonts.mjs",
+    "test": "node --test tests/*.test.mjs",
     "validate": "node scripts/validate-client.mjs",
     "validate:example": "node scripts/validate-client.mjs --client exemple-restaurant",
     "generate": "node scripts/generate-site.mjs",

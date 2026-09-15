@@ -8,23 +8,26 @@
 business:
   name: "La Table d'Essai"
   description: "Restaurant de cuisine francaise avec des produits frais et locaux"
-  category: "cuisine francaise"
+  description_en: "French restaurant with fresh, local produce in the heart of Lyon"
+  category: "restaurant"          # categorie = type de template (regle C-01)
+  slogan: "La cuisine lyonnaise, simplement."
 
 seo:
   city: "Lyon"
   domain: "la-table-dessai-demo.example.com"
-  meta_description: "Restaurant La Table d'Essai a Lyon. Cuisine francaise avec des produits frais et locaux. Reservation, carte et avis."
+  meta_description: "Restaurant La Table d'Essai a Lyon : cuisine francaise de saison, produits frais et locaux. Reservez votre table en ligne en quelques clics."
+  meta_description_en: "La Table d'Essai restaurant in Lyon: seasonal French cuisine, fresh and local produce. Book your table online in a few clicks."
   activityLabel: "cuisine francaise"
+  keywords: ["restaurant Lyon", "cuisine francaise", "produits locaux", "reservation restaurant", "restaurant presqu'ile"]
 
 contact:
   phone: "04 72 00 00 01"
-  phone_intl: "+33472000001"
   email: "contact@la-table-dessai-demo.example.com"
+  form_endpoint: ""   # Sur 1er client : endpoint Formspree/Web3Forms ("" = fallback mailto)
   address:
     street: "12 Rue de la Gastronomie"
     city: "Lyon"
     postal_code: "69001"
-    full: "12 Rue de la Gastronomie, 69001 Lyon"
   map:
     lat: 45.7640
     lng: 4.8357
@@ -49,11 +52,18 @@ opening_hours:
     - { day: "Samedi", open: "12:00", close: "14:30" }
     - { day: "Samedi", open: "18:30", close: "22:30" }
     - { day: "Dimanche", closed: true }
-  closed_periods: []
+  closed_periods: []   # ex: [{ start: "2026-12-24", end: "2026-12-26", reason: "Fetes de fin d'annee" }]
+
+services:
+  - { name: "Restaurant de cuisine francaise", description: "Carte de saison et menu du marche" }
+  - { name: "Reservation de table en ligne", description: "Creneaux disponibles en ligne" }
+  - { name: "Traiteur et evenements prives", description: "Sur devis" }
 
 reservation:
   enabled: true
-  time_slots:
+  method: "form"        # form | external_link | phone_only
+  form_endpoint: ""     # Sur 1er client : endpoint du prestataire ("" = fallback mailto)
+  slots:                # creneaux explicites filtrees par plages d'ouverture du jour
     - "12:00"
     - "12:30"
     - "13:00"
@@ -87,22 +97,30 @@ menu:
         - { name: "Eau minerale", description: "Plate ou gazeuse (75cl)", price: 4.00 }
 
 gallery:
-  images: []
+  images: []   # a enrichir avec de vraies photos (dossier assets du client)
 
 reviews:
+  enabled: true
+  source: "custom"        # google | tripadvisor | facebook | custom (regle C-06)
+  min_count: 3
   aggregate_rating:
     value: 4.5
     count: 42
-  reviews:
+  items:
     - { text: "Une excellente surprise ! Les plats sont delicieux et le service tres attentionne.", name: "Marie D.", rating: 5, source: "Google" }
     - { text: "Cadre charmant, cuisine de qualite. Nous reviendrons surement.", name: "Thomas L.", rating: 4, source: "Google" }
-    - { text: "Bonne decoouverte, rapport qualite-prix tres correct pour Lyon.", name: "Sophie M.", rating: 4, source: "TripAdvisor" }
+    - { text: "Bonne decouverture, rapport qualite-prix tres correct pour Lyon.", name: "Sophie M.", rating: 4, source: "TripAdvisor" }
 
 faq:
   questions:
     - { q: "Faut-il reserver ?", a: "La reservation est recommandee, notamment le vendredi et samedi soir. Vous pouvez reserver en ligne ou par telephone." }
     - { q: "Proposez-vous un menu enfant ?", a: "Oui, nous proposons un menu enfant a 12 euros avec un plat, un dessert et une boisson." }
     - { q: "Acceptez-vous les animaux ?", a: "Les chiens sont bienvenus en terrasse. Pour l'interieur, merci de nous contacter au prealable." }
+
+template:
+  type: "restaurant"       # regle C-01 : == business.category
+  package: "vitrine_reservation"   # regle C-04 : implique reservation.enabled: true
+  multilingual: true       # regle C-09 : fournir business.description_en + seo.meta_description_en
 
 branding:
   primary_color: "#B91C1C"
@@ -113,10 +131,15 @@ branding:
     body: "Inter"
 
 legal:
+  legal_name: "La Table d'Essai SARL"
   legal_form: "SARL"
-  siren: "123 456 789"
-  siret: "123 456 789 00012"
+  siren: "123456789"
+  siret: "12345678900012"
+  capital: "20 000 EUR"
   director: "Jean Dupont"
+  registration_number: "RCS Lyon 123 456 789"
+  mediator_name: "Centre de la Mediation de la Consommation de Concilieurs de Justice"
+  mediator_address: "14 Rue Saint-Amand, 75015 Paris"
   host_name: "OVH SAS"
   host_address: "2 Rue Kellermann, 59100 Roubaix"
   email_pro: "contact@la-table-dessai-demo.example.com"
