@@ -1,0 +1,82 @@
+---
+/**
+ * OpeningHours.astro — Horaires (DESIGN_SYSTEM_SPECS.md §5.12, UX.md §4.12)
+ * show_status : badge "Ouvert"/"Ferme" determine cote client (heure locale).
+ * Jour courant mis en evidence.
+ */
+interface Props {
+  data: any; // data.components.opening_hours { schedule: [{day, open, close, closed}], title, show_status }
+  ui: any;
+}
+
+const { data, ui } = Astro.props;
+const schedule = data.schedule || [];
+const FR_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+---
+
+<section class="ds-opening">
+  <div class="ds-section-head">
+    <h2 class="ds-section-head__title">{data.title || ui.hours.title}</h2>
+  </div>
+
+  {data.show_status ? <div id="ds-status" class="ds-opening__status" data-status></div> : null}
+
+  <ul class="ds-opening__list">
+    {FR_DAYS.map((day) => {
+      const entry = schedule.find((s: any) => s.day === day);
+      const isToday = new Date().getDay() === (FR_DAYS.indexOf(day) + 1) % 7;
+      const closed = !entry || entry.closed === true;
+      const label = closed
+        ? (ui.hours.closed || 'Ferme')
+        : (entry.open && entry.close ? `${entry.open} – ${entry.close}` : '');
+      return (
+        <li class:list={['ds-opening__row', { 'ds-opening__row--today': isToday }]}>
+          <span class="ds-opening__day">{day}{isToday ? ' (aujourd\'hui)' : ''}</span>
+          <span class:list={['ds-opening__hours', { 'ds-opening__hours--closed': closed }]}>{label}</span>
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<script>
+  // Statut temps reel (heure locale) si show_status
+  const statusEl = document.querySelector('[data-status]') as HTMLElement | null;
+  if (statusEl) {
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const scheduleJson = (statusEl.dataset.schedule || '[]');
+    let schedule;
+    try { schedule = JSON.parse(scheduleJson); } catch { schedule = []; }
+    if (schedule.length) {
+      const now = new Date();
+      const today = days[now.getDay()];
+      const entries = (schedule as any[]).filter((s) => s.day === today && !s.closed);
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      let isOpen = false;
+      for (const e of entries) {
+        if (e.open && e.close) {
+          const [oh, om] = e.open.split(':').map(Number);
+          const [ch, cm] = e.close.split(':').map(Number);
+          const o = oh * 60 + om, c = ch * 60 + cm;
+          if (minutes >= o && minutes < c) { isOpen = true; break; }
+        }
+      }
+      statusEl.innerHTML = isOpen ? '<strong class="ds-opening__open">Ouvert</strong>' : '<span class="ds-opening__closed">Ferme</span>';
+    }
+  }
+</script>
+
+<style>
+  .ds-opening__list { list-style: none; margin: 0; padding: 0; max-width: 28rem; }
+  .ds-opening__row {
+    display: flex; justify-content: space-between; gap: var(--space-4);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+  .ds-opening__row--today { font-weight: 700; color: var(--color-gray-900); }
+  .ds-opening__day { font-weight: 500; }
+  .ds-opening__hours--closed { color: var(--color-gray-400); }
+  .ds-opening__status { margin-bottom: var(--space-3); font-weight: 600; }
+  .ds-opening__open { color: var(--color-success); }
+  .ds-opening__closed { color: var(--color-gray-400); }
+</style>

@@ -1,0 +1,44 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import PageLayout from '@layouts/PageLayout.astro';
+import ContactForm from '@components/ContactForm.astro';
+import Map from '@components/Map.astro';
+import OpeningHours from '@components/OpeningHours.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildCanonical, buildHreflang } from '@utils/seo';
+import { localBusiness, contactPoint } from '@utils/schema';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.contact || {};
+const siteUrl = data.site_url || 'https://example.com';
+const title = buildTitle({ title: texts.title || 'Contact' }, data);
+const canonical = buildCanonical(siteUrl, '/contact');
+const hreflang = buildHreflang(siteUrl, '/contact', '/en/contact');
+const schema = localBusiness(data, siteUrl);
+---
+
+<PageLayout lang={lang} title={title} description={title} canonical={canonical}
+  hreflang={hreflang} ui={ui} data={data}
+  langSwitchHref={lang === 'en' ? '/contact' : '/en/contact'}
+  heroTitle={texts.title}
+  jsonLd={[schema]}
+  breadcrumb={[
+    { label: ui.nav?.index || 'Accueil', href: '/' },
+    { label: texts.title || 'Contact', href: '/contact' },
+  ]}>
+  <section class="ds-section">
+    <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
+      <ContactForm ui={ui} data={data.components?.contact_form || {}} lang={lang} />
+    </div>
+  </section>
+  <section class="ds-section ds-section--alt">
+    <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
+      {data.components?.opening_hours?.schedule?.length > 0 ? (
+        <OpeningHours data={data.components.opening_hours} ui={ui} />
+      ) : null}
+      <Map data={data.components?.map || {}} ui={ui} />
+    </div>
+  </section>
+</PageLayout>

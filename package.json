@@ -1,0 +1,29 @@
+{
+  "name": "noah-agency",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Systeme de production de sites web statiques pour petites structures lyonnaises (base de production, template flagship restaurant, generation multi-clients).",
+  "type": "module",
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "scripts": {
+    "setup": "node scripts/fetch-fonts.mjs",
+    "validate": "node scripts/validate-client.mjs",
+    "validate:example": "node scripts/validate-client.mjs --client exemple-restaurant",
+    "generate": "node scripts/generate-site.mjs",
+    "generate:example": "node scripts/generate-site.mjs --client exemple-restaurant",
+    "build:site": "node scripts/generate-site.mjs --build",
+    "build:example": "node scripts/generate-site.mjs --build --client exemple-restaurant",
+    "dev": "node scripts/dev-site.mjs",
+    "dev:example": "node scripts/dev-site.mjs --client exemple-restaurant",
+    "preview": "node scripts/preview-site.mjs",
+    "preview:example": "node scripts/preview-site.mjs --client exemple-restaurant",
+    "contrast": "node scripts/contrast-check.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "yaml": "^2.5.0"
+  }
+}

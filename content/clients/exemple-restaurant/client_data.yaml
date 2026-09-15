@@ -1,0 +1,125 @@
+# ======================================================
+# CLIENT DATA — EXEMPLE FICTIF
+# Ce fichier contient 100% de donnees inventees pour
+# demonstrer le fonctionnement du systeme de generation.
+# Aucune donnee reelle n'est utilisee.
+# ======================================================
+
+business:
+  name: "La Table d'Essai"
+  description: "Restaurant de cuisine francaise avec des produits frais et locaux"
+  category: "cuisine francaise"
+
+seo:
+  city: "Lyon"
+  domain: "la-table-dessai-demo.example.com"
+  meta_description: "Restaurant La Table d'Essai a Lyon. Cuisine francaise avec des produits frais et locaux. Reservation, carte et avis."
+  activityLabel: "cuisine francaise"
+
+contact:
+  phone: "04 72 00 00 01"
+  phone_intl: "+33472000001"
+  email: "contact@la-table-dessai-demo.example.com"
+  address:
+    street: "12 Rue de la Gastronomie"
+    city: "Lyon"
+    postal_code: "69001"
+    full: "12 Rue de la Gastronomie, 69001 Lyon"
+  map:
+    lat: 45.7640
+    lng: 4.8357
+
+socials:
+  facebook: "https://facebook.com/la-table-dessai-demo"
+  instagram: "https://instagram.com/la-table-dessai-demo"
+
+opening_hours:
+  enabled: true
+  schedule:
+    - { day: "Lundi", open: "12:00", close: "14:00" }
+    - { day: "Lundi", open: "18:30", close: "22:00" }
+    - { day: "Mardi", open: "12:00", close: "14:00" }
+    - { day: "Mardi", open: "18:30", close: "22:00" }
+    - { day: "Mercredi", open: "12:00", close: "14:00" }
+    - { day: "Mercredi", open: "18:30", close: "22:00" }
+    - { day: "Jeudi", open: "12:00", close: "14:00" }
+    - { day: "Jeudi", open: "18:30", close: "22:00" }
+    - { day: "Vendredi", open: "12:00", close: "14:00" }
+    - { day: "Vendredi", open: "18:30", close: "22:30" }
+    - { day: "Samedi", open: "12:00", close: "14:30" }
+    - { day: "Samedi", open: "18:30", close: "22:30" }
+    - { day: "Dimanche", closed: true }
+  closed_periods: []
+
+reservation:
+  enabled: true
+  time_slots:
+    - "12:00"
+    - "12:30"
+    - "13:00"
+    - "13:30"
+    - "19:00"
+    - "19:30"
+    - "20:00"
+    - "20:30"
+    - "21:00"
+  max_party_size: 8
+
+menu:
+  enabled: true
+  categories:
+    - name: "Entrees"
+      items:
+        - { name: "Soupe a l'oignon gratinee", description: "Oignons caramélisés, crouton de pain au levain, gruyere", price: 9.50 }
+        - { name: "Salade Lyonnaise", description: "Laitue, lardons grillés, oeuf poche, vinaigrette moutardee", price: 11.00 }
+    - name: "Plats"
+      items:
+        - { name: "Quenelle de brochet", description: "Sauce Nantua, riz basmati", price: 22.00 }
+        - { name: "Pavé de saumon", description: "Legumes de saison, jus citronne", price: 20.00 }
+        - { name: "Entrecôte grillée", description: "Pommes sautees, sauce au poivre", price: 26.00 }
+    - name: "Desserts"
+      items:
+        - { name: "Tarte tatin", description: "Pommes caramélisées, crème fraîche", price: 8.50 }
+        - { name: "Mousse au chocolat", description: "Chocolat noir 70%, chantilly", price: 9.00 }
+    - name: "Boissons"
+      items:
+        - { name: "Verre de vin rouge", description: "Beaujolais Villages", price: 5.50 }
+        - { name: "Eau minerale", description: "Plate ou gazeuse (75cl)", price: 4.00 }
+
+gallery:
+  images: []
+
+reviews:
+  aggregate_rating:
+    value: 4.5
+    count: 42
+  reviews:
+    - { text: "Une excellente surprise ! Les plats sont delicieux et le service tres attentionne.", name: "Marie D.", rating: 5, source: "Google" }
+    - { text: "Cadre charmant, cuisine de qualite. Nous reviendrons surement.", name: "Thomas L.", rating: 4, source: "Google" }
+    - { text: "Bonne decoouverte, rapport qualite-prix tres correct pour Lyon.", name: "Sophie M.", rating: 4, source: "TripAdvisor" }
+
+faq:
+  questions:
+    - { q: "Faut-il reserver ?", a: "La reservation est recommandee, notamment le vendredi et samedi soir. Vous pouvez reserver en ligne ou par telephone." }
+    - { q: "Proposez-vous un menu enfant ?", a: "Oui, nous proposons un menu enfant a 12 euros avec un plat, un dessert et une boisson." }
+    - { q: "Acceptez-vous les animaux ?", a: "Les chiens sont bienvenus en terrasse. Pour l'interieur, merci de nous contacter au prealable." }
+
+branding:
+  primary_color: "#B91C1C"
+  secondary_color: "#F59E0B"
+  accent_color: "#DC2626"
+  fonts:
+    heading: "Playfair Display"
+    body: "Inter"
+
+legal:
+  legal_form: "SARL"
+  siren: "123 456 789"
+  siret: "123 456 789 00012"
+  director: "Jean Dupont"
+  host_name: "OVH SAS"
+  host_address: "2 Rue Kellermann, 59100 Roubaix"
+  email_pro: "contact@la-table-dessai-demo.example.com"
+  phone_pro: "04 72 00 00 01"
+
+hero_image: null

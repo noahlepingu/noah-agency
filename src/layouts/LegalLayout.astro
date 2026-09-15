@@ -1,0 +1,41 @@
+---
+/**
+ * LegalLayout.astro — Layout des pages legales (mentions-legales, confidentialite)
+ * Contenu prose largeur max, pas de hero, breadrcrumb, robots: noindex.
+ */
+import PageLayout from './PageLayout.astro';
+
+interface Props {
+  lang: 'fr' | 'en';
+  title: string;
+  description: string;
+  canonical: string;
+  ui: any;
+  data: any;
+  langSwitchHref?: string;
+}
+
+const { lang, title, description, canonical, ui, data, langSwitchHref } = Astro.props;
+const prefix = lang === 'en' ? '/en' : '';
+---
+
+<PageLayout
+  lang={lang}
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="noindex, nofollow"
+  ui={ui}
+  data={data}
+  langSwitchHref={langSwitchHref}
+  breadcrumb={
+    [
+      { label: ui.nav?.index || 'Accueil', href: '/' },
+      { label: title, href: canonical.replace(/https?:\/\/[^/]+/, '') },
+    ]
+  }
+>
+  <div class="ds-container ds-prose" style="padding: var(--space-8) 0 var(--space-16);">
+    <slot />
+  </div>
+</PageLayout>

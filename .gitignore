@@ -9,6 +9,12 @@ dist/
 build/
 .pnpm-store/
 
+# Sites generes (regenerables a tout moment — ADR-002)
+src/sites/
+
+# Cache Astro
+.astro/
+
 # Logs et artefacts
 *.log
 .DS_Store

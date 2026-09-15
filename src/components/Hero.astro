@@ -1,0 +1,110 @@
+---
+/**
+ * Hero.astro — Section hero (DESIGN_SYSTEM_SPECS.md §5.3)
+ * Layouts : centered | left | split. Overlay sombre optionnel.
+ * H1 UNIQUE par page. CTA + CTA secondaire.
+ */
+import CTA from './CTA.astro';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  image?: { src: string; alt: string };
+  cta?: { label: string; href: string; variant?: any };
+  ctaSecondary?: { label: string; href: string; variant?: any };
+  layout?: 'centered' | 'left' | 'split';
+  overlay?: boolean;
+}
+
+const {
+  title,
+  subtitle,
+  image,
+  cta,
+  ctaSecondary,
+  layout = 'centered',
+  overlay = false,
+} = Astro.props;
+
+const hasImage = !!image?.src;
+---
+
+<section class:list={['ds-hero', `ds-hero--${layout}`]}>
+  {hasImage ? (
+    <img
+      class="ds-hero__img"
+      src={image!.src}
+      alt={image!.alt}
+      loading="eager"
+      fetchpriority="high"
+      width="1600"
+      height="800"
+    />
+  ) : null}
+  <div class:list={['ds-hero__content', { 'ds-hero__content--overlay': overlay }]}>
+    <div class="ds-container ds-hero__inner">
+      <h1 class="ds-hero__title">{title}</h1>
+      {subtitle ? <p class="ds-hero__subtitle">{subtitle}</p> : null}
+      {(cta || ctaSecondary) ? (
+        <div class="ds-hero__cta">
+          {cta ? <CTA href={cta.href} variant={cta.variant || 'primary'} size="lg">{cta.label}</CTA> : null}
+          {ctaSecondary ? <CTA href={ctaSecondary.href} variant={ctaSecondary.variant || 'outline'} size="lg">{ctaSecondary.label}</CTA> : null}
+        </div>
+      ) : null}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ds-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 340px;
+    padding: var(--space-10) 0;
+    background-color: var(--color-gray-100);
+    overflow: hidden;
+  }
+  .ds-hero--centered { justify-content: center; text-align: center; }
+  .ds-hero--left { justify-content: flex-start; text-align: left; }
+  .ds-hero__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ds-hero__content { position: relative; width: 100%; }
+  .ds-hero__content--overlay {
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45));
+  }
+  .ds-hero__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-5xl);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-gray-900);
+    max-width: 20ch;
+    margin: 0 0 var(--space-4);
+  }
+  .ds-hero--centered .ds-hero__title { margin-inline: auto; }
+  .ds-hero__content--overlay .ds-hero__title { color: var(--color-white); }
+  .ds-hero__subtitle {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--color-gray-600);
+    max-width: 60ch;
+    margin: 0 auto var(--space-6);
+  }
+  .ds-hero__content--overlay .ds-hero__subtitle { color: var(--color-gray-100); }
+  .ds-hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: inherit; }
+
+  @media (min-width: 768px) {
+    .ds-hero { min-height: 400px; padding: var(--space-16) 0; }
+  }
+  @media (min-width: 1024px) {
+    .ds-hero { min-height: 480px; }
+    .ds-hero--split .ds-hero__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-10); }
+  }
+</style>

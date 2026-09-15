@@ -1,0 +1,139 @@
+/* ==========================================================================
+   utilities.css — Utilitaires de mise en page (grille, conteneur, sections)
+   Reference : DESIGN_SYSTEM_SPECS.md §2.6 (grille 4/8/12), UX.md §3.2
+   ========================================================================== */
+
+/* Conteneur centralise, mobile-first */
+.ds-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
+}
+
+/* Conteneur de texte (lisible, 720-800px) */
+.ds-container--content {
+  max-width: var(--content-max);
+}
+
+/* Rythme vertical standard entre sections */
+.ds-section {
+  padding-block: var(--space-12);
+}
+
+.ds-section--tight {
+  padding-block: var(--space-8);
+}
+
+.ds-section--alt {
+  background-color: var(--color-gray-50);
+}
+
+/* Grilles responsives (mobile 1 colonne -> desktop N colonnes) */
+.ds-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.ds-grid--2 {
+  grid-template-columns: 1fr;
+}
+
+.ds-grid--3 {
+  grid-template-columns: 1fr;
+}
+
+.ds-grid--4 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .ds-grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ds-grid--3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ds-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ds-grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .ds-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Carte generique */
+.ds-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+/* En-tete de section */
+.ds-section-head {
+  margin-bottom: var(--space-8);
+  max-width: var(--content-max);
+}
+
+.ds-section-head h2 {
+  margin-bottom: var(--space-2);
+}
+
+.ds-section-head p {
+  color: var(--color-gray-600);
+}
+
+/* Alignment vertical simple pour blocs texte+image */
+.ds-media {
+  display: grid;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .ds-media {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Zone de texte riche (pages legales / a propos) */
+.ds-prose {
+  max-width: var(--content-max);
+}
+
+.ds-prose p {
+  margin-block: var(--space-4);
+}
+
+.ds-prose h2 {
+  margin-top: var(--space-12);
+  margin-bottom: var(--space-3);
+}
+
+.ds-prose h3 {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-2);
+}
+
+.ds-prose ul,
+.ds-prose ol {
+  margin-block: var(--space-4);
+  padding-left: var(--space-6);
+}
+
+.ds-prose li {
+  margin-block: var(--space-1);
+}

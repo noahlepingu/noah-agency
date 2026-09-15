@@ -1,0 +1,54 @@
+---
+/**
+ * SocialLinks.astro — Liens reseaux sociaux (DESIGN_SYSTEM_SPECS.md §5.13)
+ * Icons inline, aria-label sur chaque lien, target=_blank noopener.
+ * Tracking : PAS de tracking sans consentement (link sans analytics).
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  links: any[];
+  ui?: any;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'icons' | 'buttons' | 'text';
+}
+
+const { links = [], size = 'md', variant = 'icons' } = Astro.props;
+const sizeMap = { sm: 16, md: 20, lg: 24 };
+
+/** Map reseau -> nom d'icone */
+const nameFor = (r: string) => {
+  if (r === 'google_business') return 'google';
+  return r;
+};
+---
+
+<ul class:list={['ds-social', `ds-social--${variant}`, `ds-social--${size}`]}>
+  {links.map((link: any) => (
+    <li class="ds-social__item">
+      <a
+        href={link.url}
+        class="ds-social__link"
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+        aria-label={link.platform || link.url}
+      >
+        {variant === 'icons' ? <Icon name={nameFor(link.platform || '')} size={sizeMap[size]} /> : null}
+        <span class="ds-social__label">{link.label || link.platform || link.url}</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .ds-social { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+  .ds-social__link {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    color: var(--color-gray-600); text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .ds-social__link:hover { color: var(--color-primary); }
+  .ds-social__link:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+  .ds-social__label { font-size: var(--text-sm); font-weight: 500; }
+  .ds-social--icons .ds-social__label { display: none; }
+</style>

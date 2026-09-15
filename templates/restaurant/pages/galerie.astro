@@ -1,0 +1,26 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import PageLayout from '@layouts/PageLayout.astro';
+import Gallery from '@components/Gallery.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildCanonical, buildHreflang } from '@utils/seo';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.galerie || {};
+const siteUrl = data.site_url || 'https://example.com';
+const title = buildTitle({ title: texts.title || 'Galerie' }, data);
+const canonical = buildCanonical(siteUrl, '/galerie');
+const hreflang = buildHreflang(siteUrl, '/galerie');
+---
+
+<PageLayout lang={lang} title={title} description={title} canonical={canonical}
+  hreflang={hreflang} ui={ui} data={data}
+  heroTitle={texts.title}
+  breadcrumb={[
+    { label: ui.nav?.index || 'Accueil', href: '/' },
+    { label: texts.title || 'Galerie', href: '/galerie' },
+  ]}>
+  <Gallery ui={ui} data={{ ...data.components?.gallery, title: texts.title || 'Galerie' }} />
+</PageLayout>

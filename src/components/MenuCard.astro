@@ -1,0 +1,48 @@
+---
+/**
+ * MenuCard.astro — Carte/section d'un menu (restaurant)
+ * Affiche une categorie (Entrees, Plats, Desserts...) avec une liste de plats.
+ * Plats avec nom, description, prix. Photo optionnelle.
+ */
+interface Props {
+  category: string;
+  items: any[];
+}
+
+const { category, items } = Astro.props;
+---
+
+<div class="ds-card ds-card--padded ds-menu-card">
+  <h3 class="ds-menu-card__title">{category}</h3>
+  <ul class="ds-menu-card__list">
+    {items.map((item: any) => (
+      <li class="ds-menu-card__item">
+        <div class="ds-menu-card__item-header">
+          <span class="ds-menu-card__name">{item.name}</span>
+          {item.price !== undefined && item.price !== null ? (
+            <span class="ds-menu-card__price">{item.price} &euro;</span>
+          ) : null}
+        </div>
+        {item.description ? <p class="ds-menu-card__desc">{item.description}</p> : null}
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .ds-menu-card { margin-bottom: var(--space-4); }
+  .ds-menu-card__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 var(--space-4);
+  }
+  .ds-menu-card__list { list-style: none; margin: 0; padding: 0; }
+  .ds-menu-card__item { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-gray-100); }
+  .ds-menu-card__item:last-child { border-bottom: none; }
+  .ds-menu-card__item-header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+  .ds-menu-card__name { font-weight: 600; }
+  .ds-menu-card__price { font-weight: 700; color: var(--color-gray-900); white-space: nowrap; }
+  .ds-menu-card__desc { margin: var(--space-1) 0 0; color: var(--color-gray-600); font-size: var(--text-sm); line-height: 1.5; }
+</style>

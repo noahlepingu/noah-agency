@@ -1,0 +1,15 @@
+{
+  "extends": "astro/tsconfigs/base",
+  "include": [".astro/types.d.ts", "src/**/*", "templates/**/*"],
+  "exclude": ["dist", "node_modules", "src/sites"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@styles/*": ["src/styles/*"],
+      "@utils/*": ["src/utils/*"],
+      "@translations/*": ["src/translations/*"]
+    }
+  }
+}

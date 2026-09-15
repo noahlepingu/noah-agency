@@ -1,0 +1,55 @@
+{
+  "texts": {
+    "index": {
+      "hero_title": "[Nom]",
+      "hero_subtitle": "[Activite] a [Ville]. Savourez une experience culinaire unique, avec des produits frais et de saison.",
+      "intro_title": "Bienvenue",
+      "intro_text": "[Nom] est un restaurant [Activite] situe a [Ville]. Notre cuisine met a l'honneur des produits locaux et de saison, pour vous offrir une experience gourmande et authentique.",
+      "cta_reserve": "Reserver une table",
+      "cta_menu": "Voir la carte"
+    },
+    "a-propos": {
+      "title": "A propos de [Nom]",
+      "content": "[Nom] est né de la passion de son fondateur pour la cuisine [Activite]. Depuis son ouverture a [Ville], notre restaurant s'engage a vous offrir des plats elaborés avec des produits frais et locaux.",
+      "values_title": "Nos valeurs",
+      "values": ["Produits locaux et de saison", "Cuisine fait maison", "Accueil chaleureux"]
+    },
+    "menu": {
+      "title": "La Carte",
+      "subtitle": "Nos plats sont realises avec des produits frais et locaux"
+    },
+    "reservation": {
+      "title": "Reservez votre table",
+      "intro": "Quelques informations pour votre reservation."
+    },
+    "galerie": {
+      "title": "En images",
+      "subtitle": "Decouvrez [Nom] en images"
+    },
+    "temoignages": {
+      "title": "Avis de nos clients",
+      "subtitle": "Ce que nos clients disent de nous"
+    },
+    "faq": {
+      "title": "Questions frequentes",
+      "subtitle": "Trouvez reponse a vos questions"
+    },
+    "contact": {
+      "title": "Contact",
+      "subtitle": "N'hesitez pas a nous contacter"
+    },
+    "mentions_legales": {
+      "title": "Mentions legales",
+      "content": "Editeur du site : [Nom_commercial], [Forme_juridique], SIREN [SIREN], SIRET [SIRET], [Adresse]. Directeur de la publication : [Nom_directeur]. Hebergeur : [Nom_hebergeur], [Adresse_hebergeur]."
+    },
+    "confidentialite": {
+      "title": "Politique de confidentialite",
+      "content": "Ce site web ne collecte aucune donnee personnelle a des fins commerciales. Les seules donnees collectees sont celles que vous nous transmettez volontairement via nos formulaires de contact ou de reservation. Ces donnees sont traitees uniquement pour repondre a votre demande. Elles ne sont jamais revendues ni transmises a des tiers. Conformement au RGPD, vous disposez d'un droit d'acces, de rectification et de suppression de vos donnees en contactant [Email_pro]."
+    },
+    "plan_du_site": {
+      "title": "Plan du site",
+      "subtitle": "Toutes les pages du site"
+    }
+  },
+  "placeholder_keys": ["Nom", "Activite", "Ville", "Adresse_complete", "Telephone", "Telephone_intl", "Email", "Nom_commercial", "Forme_juridique", "SIREN", "SIRET", "Nom_directeur", "Nom_hebergeur", "Adresse_hebergeur", "Email_pro"]
+}

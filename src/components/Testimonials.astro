@@ -1,0 +1,77 @@
+---
+/**
+ * Testimonials.astro — Avis clients (DESIGN_SYSTEM_SPECS.md §5.7)
+ * Layout : grid. Avis REELS uniquement (jamais fabriques).
+ * Etoiles (note /5), nom, source (Google, TripAdvisor...).
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  data: any; // data.components.testimonials { title, reviews: [{text, name, rating?, source?}] }
+}
+
+const { data } = Astro.props;
+const reviews = data.reviews || [];
+const showRating = data.show_rating !== false;
+const showSource = data.show_source !== false;
+const stars = [1, 2, 3, 4, 5];
+---
+
+<section class="ds-section">
+  <div class="ds-container">
+    <div class="ds-section-head">
+      <h2 class="ds-section-head__title">{data.title || 'Avis clients'}</h2>
+    </div>
+
+    {reviews.length === 0 ? (
+      <p class="ds-t__empty">{data.empty_text || 'Aucun avis pour le moment.'}</p>
+    ) : (
+      <ul class="ds-t__grid">
+        {reviews.map((r: any) => (
+          <li class="ds-card ds-card--padded ds-t__item">
+            <blockquote class="ds-t__quote">
+              <p class="ds-t__text">“{r.text}”</p>
+            </blockquote>
+            <footer class="ds-t__footer">
+              {showRating && r.rating ? (
+                <div
+                  class="ds-t__rating"
+                  role="img"
+                  aria-label={`${r.rating}/5`}
+                  title={`${r.rating}/5`}
+                >
+                  {stars.map((s) => (
+                    <span
+                      class:list={['ds-t__star', { 'ds-t__star--on': s <= Math.round(r.rating) }]}
+                      aria-hidden="true"
+                    >
+                      <Icon name="star" size={16} />
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <cite class="ds-t__name">— {r.name || ''}</cite>
+              {showSource && r.source ? <span class="ds-t__source">{r.source}</span> : null}
+            </footer>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  .ds-t__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+  .ds-t__item { display: flex; flex-direction: column; }
+  .ds-t__quote { margin: 0; }
+  .ds-t__text { color: var(--color-gray-700); line-height: 1.6; }
+  .ds-t__rating { display: flex; gap: 2px; margin-bottom: var(--space-2); }
+  .ds-t__star { color: var(--color-gray-300); }
+  .ds-t__star--on { color: var(--color-warning); }
+  .ds-t__name { font-style: normal; font-weight: 600; color: var(--color-gray-900); }
+  .ds-t__source { display: block; color: var(--color-gray-500); font-size: var(--text-sm); }
+  .ds-t__empty { color: var(--color-gray-500); }
+
+  @media (min-width: 768px) { .ds-t__grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .ds-t__grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

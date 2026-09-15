@@ -1,0 +1,20 @@
+---
+/**
+ * 500.astro — Erreur interne (UX.md §4.2, noindex)
+ */
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import StatePage from '@components/StatePage.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildCanonical } from '@utils/seo';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const canonical = buildCanonical(data.site_url || 'https://example.com', '/500');
+---
+
+<BaseLayout lang={lang} title="Erreur" description="Erreur temporaire" canonical={canonical}
+  robots="noindex,nofollow" ui={ui} data={data}>
+  <StatePage type="500" ui={ui} lang={lang} data={data} />
+</BaseLayout>

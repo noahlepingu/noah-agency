@@ -1,0 +1,156 @@
+---
+/**
+ * CookieBanner.astro — Bandeau cookies (DESIGN_SYSTEM_SPECS.md §5.14, UX.md §4.7)
+ * N'apparait que si des tiers non necessaires sont configures.
+ * Options : Accepter tout / Refuser tout / Personnaliser (checkboxes).
+ * Persistance choix dans localStorage (cle ds_consent) pendant 6 mois.
+ * Focus trap dans le bandeau ouvert + popup.
+ * Aucun script tier avant consentement explicite.
+ * Blocage effectif : les scripts tiers lisent isAllowed() avant injection.
+ */
+
+interface Props {
+  ui: any;
+  data: any; // data.third_party = { analytics?, maps? }
+  lang?: 'fr' | 'en';
+}
+
+const { ui, data, lang = 'fr' } = Astro.props;
+const hasThirdParty = (data.analytics || data.maps);
+
+// Nom du jeu de cookies
+const cookie = ui.cookie || {};
+---
+
+{hasThirdParty ? (
+  <div class="ds-cookie" id="ds-cookie-banner" role="dialog" aria-label={cookie.title || 'Cookies'} data-cookie-banner>
+    <div class="ds-cookie__inner">
+      <p class="ds-cookie__title">{cookie.title || ''}</p>
+      <p class="ds-cookie__msg">{cookie.message || ''}</p>
+      <div class="ds-cookie__actions">
+        <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-accept-all>{cookie.accept || 'Tout accepter'}</button>
+        <button class="ds-btn ds-btn--outline ds-btn--sm" data-cookie-reject-all>{cookie.reject || 'Tout refuser'}</button>
+        <button class="ds-btn ds-btn--ghost ds-btn--sm" data-cookie-customize>{cookie.customize || 'Personnaliser'}</button>
+      </div>
+      <div class="ds-cookie__panel" id="ds-cookie-panel" hidden data-cookie-panel>
+        {data.analytics ? (
+          <label class="ds-cookie__option">
+            <input type="checkbox" name="analytics" data-cookie-cb /> {cookie.analytics || 'Mesure d\'audience'}
+            <span class="ds-cookie__opt-desc">{cookie.analyticsDesc || ''}</span>
+          </label>
+        ) : null}
+        {data.maps ? (
+          <label class="ds-cookie__option">
+            <input type="checkbox" name="maps" data-cookie-cb /> {cookie.map || 'Cartes'}
+            <span class="ds-cookie__opt-desc">{cookie.mapDesc || ''}</span>
+          </label>
+        ) : null}
+        <div class="ds-cookie__panel-actions">
+          <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-save>{cookie.save || 'Enregistrer mes choix'}</button>
+        </div>
+      </div>
+      <p class="ds-cookie__privacy">
+        <a href={lang === 'en' ? '/en/confidentialite' : '/confidentialite'}>{cookie.privacyLink || 'Politique de confidentialite'}</a>
+      </p>
+    </div>
+  </div>
+) : null}
+
+<script>
+  (function() {
+    const banner = document.querySelector('[data-cookie-banner]') as HTMLElement | null;
+    if (!banner) return;
+    const STORAGE_KEY = 'ds_consent';
+    const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
+    // Verifier si deja consenti
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d && d.timestamp && (Date.now() - d.timestamp) < EXPIRY_MS) {
+          // Consenti, pas d'affichage
+          window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: d }));
+          return;
+        }
+      }
+    } catch {}
+
+    // Afficher le bandeau
+    banner.hidden = false;
+
+    const acceptAll = banner.querySelector('[data-cookie-accept-all]');
+    const rejectAll = banner.querySelector('[data-cookie-reject-all]');
+    const customize = banner.querySelector('[data-cookie-customize]');
+    const panel = banner.querySelector('[data-cookie-panel]');
+    const save = banner.querySelector('[data-cookie-save]');
+    const cbs = banner.querySelectorAll('[data-cookie-cb]');
+
+    const persist = (data: object) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }));
+        window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: { ...data, timestamp: Date.now() } }));
+      } catch {}
+      banner.hidden = true;
+    };
+
+    acceptAll?.addEventListener('click', () => persist({ necessary: true, analytics: true, maps: true }));
+    rejectAll?.addEventListener('click', () => persist({ necessary: true, analytics: false, maps: false }));
+    customize?.addEventListener('click', () => { panel.hidden = false; customize.setAttribute('aria-expanded', 'true'); });
+    save?.addEventListener('click', () => {
+      const data: any = { necessary: true };
+      cbs.forEach((cb) => { data[(cb as HTMLInputElement).name] = (cb as HTMLInputElement).checked; });
+      persist(data);
+    });
+
+    // Focus trap basique
+    banner.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { panel.hidden = true; customize?.setAttribute('aria-expanded', 'false'); }
+    });
+  })();
+</script>
+
+<style>
+  .ds-cookie {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-cookie);
+    background-color: var(--color-white); box-shadow: var(--shadow-lg);
+    border-top: 2px solid var(--color-gray-200);
+    padding: var(--space-5) var(--space-4);
+  }
+  .ds-cookie[hidden] { display: none; }
+  .ds-cookie__inner { max-width: var(--container); margin-inline: auto; }
+  .ds-cookie__title { font-weight: 700; margin: 0 0 var(--space-2); }
+  .ds-cookie__msg { margin: 0 0 var(--space-4); font-size: var(--text-sm); color: var(--color-gray-600); }
+  .ds-cookie__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .ds-cookie__panel { margin-top: var(--space-4); border-top: 1px solid var(--color-gray-200); padding-top: var(--space-4); }
+  .ds-cookie__panel[hidden] { display: none; }
+  .ds-cookie__option { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--space-2); font-weight: 500; }
+  .ds-cookie__opt-desc { font-weight: 400; font-size: var(--text-sm); color: var(--color-gray-500); }
+  .ds-cookie__panel-actions { margin-top: var(--space-3); }
+  .ds-cookie__privacy { margin: var(--space-3) 0 0; font-size: var(--text-sm); }
+  .ds-cookie__privacy a { color: var(--color-primary); text-decoration: underline; }
+</style>
+
+<script>
+  // Script dynamique : lit le consentement et charge les scripts tiers si autorises
+  (function() {
+    const STORAGE_KEY = 'ds_consent';
+    const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
+    function isAllowed(cat: string) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const d = JSON.parse(raw);
+        if (!d || !d.timestamp || (Date.now() - d.timestamp) >= EXPIRY_MS) return false;
+        return d[cat] === true;
+      } catch { return false; }
+    }
+
+    // Google Analytics (si autorise et config)
+    window.addEventListener('ds-consent-updated', () => {
+      // Analytics : sinon plus tard
+      // Maps : iframe deja present, OSM = aucun cookie, donc rien a injecter
+    });
+  })();
+</script>

@@ -1,0 +1,50 @@
+---
+/**
+ * LanguageSwitcher.astro — Selecteur FR/EN (DESIGN_SYSTEM_SPECS.md §5.15, TECH §9)
+ * Persistance choix dans localStorage (cle ds_lang).
+ * Comportement : clic rechargement sur la page equivalent dans l'autre langue.
+ */
+interface Props {
+  lang: 'fr' | 'en';
+  ui: any;
+  href?: string; // lien vers la page dans l'autre langue
+}
+
+const { lang, ui, href } = Astro.props;
+const target = lang === 'en' ? '/fr' : '/en';
+---
+
+<a
+  class="ds-lang"
+  href={href || (lang === 'en' ? '/' : '/en/')}
+  hreflang={lang === 'en' ? 'fr' : 'en'}
+  data-lang-switcher
+  data-lang-target={lang === 'en' ? 'fr' : 'en'}
+>
+  {lang === 'en' ? (ui.language?.fr || 'FR') : (ui.language?.en || 'EN')}
+</a>
+
+<script>
+  document.querySelectorAll('[data-lang-switcher]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const target = (el as HTMLElement).dataset.langTarget;
+      if (target) {
+        try { localStorage.setItem('ds_lang', target); } catch {}
+      }
+    });
+  });
+</script>
+
+<style>
+  .ds-lang {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-gray-600);
+    text-decoration: none;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+  .ds-lang:hover { color: var(--color-primary); background-color: var(--color-gray-100); }
+  .ds-lang:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
+</style>

@@ -1,0 +1,78 @@
+{
+  "fr": {
+    "skipLink": "Aller au contenu principal",
+    "header": { "openMenu": "Ouvrir le menu de navigation", "closeMenu": "Fermer le menu de navigation" },
+    "nav": {
+      "index": "Accueil", "menu": "La Carte", "reservation": "Reservation", "a-propos": "A propos",
+      "galerie": "Galerie", "temoignages": "Avis", "faq": "FAQ", "contact": "Contact"
+    },
+    "language": { "label": "Changer de langue", "fr": "Francais", "en": "English" },
+    "footer": { "legalTitle": "Informations", "rights": "Tous droits reserves", "legal": "Mentions legales", "privacy": "Politique de confidentialite", "sitemap": "Plan du site" },
+    "form": {
+      "name": "Nom complet", "nameError": "Veuillez renseigner votre nom.",
+      "email": "Adresse email", "emailError": "Veuillez entrer un email valide (ex: jean@example.com).",
+      "phone": "Telephone", "phoneError": "Veuillez entrer un numero de telephone valide.",
+      "message": "Votre message", "messageError": "Veuillez renseigner votre message.",
+      "date": "Date", "dateError": "Veuillez choisir une date.",
+      "time": "Heure", "timeError": "Veuillez choisir un creneau.",
+      "partySize": "Nombre de personnes", "partySizeError": "Veuillez indiquer le nombre de personnes.",
+      "required": "(obligatoire)",
+      "privacyNote": "Vos donnees sont collectees uniquement pour traiter votre demande. Pour en savoir plus, consultez notre politique de confidentialite.",
+      "submit": "Envoyer", "sending": "Envoi en cours...",
+      "successTitle": "Message envoye !", "successText": "Merci pour votre message. Nous vous repondrons sous 24h ouvrees.",
+      "honeypot": "Ne pas remplir ce champ",
+      "globalError": "Le formulaire contient {n} erreur(s). Veuillez corriger les champs soulignes en rouge.",
+      "loadError": "Une erreur est survenue lors de l'envoi. Veuillez reessayer ou nous contacter directement."
+    },
+    "map": { "title": "Localisation", "openExternal": "Voir sur OpenStreetMap", "fallbackHint": "Coordonnees :", "loading": "Carte en chargement" },
+    "hours": { "title": "Horaires d'ouverture", "open": "Ouvert", "closed": "Ferme" },
+    "backToTop": "Retour en haut de page",
+    "states": {
+      "404": { "title": "Page introuvable", "message": "Oups ! La page que vous cherchez n'existe pas ou a ete deplacee.", "cta1": "Retour a l'accueil", "secondary": "Nous contacter" },
+      "500": { "title": "Erreur temporaire", "message": "Notre site rencontre un probleme temporaire. Veuillez reessayer dans quelques instants.", "cta1": "Reessayer", "cta2": "Nous contacter" },
+      "confirmation": { "title": "Merci pour votre message !", "text": "Nous vous repondrons dans les meilleurs delais.", "cta1": "Retour a l'accueil" },
+      "reservationOk": { "title": "Reservation confirmee !", "text": "Un email de confirmation vous a ete envoye a {email}.", "modify": "En cas de modification, appelez-nous au {phone}.", "cta1": "Retour a l'accueil" },
+      "noSlot": { "title": "Aucun creneau disponible", "message": "Desole, aucun creneau n'est disponible pour la date demandee.", "cta1": "Choisir une autre date", "cta2": "Nous appeler" }
+    },
+    "reservation": { "title": "Reservez votre table", "intro": "Quelques informations pour votre reservation." },
+    "cookie": { "title": "Ce site utilise des cookies.", "message": "Nous utilisons des cookies pour ameliorer votre experience. En savoir plus dans notre politique de confidentialite.", "accept": "Tout accepter", "reject": "Tout refuser", "customize": "Personnaliser", "save": "Enregistrer mes choix", "privacyLink": "Politique de confidentialite" }
+  },
+  "en": {
+    "skipLink": "Skip to main content",
+    "header": { "openMenu": "Open navigation menu", "closeMenu": "Close navigation menu" },
+    "nav": {
+      "index": "Home", "menu": "Menu", "reservation": "Reservation", "a-propos": "About",
+      "galerie": "Gallery", "temoignages": "Reviews", "faq": "FAQ", "contact": "Contact"
+    },
+    "language": { "label": "Change language", "fr": "Francais", "en": "English" },
+    "footer": { "legalTitle": "Legal", "rights": "All rights reserved", "legal": "Legal notice", "privacy": "Privacy policy", "sitemap": "Sitemap" },
+    "form": {
+      "name": "Full name", "nameError": "Please enter your name.",
+      "email": "Email address", "emailError": "Please enter a valid email address.",
+      "phone": "Phone", "phoneError": "Please enter a valid phone number.",
+      "message": "Your message", "messageError": "Please enter your message.",
+      "date": "Date", "dateError": "Please select a date.",
+      "time": "Time", "timeError": "Please select a time slot.",
+      "partySize": "Number of guests", "partySizeError": "Please indicate the number of guests.",
+      "required": "(required)",
+      "privacyNote": "Your data is collected solely to process your request. See our privacy policy for more information.",
+      "submit": "Send", "sending": "Sending...",
+      "successTitle": "Message sent!", "successText": "Thank you for your message. We will reply within 24 business hours.",
+      "honeypot": "Do not fill this field",
+      "globalError": "The form contains {n} error(s). Please correct the highlighted fields.",
+      "loadError": "An error occurred. Please try again or contact us directly."
+    },
+    "map": { "title": "Location", "openExternal": "View on OpenStreetMap", "fallbackHint": "Coordinates:", "loading": "Map loading" },
+    "hours": { "title": "Opening Hours", "open": "Open", "closed": "Closed" },
+    "backToTop": "Back to top",
+    "states": {
+      "404": { "title": "Page not found", "message": "The page you are looking for does not exist or has been moved.", "cta1": "Back to home", "secondary": "Contact us" },
+      "500": { "title": "Temporary error", "message": "Our site is experiencing a temporary issue. Please try again shortly.", "cta1": "Try again", "cta2": "Contact us" },
+      "confirmation": { "title": "Thank you for your message!", "text": "We will get back to you as soon as possible.", "cta1": "Back to home" },
+      "reservationOk": { "title": "Reservation confirmed!", "text": "A confirmation email has been sent to {email}.", "modify": "To make changes, call us at {phone}.", "cta1": "Back to home" },
+      "noSlot": { "title": "No time slot available", "message": "Sorry, no time slots are available for the selected date.", "cta1": "Choose another date", "cta2": "Call us" }
+    },
+    "reservation": { "title": "Reserve your table", "intro": "A few details for your reservation." },
+    "cookie": { "title": "This site uses cookies.", "message": "We use cookies to improve your experience. See our privacy policy for details.", "accept": "Accept all", "reject": "Reject all", "customize": "Customize", "save": "Save my choices", "privacyLink": "Privacy policy" }
+  }
+}

@@ -260,3 +260,53 @@ REGISTRE_DONNEES.md.
     des maxima recommendes ; a ajuster selon le service tiers choisi.
 45. **`seo.domain` au schema** : REQUIRED au build en attendant la decision de
     niveau de content-seo (CLIENT_DATA_VALIDATION.md section 7).
+## Decisions Phase 2 — Frontend Engineer (2026-09-15)
+
+Statut : **ACTEES** — decisions validees par le Tech Lead (hypotheses de
+travail Phase 2, reversibles avant Gate 3/4).
+Reference : ADR-002 (pipeline valider->generer->build), STACK.md, DESIGN_SYSTEM_SPECS.md,
+SITEMAP_MASTER.md, UX.md (etats speciaux), CLIENT_DATA_SCHEMA.md, SEO_SYSTEM.md.
+Livrables : src/ (components, layouts, utils, translations, styles), templates/restaurant/,
+scripts/ (generate-site, validate-client, dev-site, preview-site, contrast-check, fetch-fonts),
+content/clients/exemple-restaurant/, README.md.
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-FE-01 | **Base Astro 5 multi-clients (ADR-002 confirme)** | Une seule base `src/` (components/layouts/utils) + template flagship restaurant ; chaque client est genere dans `src/sites/<slug>` (gitignore) puis build via `CLIENT` env (astro.config.mjs : srcDir/publicDir/outDir dynamiques). Dependances : astro + yaml uniquement (budget 0 EUR, D3) | — |
+| D-FE-02 | **Template restaurant = 3 sources** | `template.yaml` (config : pages/translate/schema/components/third_party/branding) + `content/fr.json|en.json` (textes avec placeholders) + `pages/*.astro` avec marqueurs `$$LANG$$`, `$$THEME_CSS_PATH$$`, `$$DATA_PATH$$` remplaces par generate-site.mjs (FR a la racine, EN sous pages/en/ uniquement si `translate: true`) | — |
+| D-FE-03 | **Placeholders remplis partout** | `fillObject()` applique aux texts FR/EN, aux **components** (logo_text, footer address/phone/email — bug corrige : non remplis au 1er build) et aux labels `site_pages` extraits des seo_title ; placeholder `Adresse` ajoute au mapping (en plus de `Adresse_complete`). Aucun `[Placeholder]` restant dans le HTML build (verifie) | — |
+| D-FE-04 | **Liens internes i18n : pas de 404 EN** | Les pages **non traduites restent liees en FR** depuis les pages EN (Header nav, CTA header, Footer legal, plan-du-site, Hero CTAs) : `localizePath()` + `data.translated_routes` (routes `translate: true`). Le prefixe `/en` n'est applique qu'aux pages dotees d'une version EN. Pages traduites : index, a-propos, contact | — |
+| D-FE-05 | **Selecteur de langue : pages traduites uniquement** | `langSwitchHref` passe par les pages traduites (sinon masque) ; persistance `ds_lang` (localStorage) ; hreflang croisees (fr/en + x-default FR) ; fallback FR systematique (detectLanguage) | — |
+| D-FE-06 | **Astro 5 : children via `<slot />`** | Bug decouvert : `Astro.props.children` rend VIDE en Astro 5 — le CTA rendait des `<a>` sans libelle. Corrige dans CTA.astro (`<slot />` + support `fullWidth`). Verifie empiriquement (mini-repro build) ; aucun autre composant n'utilisait le pattern | — |
+| D-FE-07 | **Etats speciaux centralises (StatePage)** | Un composant `StatePage` (types 404/500/construction/confirmation/noSlot) : titre + message + CTA + telephone. Pages 404/500 dediees (routes statiques) ; « aucun creneau » gere par ReservationForm (info + CTA « Choisir une autre date » + telephone) — conforme EDGE_CASES (D2 : pas de creneaux temps reel) | — |
+| D-FE-08 | **Comment des donnees page = 0 h1 duplique** | LegalLayout ne rend plus de hero secondaire (retrait heroTitle) : les pages legales n'ont qu'un h1 (contenu), les pages internes un h1 (hero). Verifie sur les 16 pages build | — |
+| D-FE-09 | **Cookies : zero traceur tiers par defaut** | Bandeau CookieBanner maison (aucune dependance) : localStorage `ds_consent`, boutons accepter/refuser/personnaliser, event `ds-consent-updated` ; Map = OpenStreetMap (iframe sans cookie) ; `third_party.analytics=false|maps=false` active le bandeau si un tiers existe (config template.yaml) | — (voir Security en Phase 4) |
+| D-FE-10 | **SEO technique genere (fichiers statiques, 0 dependance)** | `robots.txt` (Allow all + Sitemap) et `sitemap.xml` generes par generate-site.mjs (14 URLs indexables, sans 404/500, EN incluses) ; JSON-LD via utils/schema.js (Restaurant, LocalBusiness, Menu, FAQPage, ContactPoint — pas d'aggregateRating : avis fictifs) ; title/description/canonical/hreflang/OG/Twitter par page via utils/seo.js ; trailing slash canonique | — |
+| D-FE-11 | **Accessibilite de base appliquee** | skip-link, `main id="contenu"`, lang sur html, aria-current nav, focus-visible 3px, prefers-reduced-motion, details/summary FAQ natif, lightbox galerie `<dialog>` natif, etoiles avis rendues accessibles (role=img + aria-label « n/5 »), contraste tokens (contrast-check.mjs) | — (validation dediee Phase 4) |
+| D-FE-12 | **Validation client : scripts autonomes** | `validate-client.mjs` (specs D-DB-03, codes sortie 0/2/3) ; `generate-site.mjs --build` (pipeline complet) ; `dev-site.mjs`/`preview-site.mjs` (CLIENT env) ; `contrast-check.mjs` (paires tokens) ; `fetch-fonts.mjs` (self-host optionnel — Google Fonts CDN par defaut, budget 0 EUR) | — |
+
+### Point de coherence frontend/backend (contrat @schemas)
+
+La validation des formulaires (ReservationForm, ContactForm) est actuellement
+**cote client uniquement** (regex + contraintes simples, contrat
+`{ ok, message?, errors?:[{field,message}] }` documente dans les composants).
+Le partage `@schemas` (decision Architecture STACK) sera branche en Phase 2
+backend (endpoints tiers configurables) — les types de champs et messages
+d'erreur des composants sont concus pour consommer la reponse serveur sans
+changement de contrat frontend.
+
+### Points ouverts — arbitrage Noah / autres agents (Phase 2, Frontend)
+
+46. **Polices self-hosted optionnelles** (PO-FE-01) : fallback actuel = Google
+    Fonts CDN (preconnect + stylesheet). `npm run setup` telecharge les woff2
+    dans fonts-cache/ et generate-site.mjs les copie dans public/fonts.
+    A trancher au deploiement reel (performance + RGPD : aucune requete tierce
+    si self-hosted).
+47. **Composants non crees volontairement** (PO-FE-02) : Pricing, StickyCTA,
+    DevisForm, layouts Error/Confirmation dedies — non requis par le template
+    flagship restaurant (StatePage couvre les etats ; pas de page tarifs dans
+    le perimetre restaurant). A creer si un template commerce/independant les
+    requiert (Phase 2b multil-template).
+48. **Images/hero** (PO-FE-03) : hero_image et gallery.images attendent le
+    chemin d'images reelles du client (placeholders vides actuellement) ;
+    optimisation astro:assets avec le performance-engineer au 1er client reel.

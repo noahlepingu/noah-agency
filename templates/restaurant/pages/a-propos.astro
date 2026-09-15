@@ -1,0 +1,39 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import PageLayout from '@layouts/PageLayout.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
+import { localBusiness } from '@utils/schema';
+import { localizePath } from '@utils/i18n';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.['a-propos'] || {};
+const siteUrl = data.site_url || 'https://example.com';
+const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
+const title = buildTitle({ title: texts.title || 'A propos' }, data);
+const description = buildDescription({ description: texts.content || '' }, data);
+const canonical = buildCanonical(siteUrl, '/a-propos');
+const hreflang = buildHreflang(siteUrl, '/a-propos', '/en/a-propos');
+const schema = localBusiness(data, siteUrl);
+---
+
+<PageLayout lang={lang} title={title} description={description} canonical={canonical}
+  hreflang={hreflang} ui={ui} data={data}
+  langSwitchHref={lang === 'en' ? '/a-propos' : '/en/a-propos'}
+  heroTitle={texts.title} breadcrumb={[
+    { label: ui.nav?.index || 'Accueil', href: '/' },
+    { label: texts.title || 'A propos', href: '/a-propos' },
+  ]}
+  jsonLd={[schema]}>
+  <section class="ds-section">
+    <div class="ds-container ds-prose">
+      <p>{texts.content || ''}</p>
+      {texts.values_title ? <h2>{texts.values_title}</h2> : null}
+      {texts.values ? (
+        <ul>{texts.values.map((v: string) => <li>{v}</li>)}</ul>
+      ) : null}
+    </div>
+  </section>
+</PageLayout>

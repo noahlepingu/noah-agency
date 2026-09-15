@@ -1,0 +1,132 @@
+{
+  "skipLink": "Aller au contenu principal",
+  "header": {
+    "openMenu": "Ouvrir le menu de navigation",
+    "closeMenu": "Fermer le menu de navigation"
+  },
+  "nav": {
+    "index": "Accueil",
+    "menu": "Le menu",
+    "reservation": "Reservation",
+    "a-propos": "A propos",
+    "galerie": "Galerie",
+    "temoignages": "Avis",
+    "faq": "FAQ",
+    "contact": "Contact"
+  },
+  "language": {
+    "label": "Changer de langue",
+    "fr": "Francais",
+    "en": "English"
+  },
+  "footer": {
+    "legalTitle": "Informations",
+    "rights": "Tous droits reserves",
+    "legal": "Mentions legales",
+    "privacy": "Politique de confidentialite",
+    "sitemap": "Plan du site"
+  },
+  "form": {
+    "name": "Nom complet",
+    "nameError": "Veuillez renseigner votre nom.",
+    "email": "Adresse email",
+    "emailError": "Veuillez entrer un email valide (ex: jean@example.com).",
+    "phone": "Telephone",
+    "phoneError": "Veuillez entrer un numero de telephone valide.",
+    "message": "Votre message",
+    "messageError": "Veuillez renseigner votre message.",
+    "date": "Date",
+    "dateError": "Veuillez choisir une date.",
+    "time": "Heure",
+    "timeError": "Veuillez choisir un creneau.",
+    "partySize": "Nombre de personnes",
+    "partySizeError": "Veuillez indiquer le nombre de personnes.",
+    "required": "(obligatoire)",
+    "privacyNote": "Vos donnees sont collectees uniquement pour traiter votre demande. Pour en savoir plus, consultez notre politique de confidentialite.",
+    "submit": "Envoyer",
+    "sending": "Envoi en cours...",
+    "successTitle": "Message envoye !",
+    "successText": "Merci pour votre message. Nous vous repondrons sous 24h ouvrees.",
+    "honeypot": "Ne pas remplir ce champ",
+    "globalError": "Le formulaire contient {n} erreur(s). Veuillez corriger les champs soulignes en rouge.",
+    "loadError": "Une erreur est survenue lors de l'envoi. Veuillez reessayer ou nous contacter directement.",
+    "retry": "Reessayer",
+    "backHome": "Retour a l'accueil"
+  },
+  "map": {
+    "title": "Localisation",
+    "openExternal": "Voir sur OpenStreetMap",
+    "fallbackHint": "Coordonnees :",
+    "loading": "Carte en chargement"
+  },
+  "hours": {
+    "title": "Horaires d'ouverture",
+    "open": "Ouvert",
+    "closed": "Ferm\u00e9",
+    "label": "Horaires d\u2019ouverture"
+  },
+  "gallery": {
+    "empty": "Aucune photo pour le moment.",
+    "title": "En images"
+  },
+  "backToTop": "Retour en haut de page",
+  "states": {
+    "404": {
+      "title": "Page introuvable",
+      "message": "Oups ! La page que vous cherchez n'existe pas ou a ete deplacee.",
+      "cta": "Retour a l'accueil",
+      "secondary": "Nous contacter"
+    },
+    "500": {
+      "title": "Erreur temporaire",
+      "message": "Notre site rencontre un probleme temporaire. Veuillez reessayer dans quelques instants.",
+      "contact": "Si le probleme persiste, contactez-nous a {phone} ou {email}.",
+      "cta1": "Reessayer",
+      "cta2": "Nous contacter"
+    },
+    "construction": {
+      "title": "Page en cours de creation",
+      "message": "Revenez bientot, cette page sera disponible prochainement !",
+      "cta1": "Retour a l'accueil",
+      "cta2": "Nous contacter"
+    },
+    "confirmation": {
+      "title": "Merci pour votre message !",
+      "text": "Nous vous repondrons dans les meilleurs delais.",
+      "cta": "Retour a l'accueil"
+    },
+    "reservationOk": {
+      "title": "Reservation confirmee !",
+      "text": "Un email de confirmation vous a ete envoye a {email}.",
+      "modify": "En cas de modification, appelez-nous au {phone}.",
+      "cta": "Retour a l'accueil"
+    },
+    "noSlot": {
+      "title": "Aucun creneau disponible",
+      "message": "Desole, aucun creneau n'est disponible pour la date demandee.",
+      "cta1": "Choisir une autre date",
+      "cta2": "Nous appeler"
+    }
+  },
+  "reservation": {
+    "title": "Reservez votre table",
+    "intro": "Quelques informations pour votre reservation.",
+    "partyLabel": "Nombre de personnes",
+    "maxParty": "Maximum {n} personnes."
+  },
+  "cookie": {
+    "title": "Ce site utilise des cookies.",
+    "message": "Nous utilisons des cookies pour ameliorer votre experience. En savoir plus dans notre politique de confidentialite.",
+    "accept": "Tout accepter",
+    "reject": "Tout refuser",
+    "customize": "Personnaliser",
+    "save": "Enregistrer mes choix",
+    "necessary": "Cookies necessaires",
+    "necessaryDesc": "Indispensables au fonctionnement du site.",
+    "analytics": "Mesure d'audience",
+    "analyticsDesc": "Nous permettent de mesurer la frequentation du site.",
+    "map": "Cartes",
+    "mapDesc": "Integration de cartes interactives.",
+    "privacyLink": "Politique de confidentialite"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "skipLink": "Skip to main content",
+  "header": {
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu"
+  },
+  "nav": {
+    "index": "Home",
+    "menu": "Menu",
+    "reservation": "Reservation",
+    "a-propos": "About",
+    "galerie": "Gallery",
+    "temoignages": "Reviews",
+    "faq": "FAQ",
+    "contact": "Contact"
+  },
+  "language": {
+    "label": "Change language",
+    "fr": "Fran\u00e7ais",
+    "en": "English"
+  },
+  "footer": {
+    "legalTitle": "Legal",
+    "rights": "All rights reserved",
+    "legal": "Legal notice",
+    "privacy": "Privacy policy",
+    "sitemap": "Sitemap"
+  },
+  "form": {
+    "name": "Full name",
+    "nameError": "Please enter your name.",
+    "email": "Email address",
+    "emailError": "Please enter a valid email address.",
+    "phone": "Phone",
+    "phoneError": "Please enter a valid phone number.",
+    "message": "Your message",
+    "messageError": "Please enter your message.",
+    "date": "Date",
+    "dateError": "Please select a date.",
+    "time": "Time",
+    "timeError": "Please select a time slot.",
+    "partySize": "Number of guests",
+    "partySizeError": "Please indicate the number of guests.",
+    "required": "(required)",
+    "privacyNote": "Your data is collected solely to process your request. See our privacy policy for more information.",
+    "submit": "Send",
+    "sending": "Sending...",
+    "successTitle": "Message sent!",
+    "successText": "Thank you for your message. We will reply within 24 business hours.",
+    "honeypot": "Do not fill this field",
+    "globalError": "The form contains {n} error(s). Please correct the highlighted fields.",
+    "loadError": "An error occurred. Please try again or contact us directly.",
+    "retry": "Try again",
+    "backHome": "Back to home"
+  },
+  "map": {
+    "title": "Location",
+    "openExternal": "View on OpenStreetMap",
+    "fallbackHint": "Coordinates:",
+    "loading": "Map loading"
+  },
+  "hours": {
+    "title": "Opening Hours",
+    "open": "Open",
+    "closed": "Closed",
+    "label": "Opening Hours"
+  },
+  "gallery": {
+    "empty": "No photos yet.",
+    "title": "Gallery"
+  },
+  "backToTop": "Back to top",
+  "states": {
+    "404": {
+      "title": "Page not found",
+      "message": "The page you are looking for does not exist or has been moved.",
+      "cta": "Back to home",
+      "secondary": "Contact us"
+    },
+    "500": {
+      "title": "Temporary error",
+      "message": "Our site is experiencing a temporary issue. Please try again shortly.",
+      "contact": "If the problem persists, contact us at {phone} or {email}.",
+      "cta1": "Try again",
+      "cta2": "Contact us"
+    },
+    "construction": {
+      "title": "Page under construction",
+      "message": "Come back soon, this page will be available shortly!",
+      "cta1": "Back to home",
+      "cta2": "Contact us"
+    },
+    "confirmation": {
+      "title": "Thank you for your message!",
+      "text": "We will get back to you as soon as possible.",
+      "cta": "Back to home"
+    },
+    "reservationOk": {
+      "title": "Reservation confirmed!",
+      "text": "A confirmation email has been sent to {email}.",
+      "modify": "To make changes, call us at {phone}.",
+      "cta": "Back to home"
+    },
+    "noSlot": {
+      "title": "No time slot available",
+      "message": "Sorry, no time slots are available for the selected date.",
+      "cta1": "Choose another date",
+      "cta2": "Call us"
+    }
+  },
+  "reservation": {
+    "title": "Reserve your table",
+    "intro": "A few details for your reservation.",
+    "partyLabel": "Number of guests",
+    "maxParty": "Maximum {n} guests."
+  },
+  "cookie": {
+    "title": "This site uses cookies.",
+    "message": "We use cookies to improve your experience. See our privacy policy for details.",
+    "accept": "Accept all",
+    "reject": "Reject all",
+    "customize": "Customize",
+    "save": "Save my choices",
+    "necessary": "Essential cookies",
+    "necessaryDesc": "Required for the site to function.",
+    "analytics": "Analytics",
+    "analyticsDesc": "Help us measure site traffic.",
+    "map": "Maps",
+    "mapDesc": "Interactive map integration.",
+    "privacyLink": "Privacy policy"
+  }
+}

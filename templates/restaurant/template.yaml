@@ -1,0 +1,131 @@
+# template.yaml — Configuration du template restaurant (flagship)
+# Reference : TEMPLATE_VISION.md §3, SITEMAP_MASTER §3.1
+name: restaurant
+label: Restaurant
+description: Site vitrine pour restaurant avec menu, reservation, galerie, avis
+
+# Pages actives par defaut
+pages:
+  - route: /
+    file: index.astro
+    translate: true          # Version EN generee
+    schema: Restaurant       # schema.org
+    seo_title: "[Nom] — Restaurant [Activite] a [Ville]"
+    seo_description: "[Nom], restaurant [Activite] a [Ville]. Menu, reservation et avis clients."
+  - route: /a-propos
+    file: a-propos.astro
+    translate: true
+    schema: LocalBusiness
+    seo_title: "A propos — [Nom]"
+    seo_description: "Decouvrez [Nom], restaurant [Activite] a [Ville]. Notre histoire et nos valeurs."
+  - route: /menu
+    file: menu.astro
+    schema: Menu
+    seo_title: "La Carte — [Nom]"
+    seo_description: "Consultez la carte et le menu de [Nom] a [Ville]. Plats, desserts, boissons."
+  - route: /reservation
+    file: reservation.astro
+    schema: ReserveAction
+    seo_title: "Reservation — [Nom]"
+    seo_description: "Reservez votre table a [Nom] a [Ville]. Choisissez votre date et votre creneau."
+  - route: /galerie
+    file: galerie.astro
+    seo_title: "Galerie — [Nom]"
+    seo_description: "Photos de [Nom] restaurant a [Ville]. Nos plats et notre espace."
+  - route: /temoignages
+    file: temoignages.astro
+    seo_title: "Avis clients — [Nom]"
+    seo_description: "Les avis de nos clients sur [Nom] restaurant a [Ville]."
+  - route: /faq
+    file: faq.astro
+    schema: FAQPage
+    seo_title: "Questions frequentes — [Nom]"
+    seo_description: "Reponses aux questions frequentes sur [Nom] restaurant a [Ville]."
+  - route: /contact
+    file: contact.astro
+    translate: true
+    schema: ContactPoint
+    seo_title: "Contact — [Nom]"
+    seo_description: "Contactez [Nom] restaurant a [Ville]. Telephone, email, formulaire."
+  - route: /mentions-legales
+    file: mentions-legales.astro
+    seo_title: "Mentions legales — [Nom]"
+  - route: /confidentialite
+    file: confidentialite.astro
+    seo_title: "Politique de confidentialite — [Nom]"
+  - route: /plan-du-site
+    file: plan-du-site.astro
+    seo_title: "Plan du site — [Nom]"
+  - route: /404
+    file: 404.astro
+  - route: /500
+    file: 500.astro
+
+# Composants actifs et leur configuration par defaut
+components:
+  header:
+    logo_text: "[Nom]"
+    nav:
+      - { label: "Accueil", href: "/" }
+      - { label: "La Carte", href: "/menu" }
+      - { label: "Reservation", href: "/reservation" }
+      - { label: "Contact", href: "/contact" }
+    cta: { label: "Reserver", href: "/reservation", variant: "primary" }
+  hero:
+    title: "[Nom]"
+    subtitle: "Restaurant [Activite] a [Ville]. Savourez une experience culinaire unique."
+    layout: centered
+    overlay: true
+  gallery:
+    title: "En images"
+    empty_text: "Aucune photo pour le moment."
+    images: []
+  testimonials:
+    title: "Avis de nos clients"
+    show_rating: true
+    show_source: true
+    reviews: []
+  faq:
+    title: "Questions frequentes"
+    questions: []
+  menu:
+    title: "La Carte"
+    categories: []
+  opening_hours:
+    title: "Horaires d'ouverture"
+    show_status: true
+    schedule: []
+  map:
+    title: "Localisation"
+    zoom: 16
+  contact_form:
+    action: ""
+    site_name: "[Nom]"
+  reservation_form:
+    time_slots: ["12:00", "12:30", "13:00", "13:30", "19:00", "19:30", "20:00", "20:30", "21:00"]
+    max_party_size: 8
+  footer:
+    logo_text: "[Nom]"
+    address: "[Adresse_complete]"
+    phone: "[Telephone]"
+    phone_href: "[Telephone_intl]"
+    email: "[Email]"
+    legal:
+      - { label: "Mentions legales", href: "/mentions-legales" }
+      - { label: "Politique de confidentialite", href: "/confidentialite" }
+      - { label: "Plan du site", href: "/plan-du-site" }
+  back_to_top: {}
+
+# Third-party config (triggers cookie banner if present)
+third_party:
+  analytics: false
+  maps: false     # OpenStreetMap = pas de cookie, donc false
+
+# Branding defaut (theme.css genere depuis branding du client_data.yaml)
+branding:
+  primary_color: "#B91C1C"
+  secondary_color: "#F59E0B"
+  accent_color: "#DC2626"
+  fonts:
+    heading: "Playfair Display"
+    body: "Inter"

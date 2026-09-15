@@ -1,0 +1,20 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import LegalLayout from '@layouts/LegalLayout.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildCanonical, buildHreflang } from '@utils/seo';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.mentions_legales || {};
+const siteUrl = data.site_url || 'https://example.com';
+const title = texts.title || 'Mentions legales';
+const canonical = buildCanonical(siteUrl, '/mentions-legales');
+---
+
+<LegalLayout lang={lang} title={title} description={title} canonical={canonical}
+  ui={ui} data={data}>
+  <h1>{title}</h1>
+  <p>{texts.content || ''}</p>
+</LegalLayout>

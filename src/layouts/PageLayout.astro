@@ -1,0 +1,78 @@
+---
+/**
+ * PageLayout.astro — Layout de page interne (hero secondaire + breadcrumb)
+ * Utilise BaseLayout. Ajoute un hero compact + Breadcrumb.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Hero from '@components/Hero.astro';
+import Breadcrumb from '@components/Breadcrumb.astro';
+
+interface Props {
+  lang: 'fr' | 'en';
+  title: string;
+  description: string;
+  canonical: string;
+  og?: any;
+  twitter?: any;
+  jsonLd?: any[];
+  hreflang?: any[];
+  robots?: string;
+  ui: any;
+  data: any;
+  langSwitchHref?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: { src: string; alt: string };
+  breadcrumb?: { label: string; href: string }[];
+}
+
+const {
+  lang,
+  title,
+  description,
+  canonical,
+  og,
+  twitter,
+  jsonLd,
+  hreflang,
+  robots,
+  ui,
+  data,
+  langSwitchHref,
+  heroTitle,
+  heroSubtitle,
+  heroImage,
+  breadcrumb = [],
+} = Astro.props;
+---
+
+<BaseLayout
+  lang={lang}
+  title={title}
+  description={description}
+  canonical={canonical}
+  og={og}
+  twitter={twitter}
+  jsonLd={jsonLd}
+  hreflang={hreflang}
+  robots={robots}
+  ui={ui}
+  data={data}
+  langSwitchHref={langSwitchHref}
+>
+  {breadcrumb.length > 0 ? (
+    <div class="ds-container" style="padding-top: var(--space-6);">
+      <Breadcrumb items={breadcrumb} lang={lang} />
+    </div>
+  ) : null}
+  {heroTitle ? (
+    <Hero
+      title={heroTitle}
+      subtitle={heroSubtitle}
+      image={heroImage}
+      layout="centered"
+      overlay={!!heroImage?.src}
+    />
+  ) : null}
+  <slot />
+</BaseLayout>

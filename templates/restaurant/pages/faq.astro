@@ -1,0 +1,29 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import PageLayout from '@layouts/PageLayout.astro';
+import FAQ from '@components/FAQ.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildCanonical, buildHreflang } from '@utils/seo';
+import { faqSchema } from '@utils/schema';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.faq || {};
+const siteUrl = data.site_url || 'https://example.com';
+const title = buildTitle({ title: texts.title || 'FAQ' }, data);
+const canonical = buildCanonical(siteUrl, '/faq');
+const hreflang = buildHreflang(siteUrl, '/faq');
+const faqS = faqSchema(data.components?.faq?.questions || []);
+---
+
+<PageLayout lang={lang} title={title} description={title} canonical={canonical}
+  hreflang={hreflang} ui={ui} data={data}
+  heroTitle={texts.title}
+  jsonLd={faqS ? [faqS] : []}
+  breadcrumb={[
+    { label: ui.nav?.index || 'Accueil', href: '/' },
+    { label: texts.title || 'FAQ', href: '/faq' },
+  ]}>
+  <FAQ data={data.components?.faq || { questions: [] }} />
+</PageLayout>

@@ -1,0 +1,50 @@
+---
+/**
+ * BackToTop.astro — Bouton retour en haut (UX §3.1, apparait apres scroll)
+ * Accessibilite : visible au clavier, aria-label explicite.
+ * Apparait quand scroll > 300px.
+ */
+interface Props {
+  ui?: any;
+}
+
+const { ui } = Astro.props;
+---
+
+<button
+  type="button"
+  class="ds-back2top"
+  aria-label={ui?.backToTop || 'Retour en haut de page'}
+  data-back2top
+>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <path d="M4.5 15.75l7.5-7.5 7.5 7.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script>
+  const btn = document.querySelector('[data-back2top]') as HTMLElement | null;
+  if (btn) {
+    const toggle = () => { btn.classList.toggle('ds-back2top--show', window.scrollY > 300); };
+    window.addEventListener('scroll', toggle, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+</script>
+
+<style>
+  .ds-back2top {
+    position: fixed; bottom: var(--space-4); right: var(--space-4);
+    z-index: var(--z-sticky);
+    width: 44px; height: 44px; border-radius: var(--radius-full);
+    background-color: var(--color-primary); color: var(--color-white);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-md);
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+  .ds-back2top--show { opacity: 1; pointer-events: auto; }
+  .ds-back2top:hover { background-color: var(--color-primary-dark); transform: scale(1.05); }
+  .ds-back2top:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .ds-back2top { transition: opacity var(--transition-fast); } }
+</style>

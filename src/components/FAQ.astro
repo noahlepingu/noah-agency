@@ -1,0 +1,67 @@
+---
+/**
+ * FAQ.astro — Questions frequentes (DESIGN_SYSTEM_SPECS.md §5.9, SEO §3.6)
+ * Accordion natif <details>/<summary> : accessible (focus natif),
+ * aria-expanded gere par le navigateur, etat open/close.
+ * Donnees structurees FAQPage injectees par le layout (schema.js).
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  data: any; // data.components.faq { title, questions: [{q, a}] }
+}
+
+const { data } = Astro.props;
+const questions = data.questions || [];
+const defaultOpen = typeof data.default_open === 'number' ? data.default_open : -1;
+---
+
+<section class="ds-section ds-section--alt">
+  <div class="ds-container ds-faq">
+    <div class="ds-section-head">
+      <h2 class="ds-section-head__title">{data.title || 'Questions frequentes'}</h2>
+    </div>
+
+    {questions.length === 0 ? (
+      <p class="ds-faq__empty">{data.empty_text || 'Aucune question pour le moment.'}</p>
+    ) : (
+      <div class="ds-faq__list">
+        {questions.map((q: any, i: number) => (
+          <details class="ds-faq__item" open={i === defaultOpen ? true : undefined}>
+            <summary class="ds-faq__summary">
+              <span class="ds-faq__q">{q.q}</span>
+              <Icon name="chevronDown" size={20} class="ds-faq__chevron" />
+            </summary>
+            <div class="ds-faq__a"><p>{q.a}</p></div>
+          </details>
+        ))}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .ds-faq__list { display: flex; flex-direction: column; gap: var(--space-3); max-width: 48rem; margin-inline: auto; }
+  .ds-faq__item {
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    background-color: var(--color-white);
+  }
+  .ds-faq__summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer; list-style: none;
+    font-weight: 600; color: var(--color-gray-900);
+    font-size: var(--text-base);
+  }
+  .ds-faq__summary::-webkit-details-marker { display: none; }
+  .ds-faq__summary:hover { background-color: var(--color-gray-50); }
+  .ds-faq__summary:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: -3px; border-radius: var(--radius-md); }
+  .ds-faq__item[open] .ds-faq__chevron { transform: rotate(180deg); }
+  .ds-faq__chevron { transition: transform var(--transition-fast); flex-shrink: 0; }
+  .ds-faq__a { padding: 0 var(--space-5) var(--space-4); color: var(--color-gray-600); line-height: 1.6; }
+  .ds-faq__a p { margin: 0; }
+  .ds-faq__empty { color: var(--color-gray-500); text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) { .ds-faq__chevron { transition: none; } }
+</style>

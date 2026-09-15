@@ -1,0 +1,81 @@
+---
+/**
+ * StatePage.astro — Etats speciaux : 404, 500, construction, confirmation, aucun creneau
+ * (DESIGN_SYSTEM_SPECS.md §6, UX.md §4)
+ * Layout : logo/texte + icone + titre + message + CTA + secondary CTA.
+ * Accessibilite : role=alert pour erreurs, role=status pour confirmation.
+ * noindex pour les pages d'etat.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  type: '404' | '500' | 'construction' | 'confirmation' | 'noSlot';
+  ui: any;
+  lang?: 'fr' | 'en';
+  data?: any;
+}
+
+const { type, ui, lang = 'fr', data } = Astro.props;
+const prefix = lang === 'en' ? '/en' : '';
+const states = ui.states || {};
+const state = states[type] || states['404'] || {};
+const phone = data?.phone || '';
+const email = data?.email || '';
+const e = (href: string) => (prefix ? `${prefix}${href}` : href);
+const role = type === 'confirmation' ? 'status' : 'alert';
+---
+
+<div class="ds-state" role={role}>
+  <div class="ds-container ds-state__inner">
+    <div class:list={['ds-state__icon', `ds-state__icon--${type}`]}>
+      <Icon name={
+        type === '404' ? 'pin'
+        : type === '500' ? 'warning'
+        : type === 'construction' ? 'menu'
+        : type === 'noSlot' ? 'calendar'
+        : 'check'
+      } size={48} />
+    </div>
+    <h1 class="ds-state__title">{state.title || ''}</h1>
+    <p class="ds-state__msg">
+      {type === '500' ? (
+        <Fragment>
+          {state.message || ''}{' '}
+          {state.contact ? (
+            <Fragment set:html={(state.contact as string).replace('{phone}', `<a href="tel:${phone}">${phone}</a>`).replace('{email}', `<a href="mailto:${email}">${email}</a>`)} />
+          ) : null}
+        </Fragment>
+      ) : state.message || state.text || ''}
+    </p>
+    <div class="ds-state__actions">
+      {state.cta ? <a href={state.cta.startsWith('/') ? e(state.cta) : e('/')} class="ds-btn ds-btn--primary">{state.cta_label || state.cta}</a> : null}
+      {state.cta1 ? <a href={e('/')} class="ds-btn ds-btn--primary">{state.cta1}</a> : null}
+      {state.secondary ? <a href={e('/contact')} class="ds-btn ds-btn--outline">{state.secondary}</a> : null}
+      {state.cta2 ? <a href={e('/contact')} class="ds-btn ds-btn--outline">{state.cta2}</a> : null}
+    </div>
+  </div>
+</div>
+
+<style>
+  .ds-state { padding: var(--space-16) 0; text-align: center; }
+  .ds-state__inner { max-width: 32rem; margin-inline: auto; }
+  .ds-state__icon {
+    width: 80px; height: 80px; border-radius: var(--radius-full);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: var(--space-6);
+  }
+  .ds-state__icon--404 { background-color: var(--color-gray-100); color: var(--color-gray-500); }
+  .ds-state__icon--500 { background-color: var(--color-warning-light); color: var(--color-warning); }
+  .ds-state__icon--construction { background-color: var(--color-info-light); color: var(--color-info); }
+  .ds-state__icon--confirmation { background-color: var(--color-success-light); color: var(--color-success); }
+  .ds-state__icon--noSlot { background-color: var(--color-gray-100); color: var(--color-gray-600); }
+  .ds-state__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin: 0 0 var(--space-3);
+  }
+  .ds-state__msg { color: var(--color-gray-600); line-height: 1.6; }
+  .ds-state__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-6); }
+</style>

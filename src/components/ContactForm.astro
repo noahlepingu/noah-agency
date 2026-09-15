@@ -1,0 +1,244 @@
+---
+/**
+ * ContactForm.astro — Formulaire de contact (DESIGN_SYSTEM_SPECS.md §5.5)
+ * Etats : default, focus (outline), erreur par champ (aria-invalid + message),
+ * erreur globale (role=alert), loading (spinner + disabled), success (role=status).
+ * Envoi : action externe (Formspree si configure, sinon mailto) —
+ * la validation cote client est toujours active.
+ * CNIL : mention d'information sous le formulaire (D-LEG).
+ */
+import CTA from './CTA.astro';
+
+interface Props {
+  ui: any;
+  data: any; // data.components.contact_form
+  lang: 'fr' | 'en';
+}
+
+const { ui, data, lang } = Astro.props;
+const FORM_ACTION = data.action || ''; // ex: https://formspree.io/f/xxxx
+const HONEYPOT = 'website';
+---
+
+<form
+  class="ds-form"
+  method="post"
+  action={FORM_ACTION}
+  data-form="contact"
+  aria-describedby="form-contact-note"
+  novalidate
+>
+  <div class="ds-form__grid">
+    <div class="ds-form__field">
+      <label for="cf-name" class="ds-form__label">{ui.form.name} <span aria-hidden="true">*</span></label>
+      <input
+        type="text"
+        id="cf-name"
+        name="name"
+        class="ds-form__input"
+        required
+        autocomplete="name"
+        aria-required="true"
+      />
+      <p class="ds-form__error" id="cf-name-error" hidden></p>
+    </div>
+
+    <div class="ds-form__field">
+      <label for="cf-email" class="ds-form__label">{ui.form.email} <span aria-hidden="true">*</span></label>
+      <input
+        type="email"
+        id="cf-email"
+        name="email"
+        class="ds-form__input"
+        required
+        autocomplete="email"
+        aria-required="true"
+      />
+      <p class="ds-form__error" id="cf-email-error" hidden></p>
+    </div>
+
+    <div class="ds-form__field ds-form__field--full">
+      <label for="cf-message" class="ds-form__label">{ui.form.message} <span aria-hidden="true">*</span></label>
+      <textarea
+        id="cf-message"
+        name="message"
+        class="ds-form__textarea"
+        rows="5"
+        required
+        aria-required="true"
+      ></textarea>
+      <p class="ds-form__error" id="cf-message-error" hidden></p>
+    </div>
+
+    <!-- Honeypot anti-spam : invisible aux humains -->
+    <div class="ds-form__honeypot" aria-hidden="true">
+      <label for={HONEYPOT}>{ui.form.honeypot}</label>
+      <input type="text" id={HONEYPOT} name={HONEYPOT} tabindex="-1" autocomplete="off" />
+    </div>
+  </div>
+
+  <p class="ds-form__global-error" role="alert" hidden data-form-error></p>
+
+  <div class="ds-form__submit-row">
+    <button type="submit" class="ds-btn ds-btn--primary" data-form-submit>
+      <span data-form-submit-label>{ui.form.submit}</span>
+    </button>
+  </div>
+
+  <p class="ds-form__note" id="form-contact-note">{ui.form.privacyNote}</p>
+
+  <!-- Confirmation -->
+  <p class="ds-form__success" role="status" hidden data-form-success>
+    <strong>{ui.form.successTitle}</strong><br />
+    {ui.form.successText}
+  </p>
+</form>
+
+<script>
+  const form = document.querySelector('[data-form="contact"]') as HTMLFormElement | null;
+  if (form) {
+    const uiData = { ...JSON.parse((form.dataset as any).jsonForm || '{}') };
+
+    const name = form.querySelector('#cf-name') as HTMLInputElement;
+    const email = form.querySelector('#cf-email') as HTMLInputElement;
+    const message = form.querySelector('#cf-message') as HTMLTextAreaElement;
+    const honeypot = form.querySelector('input[name="website"]') as HTMLInputElement;
+    const errorGlobal = form.querySelector('[data-form-error]') as HTMLElement;
+    const success = form.querySelector('[data-form-success]') as HTMLElement;
+    const submit = form.querySelector('[data-form-submit]') as HTMLButtonElement;
+    const submitLabel = form.querySelector('[data-form-submit-label]') as HTMLElement;
+    const action = form.getAttribute('action') || '';
+
+    const setFieldError = (field: HTMLInputElement | HTMLTextAreaElement, msg: string | null) => {
+      const err = document.getElementById(`${field.id}-error`);
+      if (msg) {
+        field.setAttribute('aria-invalid', 'true');
+        field.classList.add('ds-form__input--invalid');
+        if (err) { err.textContent = msg; err.hidden = false; }
+      } else {
+        field.removeAttribute('aria-invalid');
+        field.classList.remove('ds-form__input--invalid');
+        if (err) { err.hidden = true; }
+      }
+    };
+
+    const validate = () => {
+      let count = 0;
+      // Nom
+      const nameOk = (name.value.trim().length >= 2);
+      setFieldError(name, nameOk ? null : (uiData.nameError || 'Nom obligatoire'));
+      if (!nameOk) count++;
+      // Email
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+      setFieldError(email, emailOk ? null : (uiData.emailError || 'Email invalide'));
+      if (!emailOk) count++;
+      // Message
+      const msgOk = message.value.trim().length > 0;
+      setFieldError(message, msgOk ? null : (uiData.messageError || 'Message obligatoire'));
+      if (!msgOk) count++;
+      if (count > 0 && errorGlobal) {
+        errorGlobal.textContent = (uiData.globalError || '').replace('{n}', String(count));
+        errorGlobal.hidden = false;
+      } else if (errorGlobal) { errorGlobal.hidden = true; }
+      return count === 0;
+    };
+
+    // Re-validate a la saisie
+    [name, email, message].forEach((f) => f.addEventListener('input', () => {
+      if (f.hasAttribute('aria-invalid')) setFieldError(f, null);
+    }));
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      errorGlobal!.hidden = true;
+
+      // Honeypot : abandon silencieux
+      if (honeypot && honeypot.value.trim().length > 0) return;
+
+      if (!validate()) return;
+
+      submit!.disabled = true;
+      submitLabel!.textContent = uiData.sending || 'Envoi...';
+
+      const payload = new FormData(form);
+      try {
+        if (action) {
+          const res = await fetch(action, { method: 'POST', body: payload, headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+        } else {
+          // Fallback : mailto (fonctionne sans backend)
+          const subject = encodeURIComponent('Contact ' + (uiData.siteName || ''));
+          const body = encodeURIComponent(`Nom: ${name.value}\nEmail: ${email.value}\n\n${message.value}`);
+          window.location.href = `mailto:${uiData.emailAddress || ''}?subject=${subject}&body=${body}`;
+        }
+        form.reset();
+        success!.hidden = false;
+        submit!.disabled = false;
+        submitLabel!.textContent = uiData.submit || 'Envoyer';
+      } catch {
+        submit!.disabled = false;
+        submitLabel!.textContent = uiData.submit || 'Envoyer';
+        errorGlobal!.textContent = uiData.loadError || 'Erreur lors de l\'envoi';
+        errorGlobal!.hidden = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .ds-form__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+  .ds-form__field { display: flex; flex-direction: column; gap: var(--space-1); }
+  .ds-form__label { font-size: var(--text-sm); font-weight: 600; }
+  .ds-form__input,
+  .ds-form__textarea {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--color-gray-900);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    min-height: 48px;
+  }
+  .ds-form__textarea { resize: vertical; }
+  .ds-form__input:focus,
+  .ds-form__textarea:focus {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-color: var(--color-primary);
+  }
+  .ds-form__input--invalid { border-color: var(--color-error); }
+  .ds-form__error { color: var(--color-error); font-size: var(--text-sm); margin: 0; }
+  .ds-form__global-error {
+    color: var(--color-error);
+    background-color: var(--color-error-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    font-size: var(--text-base);
+  }
+  .ds-form__success {
+    color: var(--color-success);
+    background-color: var(--color-success-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin: var(--space-4) 0 0;
+  }
+  .ds-form__note { font-size: var(--text-sm); color: var(--color-gray-500); margin: var(--space-4) 0 0; }
+  .ds-form__submit-row { margin-top: var(--space-4); }
+  .ds-form__honeypot {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .ds-form__grid { grid-template-columns: 1fr 1fr; }
+    .ds-form__field--full { grid-column: 1 / -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ds-form__input, .ds-form__textarea { transition: none; }
+  }
+</style>

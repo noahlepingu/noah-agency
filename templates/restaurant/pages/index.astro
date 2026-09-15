@@ -1,0 +1,83 @@
+---
+/**
+ * index.astro — Page d'accueil restaurant
+ * Sections : Hero + Intro + CTA + Menu + Galerie + Avis + FAQ + Map + Contact.
+ * $$LANG$$ est remplace par "fr" ou "en" lors de la generation.
+ */
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/Hero.astro';
+import Menu from '@components/Menu.astro';
+import Gallery from '@components/Gallery.astro';
+import Testimonials from '@components/Testimonials.astro';
+import FAQ from '@components/FAQ.astro';
+import Map from '@components/Map.astro';
+import CTA from '@components/CTA.astro';
+import OpeningHours from '@components/OpeningHours.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildTitle, buildDescription, buildCanonical, buildOG, buildTwitter, buildHreflang, buildRobots } from '@utils/seo';
+import { restaurant, localBusiness, faqSchema } from '@utils/schema';
+import { localizePath } from '@utils/i18n';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.index || {};
+const siteUrl = data.site_url || 'https://example.com';
+const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
+
+const title = buildTitle({ title: texts.hero_title || data.business?.name || '' }, data);
+const description = buildDescription({ description: texts.hero_subtitle || data.seo?.meta_description || '' }, data);
+const canonical = buildCanonical(siteUrl, '/');
+const og = buildOG({ title, description, pageUrl: canonical, siteName: data.business?.name });
+const hreflang = buildHreflang(siteUrl, '/', '/en/');
+---
+
+<BaseLayout lang={lang} title={title} description={description} canonical={canonical}
+  og={og} hreflang={hreflang} robots="index,follow" ui={ui} data={data}
+  langSwitchHref={lang === 'en' ? '/' : '/en/'}>
+
+  <Hero
+    title={texts.hero_title || ''}
+    subtitle={texts.hero_subtitle || ''}
+    image={data.hero_image ? { src: data.hero_image.src, alt: data.hero_image.alt } : undefined}
+    cta={{ label: texts.cta_reserve || 'Reserver', href: e('/reservation'), variant: 'primary' }}
+    ctaSecondary={{ label: texts.cta_menu || 'La Carte', href: e('/menu'), variant: 'outline' }}
+    layout="centered"
+    overlay={!!data.hero_image?.src}
+  />
+
+  <!-- Introduction -->
+  <section class="ds-section">
+    <div class="ds-container ds-prose">
+      <h2 class="ds-section-head__title">{texts.intro_title || ''}</h2>
+      <p>{texts.intro_text || ''}</p>
+      <div class="ds-hero__cta" style="margin-top: var(--space-6);">
+        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || 'Reserver'}</CTA>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu -->
+  {data.components?.menu?.categories?.length > 0 ? <Menu data={data.components.menu} /> : null}
+
+  <!-- Galerie -->
+  {data.components?.gallery?.images?.length > 0 ? <Gallery ui={ui} data={data.components.gallery} /> : null}
+
+  <!-- Horaires + Map en grille -->
+  <section class="ds-section ds-section--alt">
+    <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
+      {data.components?.opening_hours?.schedule?.length > 0 ? (
+        <OpeningHours data={data.components.opening_hours} ui={ui} />
+      ) : null}
+      <Map data={data.components?.map || {}} ui={ui} />
+    </div>
+  </section>
+
+  <!-- Avis -->
+  {data.components?.testimonials?.reviews?.length > 0 ? <Testimonials data={data.components.testimonials} /> : null}
+
+  <!-- FAQ -->
+  {data.components?.faq?.questions?.length > 0 ? <FAQ data={data.components.faq} /> : null}
+
+</BaseLayout>

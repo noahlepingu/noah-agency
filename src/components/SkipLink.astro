@@ -1,0 +1,14 @@
+---
+/**
+ * SkipLink.astro — Lien d'evitement (UX.md §5.1)
+ * Accessible au clavier, visible uniquement au focus.
+ * Le cible est l'element main#contenu du BaseLayout.
+ */
+interface Props {
+  label?: string;
+}
+
+const { label = 'Aller au contenu principal' } = Astro.props;
+---
+
+<a href="#contenu" class="skip-link">{label}</a>

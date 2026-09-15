@@ -1,0 +1,54 @@
+{
+  "texts": {
+    "index": {
+      "hero_title": "[Nom]",
+      "hero_subtitle": "[Activite] in [Ville]. Enjoy a unique culinary experience with fresh, seasonal ingredients.",
+      "intro_title": "Welcome",
+      "intro_text": "[Nom] is a [Activite] restaurant located in [Ville]. Our cuisine celebrates local and seasonal produce for an authentic, gourmet experience.",
+      "cta_reserve": "Book a table",
+      "cta_menu": "See the menu"
+    },
+    "a-propos": {
+      "title": "About [Nom]",
+      "content": "[Nom] was born from a passion for [Activite] cuisine. Since opening in [Ville], our restaurant is committed to offering dishes made with fresh, local ingredients.",
+      "values_title": "Our values",
+      "values": ["Local and seasonal produce", "Homemade dishes", "Warm welcome"]
+    },
+    "menu": {
+      "title": "The Menu",
+      "subtitle": "Our dishes are prepared with fresh, local produce"
+    },
+    "reservation": {
+      "title": "Book your table",
+      "intro": "A few details for your reservation."
+    },
+    "galerie": {
+      "title": "Gallery",
+      "subtitle": "Discover [Nom] in pictures"
+    },
+    "temoignages": {
+      "title": "Customer reviews",
+      "subtitle": "What our customers say about us"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "Find answers to your questions"
+    },
+    "contact": {
+      "title": "Contact",
+      "subtitle": "Don't hesitate to contact us"
+    },
+    "mentions_legales": {
+      "title": "Legal notice",
+      "content": "Publisher: [Nom_commercial], [Forme_juridique], SIREN [SIREN], SIRET [SIRET], [Adresse]. Publication director: [Nom_directeur]. Hosting provider: [Nom_hebergeur], [Adresse_hebergeur]."
+    },
+    "confidentialite": {
+      "title": "Privacy policy",
+      "content": "This website does not collect personal data for commercial purposes. The only data collected is what you voluntarily send via our contact or reservation forms. This data is processed solely to respond to your request. It is never sold or shared with third parties. In accordance with the GDPR, you have the right to access, rectify and delete your data by contacting [Email_pro]."
+    },
+    "plan_du_site": {
+      "title": "Sitemap",
+      "subtitle": "All pages on this site"
+    }
+  }
+}

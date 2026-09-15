@@ -1,0 +1,71 @@
+---
+/**
+ * Map.astro — Carte (DESIGN_SYSTEM_SPECS.md §5.10, UX.md §4.6, ADR-005)
+ * Provider : OpenStreetMap via iframe (AUCUN cookie) — pas de consentement requis.
+ * Fallback : coordonnees + lien vers OpenStreetMap si iframe indisponible.
+ * Lazy : chargement differe (performance), loading=lazy.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  data: any; // data.components.map { address, lat, lng?, zoom?, title }
+  ui: any;
+}
+
+const { data, ui } = Astro.props;
+const base = 'https://www.openstreetmap.org/export/embed.html';
+const zoom = data.zoom || 16;
+const hasCoords = data.lat && data.lng;
+const hasAddress = !!data.address;
+const iframeSrc = hasCoords
+  ? `${base}?bbox=${data.lng - 0.004}%2C${data.lat - 0.003}%2C${data.lng + 0.004}%2C${data.lat + 0.003}&layer=mapnik&marker=${data.lat}%2C${data.lng}`
+  : `${base}?bbox=-0.1%2C45.7%2C0.1%2C45.9&layer=mapnik`;
+const osmUrl = hasCoords ? `https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=${zoom}/${data.lat}/${data.lng}` : 'https://www.openstreetmap.org/';
+---
+
+<section class="ds-section ds-map" aria-label={data.title || ui.map.title}>
+  <div class="ds-container">
+    <div class="ds-section-head">
+      <h2 class="ds-section-head__title">{data.title || ui.map.title}</h2>
+    </div>
+
+    {hasCoords || hasAddress ? (
+      <div class="ds-map__frame">
+        <iframe
+          src={iframeSrc}
+          class="ds-map__iframe"
+          title={data.title || ui.map.title}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          width="100%"
+          height="400"
+        ></iframe>
+        <p class="ds-map__fallback">
+          {data.address || ''}
+          {hasCoords ? ` (${ui.map.fallbackHint} ${data.lat}, ${data.lng})` : ''}
+          {' — '}
+          <a href={osmUrl} target="_blank" rel="noopener noreferrer nofollow">
+            {ui.map.openExternal} <Icon name="external" size={16} />
+          </a>
+        </p>
+      </div>
+    ) : (
+      <p class="ds-map__fallback">{ui.map.loading}</p>
+    )}
+  </div>
+</section>
+
+<style>
+  .ds-map__frame { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); background: var(--color-gray-100); }
+  .ds-map__iframe { display: block; border: 0; width: 100%; min-height: 320px; }
+  .ds-map__fallback {
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-white);
+    margin: 0;
+    display: flex; align-items: center; gap: var(--space-2);
+    font-size: var(--text-sm); color: var(--color-gray-600);
+    flex-wrap: wrap;
+  }
+  .ds-map__fallback a { display: inline-flex; align-items: center; gap: 4px; color: var(--color-primary); font-weight: 600; }
+  @media (min-width: 1024px) { .ds-map__iframe { min-height: 400px; } }
+</style>

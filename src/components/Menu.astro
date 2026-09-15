@@ -1,0 +1,40 @@
+---
+/**
+ * Menu.astro — Page menu restaurant (DESIGN_SYSTEM_SPECS.md §5.11)
+ * Affiche les categories via MenuCard. Grille responsive.
+ */
+import MenuCard from './MenuCard.astro';
+
+interface Props {
+  data: any; // data.components.menu
+}
+
+const { data } = Astro.props;
+const categories = data.categories || [];
+---
+
+<section class="ds-section" id="menu">
+  <div class="ds-container">
+    <div class="ds-section-head ds-section-head--centered">
+      <h2 class="ds-section-head__title">{data.title || 'La Carte'}</h2>
+      {data.subtitle ? <p class="ds-section-head__subtitle">{data.subtitle}</p> : null}
+    </div>
+
+    {categories.length === 0 ? (
+      <p class="ds-section__empty">{data.empty_text || 'Le menu sera bientot disponible.'}</p>
+    ) : (
+      <div class="ds-menu__grid">
+        {categories.map((cat: any) => (
+          <MenuCard category={cat.name} items={cat.items || []} />
+        ))}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .ds-menu__grid { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+  .ds-section__empty { text-align: center; color: var(--color-gray-500); }
+
+  @media (min-width: 768px) { .ds-menu__grid { grid-template-columns: 1fr 1fr; } }
+</style>

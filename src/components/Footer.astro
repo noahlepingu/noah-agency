@@ -1,0 +1,116 @@
+---
+/**
+ * Footer.astro — Pied de page (DESIGN_SYSTEM_SPECS.md §5.2, SITEMAP_MASTER §6.2)
+ * 3 colonnes desktop (infos, horaires, reseaux+legal), 1 colonne mobile.
+ * Coordonnees cliquables (tel:, mailto:), liens legaux obligatoires.
+ */
+import SocialLinks from './SocialLinks.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  lang: 'fr' | 'en';
+  ui: any;
+  data: any; // data.components.footer
+  translatedRoutes?: string[];
+}
+
+const { lang, ui, data, translatedRoutes = [] } = Astro.props;
+const legal = data.legal || [];
+
+const hoursText = data.hours_list || '';
+const localize = (s: string) => {
+  if (lang !== 'en') return s;
+  return translatedRoutes.includes(s) ? `/en${s}` : s;
+};
+---
+
+<footer class="ds-footer">
+  <div class="ds-container ds-footer__grid">
+    <div class="ds-footer__col">
+      <p class="ds-footer__logo">{data.logo_text || ''}</p>
+      {data.address ? (
+        <address class="ds-footer__address">
+          <span class="ds-footer__line"><Icon name="pin" size={16} />{data.address}</span>
+        </address>
+      ) : null}
+      {data.phone ? (
+        <a class="ds-footer__line ds-footer__link" href={`tel:${data.phone_href || data.phone}`}>
+          <Icon name="phone" size={16} />{data.phone}
+        </a>
+      ) : null}
+      {data.email ? (
+        <a class="ds-footer__line ds-footer__link" href={`mailto:${data.email}`}>
+          <Icon name="mail" size={16} />{data.email}
+        </a>
+      ) : null}
+    </div>
+
+    {hoursText ? (
+      <div class="ds-footer__col">
+        <h2 class="ds-footer__title">{ui.hours.title}</h2>
+        <p class="ds-footer__hours">{hoursText}</p>
+      </div>
+    ) : null}
+
+    <div class="ds-footer__col">
+      {data.socials && data.socials.length > 0 ? (
+        <SocialLinks links={data.socials} ui={ui} size="sm" variant="icons" />
+      ) : null}
+      <nav class="ds-footer__legal" aria-label={ui.footer.legalTitle}>
+        <ul class="ds-footer__legal-list">
+          {legal.map((l: any) => (
+            <li><a class="ds-footer__link ds-footer__legal-link" href={localize(l.href)}>{l.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <p class="ds-footer__copyright">
+        &copy; {new Date().getFullYear()} {data.copyright || ''} — {ui.footer.rights}
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ds-footer {
+    background-color: var(--color-gray-900);
+    color: var(--color-gray-300);
+    padding: var(--space-12) 0 var(--space-8);
+  }
+  .ds-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+  .ds-footer__logo {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--color-white);
+    margin: 0 0 var(--space-4);
+  }
+  .ds-footer__title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-white);
+    margin: 0 0 var(--space-3);
+  }
+  .ds-footer__line {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-style: normal;
+    margin-bottom: var(--space-2);
+  }
+  .ds-footer__link { color: var(--color-gray-300); text-decoration: none; }
+  .ds-footer__link:hover { color: var(--color-white); text-decoration: underline; }
+  .ds-footer__address { margin: 0; }
+  .ds-footer__hours { margin: 0; line-height: 1.6; }
+  .ds-footer__legal-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  .ds-footer__copyright { margin: var(--space-6) 0 0; font-size: var(--text-sm); color: var(--color-gray-400); }
+
+  @media (min-width: 768px) {
+    .ds-footer__grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>

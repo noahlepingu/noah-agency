@@ -1,0 +1,130 @@
+---
+/**
+ * Gallery.astro — Galerie photos (DESIGN_SYSTEM_SPECS.md §5.6)
+ * Layout : grid (1-2-3 colonnes responsive). Lightbox simple native (dialog).
+ * Etat vide : message. Accessibilite : alt descriptif, boutons focusables.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  ui: any;
+  data: any; // data.components.gallery { title, images: [{src, alt, caption?}] }
+}
+
+const { data } = Astro.props;
+const images = data.images || [];
+const emptyText = data.empty_text || 'Aucune photo pour le moment.';
+---
+
+<section class="ds-section ds-section--alt">
+  <div class="ds-container">
+    <div class="ds-section-head">
+      <h2 class="ds-section-head__title">{data.title || 'Galerie'}</h2>
+    </div>
+
+    {images.length === 0 ? (
+      <p class="ds-gallery__empty">{emptyText}</p>
+    ) : (
+      <ul class="ds-gallery">
+        {images.map((img: any, i: number) => (
+          <li class="ds-gallery__item">
+            <button
+              type="button"
+              class="ds-gallery__btn"
+              data-lightbox={i}
+              aria-label={img.alt}
+              aria-haspopup="dialog"
+            >
+              <img
+                class="ds-gallery__img"
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                width="800"
+                height="600"
+              />
+              {img.caption ? <span class="ds-gallery__caption">{img.caption}</span> : null}
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<dialog class="ds-lightbox" data-lightbox-dialog aria-label="Galerie">
+  <button type="button" class="ds-lightbox__close" data-lightbox-close aria-label="Fermer">
+    <Icon name="close" size={24} />
+  </button>
+  <figure class="ds-lightbox__figure">
+    <img class="ds-lightbox__img" src="" alt="" data-lightbox-img />
+    <figcaption class="ds-lightbox__caption" data-lightbox-caption></figcaption>
+  </figure>
+</dialog>
+
+<script>
+  const dialog = document.querySelector('[data-lightbox-dialog]') as HTMLDialogElement | null;
+  const images = Array.from(document.querySelectorAll('[data-lightbox]')) as HTMLButtonElement[];
+
+  if (dialog) {
+    const imgEl = dialog.querySelector('[data-lightbox-img]') as HTMLImageElement;
+    const capEl = dialog.querySelector('[data-lightbox-caption]') as HTMLElement;
+    const closeBtn = dialog.querySelector('[data-lightbox-close]') as HTMLButtonElement;
+
+    images.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        const real = btn.querySelector('img') as HTMLImageElement;
+        imgEl.src = real.src;
+        imgEl.alt = real.alt;
+        const cap = btn.querySelector('.ds-gallery__caption');
+        capEl.textContent = cap ? cap.textContent : '';
+        dialog.showModal();
+      });
+    });
+
+    closeBtn.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      // Fermer si clic hors figure
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') dialog.close();
+    });
+  }
+</script>
+
+<style>
+  .ds-gallery { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+  .ds-gallery__item { margin: 0; }
+  .ds-gallery__btn {
+    display: block; width: 100%; padding: 0; border: none; border-radius: var(--radius-lg);
+    overflow: hidden; background: transparent; cursor: pointer; position: relative;
+    aspect-ratio: 4 / 3;
+    box-shadow: var(--shadow-sm);
+  }
+  .ds-gallery__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--transition-fast); }
+  .ds-gallery__btn:hover .ds-gallery__img { transform: scale(1.02); }
+  .ds-gallery__btn:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
+  .ds-gallery__caption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: var(--space-2) var(--space-3);
+    background-image: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: var(--color-white); font-size: var(--text-sm);
+  }
+  .ds-gallery__empty { color: var(--color-gray-500); }
+
+  .ds-lightbox { border: none; border-radius: var(--radius-lg); padding: 0; background: var(--color-gray-900); max-width: 90vw; }
+  .ds-lightbox::backdrop { background-color: rgba(0,0,0,0.7); }
+  .ds-lightbox__figure { margin: 0; }
+  .ds-lightbox__img { display: block; max-width: 90vw; max-height: 80vh; object-fit: contain; }
+  .ds-lightbox__caption { color: var(--color-gray-200); padding: var(--space-3); text-align: center; }
+  .ds-lightbox__close {
+    position: absolute; top: var(--space-2); right: var(--space-2);
+    background: rgba(0,0,0,0.5); color: var(--color-white); border: none;
+    width: 40px; height: 40px; border-radius: var(--radius-full); cursor: pointer;
+  }
+  .ds-lightbox__close:hover { background: rgba(0,0,0,0.8); }
+
+  @media (min-width: 640px) { .ds-gallery { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .ds-gallery { grid-template-columns: repeat(3, 1fr); } }
+</style>

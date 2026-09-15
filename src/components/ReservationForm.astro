@@ -1,0 +1,160 @@
+---
+/**
+ * ReservationForm.astro — Formulaire de reservation (restaurant)
+ * Champs : date, heure, nombre de personnes, nom, email, telephone, message.
+ * Etat "Aucun creneau" : si tous les creneaux d'une date sont pris (simulateur).
+ * CNIL : mention d'information sous le formulaire.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  ui: any;
+  data: any; // data.components.reservation_form
+  lang: 'fr' | 'en';
+}
+
+const { ui, data, lang } = Astro.props;
+const reserv = ui.reservation || {};
+const maxGuests = data.max_party_size || 8;
+const HONEYPOT = 'phone_confirm';
+---
+
+<section class="ds-section">
+  <div class="ds-container ds-form">
+    <div class="ds-section-head ds-section-head--centered">
+      <h2 class="ds-section-head__title">{reserv.title || 'Reservez votre table'}</h2>
+      {reserv.intro ? <p class="ds-section-head__subtitle">{reserv.intro}</p> : null}
+    </div>
+
+    <form method="post" action={data.action || ''} data-form="reservation" novalidate>
+      <div class="ds-form__grid ds-form__grid--reservation">
+        <div class="ds-form__field">
+          <label for="r-date" class="ds-form__label">{ui.form.date} *</label>
+          <input type="date" id="r-date" name="date" class="ds-form__input" required min={new Date().toISOString().slice(0, 10)} aria-required="true" />
+          <p class="ds-form__error" id="r-date-error" hidden></p>
+        </div>
+
+        <div class="ds-form__field">
+          <label for="r-time" class="ds-form__label">{ui.form.time} *</label>
+          <select id="r-time" name="time" class="ds-form__input ds-form__select" required aria-required="true">
+            <option value="">{ui.form.timeError}</option>
+            {(data.time_slots || []).map((s: string) => <option value={s}>{s}</option>)}
+          </select>
+          <p class="ds-form__error" id="r-time-error" hidden></p>
+        </div>
+
+        <div class="ds-form__field">
+          <label for="r-guests" class="ds-form__label">{ui.form.partySize} *</label>
+          <select id="r-guests" name="guests" class="ds-form__input ds-form__select" required aria-required="true">
+            {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
+              <option value={String(n)}>{n} {n === 1 ? 'personne' : 'personnes'}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="ds-form__field">
+          <label for="r-name" class="ds-form__label">{ui.form.name} *</label>
+          <input type="text" id="r-name" name="name" class="ds-form__input" required autocomplete="name" aria-required="true" />
+          <p class="ds-form__error" id="r-name-error" hidden></p>
+        </div>
+
+        <div class="ds-form__field">
+          <label for="r-email" class="ds-form__label">{ui.form.email} *</label>
+          <input type="email" id="r-email" name="email" class="ds-form__input" required autocomplete="email" aria-required="true" />
+          <p class="ds-form__error" id="r-email-error" hidden></p>
+        </div>
+
+        <div class="ds-form__field">
+          <label for="r-phone" class="ds-form__label">{ui.form.phone}</label>
+          <input type="tel" id="r-phone" name="phone" class="ds-form__input" autocomplete="tel" />
+          <p class="ds-form__error" id="r-phone-error" hidden></p>
+        </div>
+
+        <div class="ds-form__field ds-form__field--full">
+          <label for="r-message" class="ds-form__label">{ui.form.message}</label>
+          <textarea id="r-message" name="message" class="ds-form__textarea" rows="3"></textarea>
+        </div>
+
+        <div class="ds-form__honeypot" aria-hidden="true">
+          <label for={HONEYPOT}>{ui.form.honeypot}</label>
+          <input type="text" id={HONEYPOT} name={HONEYPOT} tabindex="-1" autocomplete="off" />
+        </div>
+      </div>
+
+      <p class="ds-form__note" id="form-reserv-note">{ui.form.privacyNote}</p>
+
+      <p class="ds-form__global-error" role="alert" hidden data-form-error></p>
+
+      <div class="ds-form__submit-row">
+        <button type="submit" class="ds-btn ds-btn--primary" data-form-submit>
+          <span data-form-submit-label>{ui.form.submit || 'Envoyer'}</span>
+        </button>
+      </div>
+
+      <!-- Aucun creneau -->
+      <div class="ds-form__empty" hidden data-no-slot>
+        <Icon name="calendar" size={32} />
+        <p class="ds-form__empty-title">{ui.states?.noSlot?.title || 'Aucun creneau disponible'}</p>
+        <p class="ds-form__empty-msg">{ui.states?.noSlot?.message || ''}</p>
+        <div class="ds-form__empty-actions">
+          <button type="button" class="ds-btn ds-btn--primary" data-retry-slot>{ui.states?.noSlot?.cta1 || 'Choisir une autre date'}</button>
+          {data.phone ? (
+            <a href={`tel:${data.phone}`} class="ds-btn ds-btn--outline">{ui.states?.noSlot?.cta2 || 'Nous appeler'}</a>
+          ) : null}
+        </div>
+      </div>
+
+      <!-- Confirmation -->
+      <div class="ds-form__success" role="status" hidden data-form-success>
+        <Icon name="check" size={32} />
+        <p class="ds-form__success-title">{ui.states?.reservationOk?.title || 'Reservation confirmee !'}</p>
+        <p class="ds-form__success-msg">{(ui.states?.reservationOk?.text || '').replace('{email}', data.email || '')}</p>
+        <p class="ds-form__success-modify">{(ui.states?.reservationOk?.modify || '').replace('{phone}', data.phone || '')}</p>
+        <a href={lang === 'en' ? '/en/' : '/'} class="ds-btn ds-btn--primary">{ui.states?.reservationOk?.cta || 'Retour a l\'accueil'}</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector('[data-form="reservation"]') as HTMLFormElement | null;
+  if (form) {
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const date = form.querySelector('#r-date') as HTMLInputElement;
+      const time = form.querySelector('#r-time') as HTMLSelectElement;
+      const name = form.querySelector('#r-name') as HTMLInputElement;
+      const email = form.querySelector('#r-email') as HTMLInputElement;
+      const noSlot = form.querySelector('[data-no-slot]');
+      const success = form.querySelector('[data-form-success]');
+      // Simple validation
+      const errors = [!date.value, !time.value, !name.value, !/^\S+@\S+$/.test(email.value)].filter(Boolean).length;
+      if (errors > 0) { return; }
+      // Simulate creneau plein si date aujourd'hui ou demain
+      const today = new Date().toISOString().slice(0, 10);
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      if (date.value === today || date.value === tomorrow) {
+        noSlot.hidden = false;
+        form.querySelectorAll('input, select, textarea, button').forEach((el) => { (el as HTMLElement).disabled = true; });
+      } else {
+        success.hidden = false;
+        form.hidden = true;
+      }
+    });
+    form.querySelector('[data-retry-slot]')?.addEventListener('click', () => {
+      const noSlot = form.querySelector('[data-no-slot]');
+      noSlot.hidden = true;
+      form.querySelectorAll('input, select, textarea, button').forEach((el) => { (el as HTMLElement).disabled = false; });
+    });
+  }
+</script>
+
+<style>
+  .ds-form__grid--reservation { grid-template-columns: 1fr 1fr; }
+  .ds-form__select { appearance: auto; }
+  .ds-form__empty, .ds-form__success { text-align: center; padding: var(--space-8) 0; }
+  .ds-form__empty-title, .ds-form__success-title { font-family: var(--font-heading); font-size: var(--text-2xl); margin: var(--space-4) 0 var(--space-2); }
+  .ds-form__empty-msg, .ds-form__success-msg, .ds-form__success-modify { color: var(--color-gray-600); margin: 0 0 var(--space-2); }
+  .ds-form__empty-actions, .ds-form__success > .ds-btn { margin-top: var(--space-4); }
+  @media (max-width: 767px) { .ds-form__grid--reservation { grid-template-columns: 1fr; } }
+</style>

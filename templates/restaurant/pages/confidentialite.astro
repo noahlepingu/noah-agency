@@ -1,0 +1,19 @@
+---
+const lang = "$$LANG$$";
+import '$$THEME_CSS_PATH$$';
+import LegalLayout from '@layouts/LegalLayout.astro';
+import data from '$$DATA_PATH$$';
+import uiStrings from '@translations/ui.json';
+import { buildCanonical } from '@utils/seo';
+
+const ui = uiStrings[lang] || uiStrings.fr;
+const texts = data.texts?.confidentialite || {};
+const title = texts.title || 'Politique de confidentialite';
+const canonical = buildCanonical(data.site_url || 'https://example.com', '/confidentialite');
+---
+
+<LegalLayout lang={lang} title={title} description={title} canonical={canonical}
+  ui={ui} data={data}>
+  <h1>{title}</h1>
+  <p>{texts.content || ''}</p>
+</LegalLayout>

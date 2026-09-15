@@ -1,0 +1,95 @@
+---
+/**
+ * BaseLayout.astro — Layout de base (TECHNICAL_ARCHITECTURE §6)
+ * Head SEO complet + Header + Footer + CookieBanner + BackToTop.
+ * CSS : design system importe ici, theme.css importe par les pages.
+ */
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/fonts.css';
+import '../styles/utilities.css';
+
+import Header from '@components/Header.astro';
+import Footer from '@components/Footer.astro';
+import CookieBanner from '@components/CookieBanner.astro';
+import BackToTop from '@components/BackToTop.astro';
+
+interface Props {
+  lang: 'fr' | 'en';
+  title: string;
+  description: string;
+  canonical: string;
+  og?: any;
+  twitter?: any;
+  jsonLd?: any[];
+  hreflang?: { hreflang: string; href: string }[];
+  robots?: string;
+  ui: any;
+  data: any;
+  langSwitchHref?: string;
+}
+
+const {
+  lang = 'fr',
+  title,
+  description,
+  canonical,
+  og = {},
+  twitter = {},
+  jsonLd = [],
+  hreflang = [],
+  robots = 'index,follow',
+  ui,
+  data,
+  langSwitchHref,
+} = Astro.props;
+
+const siteName = data.business?.name || '';
+
+const headerData = data.components?.header || {
+  logo_text: siteName,
+  nav: ui.nav ? Object.entries(ui.nav).map(([k, v]: [string, any]) => ({
+    label: v, href: k === 'index' ? '/' : `/${k}`
+  })) : [],
+  cta: null,
+};
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={og['og:title'] || title} />
+    <meta property="og:description" content={og['og:description'] || description} />
+    {og['og:image'] ? <meta property="og:image" content={og['og:image']} /> : null}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={og['og:locale'] || (lang === 'en' ? 'en_US' : 'fr_FR')} />
+    <meta property="og:site_name" content={og['og:site_name'] || siteName} />
+    <meta name="twitter:card" content={twitter['twitter:card'] || 'summary_large_image'} />
+    <meta name="twitter:title" content={twitter['twitter:title'] || title} />
+    <meta name="twitter:description" content={twitter['twitter:description'] || description} />
+    {twitter['twitter:image'] ? <meta name="twitter:image" content={twitter['twitter:image']} /> : null}
+    {hreflang.map((h) => <link rel="alternate" hreflang={h.hreflang} href={h.href} />)}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" />
+    {jsonLd.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </head>
+  <body>
+    <Header lang={lang} ui={ui} data={headerData} langSwitchHref={langSwitchHref || ''} translatedRoutes={data.translated_routes || []} />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer lang={lang} ui={ui} data={data.components?.footer || {}} translatedRoutes={data.translated_routes || []} />
+    <CookieBanner ui={ui} data={data.third_party || {}} lang={lang} />
+    <BackToTop ui={ui} />
+  </body>
+</html>
