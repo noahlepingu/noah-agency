@@ -85,6 +85,39 @@ section 23 : design, structure, direction artistique).
 19. **Icons** : quelle librairie ? (Heroicons, Lucide, Phosphor — gratuites)
 20. **Animation** : transitions simples uniquement ou animations poussees ?
 
+## Decisions Phase 0 — Legal / Compliance (2026-09-15)
+
+Statut : **PROPOSEES** — a valider par Noah en **Gate 1** (conformite business,
+TVA, CLIENT_TYPE, documents contractuels).
+
+| ID | Decision | Porteur | Detail | A valider par Noah ? |
+| -- | -------- | ------- | ------ | --------------------- |
+| D-LG-01 | **Statut juridique recommande : EI** (Entreprise Individuelle) | Legal | Demarche via le guichet des formalites des entreprises ; code APE a determiner lors de l'immatriculation (6201Z, 6202A ou 7022A selon l'activite declaree) ; assurance RC Pro a evaluer ; compte bancaire dedie recommande des le depart | OUI (decision formelle) |
+| D-LG-02 | **Configuration TVA : franchise en base recommandee** | Legal | Seuils 2026 : 37 500 EUR (franchise) / 41 250 EUR (tolerance) pour prestations de services ; jamais hardcode TVA=0% sans verification du statut reel ; mentions sur factures : « TVA non applicable, article 293 B du CGI » ; a reverifier regulierement | OUI (selon CA previsionnel reel) |
+| D-LG-03 | **CLIENT_TYPE : B2B recommande** (professionnels acheteurs) | Legal | B2C possible et documente ; determination avant tout document commercial ; consequence majeure : retractation 14 jours B2C, mediation obligatoire, CGV dediees | OUI (decision formelle) |
+| D-LG-04 | **Structure des documents : BROUILLONS avec placeholders** | Legal | Tous les documents (devis, contrat, CGV, facture) sont des brouillons valides par Noah ; champs placeholder visibles [SIRET], [Adresse], etc. ; verification professionnelle recommandee avant premiere utilisation commerciale | — (principe transversal) |
+| D-LG-05 | **Cookies : pas de traceur non necessaire par defaut** | Legal | Le bandeau cookies n'apparait QUE si des tiers le necessitent ; 3 options (Accepter/Refuser/Personnaliser) ; refus aussi facile que l'acceptation (CNIL) ; consentement avant chargement des scripts tiers | — (principe transversal) |
+| D-LG-06 | **PRIVACY_REQUIREMENTS par projet** | Legal | Fiche RGPD remplie pour CHAQUE projet client ; donnees collectees, finalite, base legale, destinataires, duree, sous-traitants, transferts hors UE, droits des personnes | — (processus transversal) |
+| D-LG-07 | **Pages legales obligatoires** | Legal | Mentions legales (loi 2004-575) + politique de confidentialite (RGPD) + plan du site ; gestion cookies si traceurs tiers ; integrées dans le footer et le sitemap de chaque site | — (exigence legale) |
+| D-LG-08 | **Facturation : sequence numerotation coherente** | Legal | Numerotation des factures sequentielle et ininterrompue ; mentions obligatoires selon CLIENT_TYPE ; TVA configurable (franchise ou assujetti) | — (processus transversal) |
+
+## Points ouverts — arbitrage Noah (Gate 1) — Legal
+
+21. **Statut juridique reel** (D-LG-01) : EI confirmee ? Autre forme ? A determiner
+    avant toute immatriculation.
+22. **CA previsionnel reel** (D-LG-02) : seuil TVA (franchise en base ou assujetti).
+    A determiner avant choix du regime de TVA.
+23. **CLIENT_TYPE formel** (D-LG-03) : B2B prioritaire confirme ? Politique du cas
+    B2C (retractation, mediation).
+24. **Donnees d'identite de Noah** (D-LG-04) : nom complet, adresse, SIREN/SIRET,
+    email, telephone. A fournir avant production des templates contractuels.
+25. **Verification professionnelle** (D-LG-04) : avocat ou expert-comptable pour
+    les CGV/contrats B2C ? Fortement recommandee avant premiere utilisation.
+26. **Service de mediateur** (B2C) : identite et coordonnees du mediateur de la
+    consommation si activite B2C avec CA >= 5 000 EUR.
+27. **Hebergeur du systeme** : identite et localisation de l'hebergeur pour les
+    mentions legales des sites produits.
+
 ## Decisions a venir (Phase 0)
 
 | Point | Attendu |
@@ -99,3 +132,10 @@ section 23 : design, structure, direction artistique).
 | Reservation | A definir (formulaire / service externe) — selon premier client |
 | **Design system** | **Familles de polices, palettes, composants, templates (Gate 2)** |
 | **Architecture info** | **Sitemap, navigation, parcours (Gate 2)** |
+| **Statut juridique** | **EI ou autre forme ? Immatriculation, code APE (D-LG-01)** |
+| **CA previsionnel** | **Seuil TVA, regime fiscal (D-LG-02)** |
+| **CLIENT_TYPE formel** | **B2B/B2C, politique retractation (D-LG-03)** |
+| **Donnees identite Noah** | **Nom, adresse, SIREN/SIRET (D-LG-04)** |
+| **Verification CGV** | **Professionnel pour premiere utilisation (D-LG-04)** |
+| **Mediateur (B2C)** | **Identite, coordonnees si CA >= 5 000 EUR** |
+| **Hebergeur systeme** | **Nom, localisation pour mentions legales** |
