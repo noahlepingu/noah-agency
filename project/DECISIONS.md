@@ -118,6 +118,42 @@ TVA, CLIENT_TYPE, documents contractuels).
 27. **Hebergeur du systeme** : identite et localisation de l'hebergeur pour les
     mentions legales des sites produits.
 
+## Decisions Phase 0 — Content / SEO (2026-09-15)
+
+Statut : **PROPOSEES** — a valider par Noah en **Gate 1/2** (schema donnees
+client, systeme SEO, bibliotheque de contenus).
+
+| ID | Decision | Porteur | Detail | A valider par Noah ? |
+| -- | -------- | ------- | ------ | --------------------- |
+| D-CS-01 | **Fichier client_data.yaml unique** — un seul fichier YAML par projet client contenant les 13 sections (business, branding, opening_hours, socials, seo, services, contact, legal, reviews, menu, reservation, template, maintenance). Format YAML pour lisibilite et commentaires. | Content/SEO | CLIENT_DATA_SCHEMA.md | OUI (format et structure) |
+| D-CS-02 | **Niveaux de champs REQUIRED/SHOULD/COULD** — les champs REQUIRED bloquent la generation du site si vides. Les SHOULD generent une alerte. Les COULD sont informatifs. Detection automatique des manques avec rapport structure. | Content/SEO | CLIENT_DATA_SCHEMA.md section 3 | — (principe transversal) |
+| D-CS-03 | **Donnees structurees sectorielles** — Restaurant utilise le schema `Restaurant` (avec Menu/MenuItem). Les 4 autres templates utilisent `LocalBusiness` avec extensions (Service, Person, NGO). Template JSON-LD fourni pour chaque cas. | Content/SEO | SEO_SYSTEM.md section 3 | OUI (types schema.org) |
+| D-CS-04 | **SEO local integre des la conception** — chaque site embarque : données structurees, metadata optimisees, Open Graph, sitemap.xml, robots.txt, FAQPage schema, BreadcrumbList. Le SEO n'est jamais ajoute en fin de projet. | Content/SEO | SEO_SYSTEM.md | — (principe transversal) |
+| D-CS-05 | **Pattern de metadata par page** — title 30-60 car. (nom + activite + ville), meta description 120-160 car. (ville + mot-cle + CTA), canonical systématique, Open Graph (og:title, og:description, og:image 1200x630). | Content/SEO | SEO_SYSTEM.md sections 4-5 | OUI (patterns) |
+| D-CS-06 | **Avis reels uniquement** — pas de fabrication d'avis. Les avis sont tires du client_data.yaml (source Google/TripAdvisor/custom). AggregateRating incluse dans les donnees structurees uniquement si avis reels verifies. | Content/SEO | SEO_SYSTEM.md section 8 | — (regle transversale) |
+| D-CS-07 | **Bibliotheque de contenus template** — textes reutilisables par section (hero, presentation, services, CTA, FAQ, etats speciaux) avec placeholders [Nom], [Ville], [Activite]. Templates par template secteur. Pas de contenu definitif sans validation Noah. | Content/SEO | CONTENT_LIBRARY.md | OUI (templates de texte) |
+| D-CS-08 | **FAQ generique par secteur** — 5-7 questions pre-remplies par template (restaurant: reservation, horaires, parking ; artisan: devis, delais, zone ; commerce: livraison, paiement, promos ; etc.). Personnalisables. | Content/SEO | CONTENT_LIBRARY.md section 5 | OUI (questions par template) |
+| D-CS-09 | **Etats speciaux avec textes** — 404, 500, aucun creneau, erreur formulaire (par champ + globale), confirmation envoi, confirmation reservation, cookie banner, page en construction. Textes coherents avec UX.md section 4. | Content/SEO | CONTENT_LIBRARY.md section 4, CONTENT_GUIDELINES.md | — (aligne sur UX) |
+| D-CS-10 | **Content Guidelines** — ton par template secteur, longueur des textes par composant, regles CTA, consistance typographique, checklist de validation avant livraison (contenu, SEO, accessibilite, CTA, legal, images, performance). | Content/SEO | CONTENT_GUIDELINES.md | OUI (ton, limites, checklist) |
+
+## Points ouverts — arbitrage Noah (Gate 1/2) — Content / SEO
+
+28. **Format du fichier client** : YAML confirme ? Ou JSON (plus technique) ?
+29. **Map provider** : OpenStreetMap (pas de cookie) ou Google Maps (cookie requis) ?
+    Impact sur les donnees structurees (hasMap) et les cookies (D-LG-05).
+30. **Google Analytics** : integrer GA4 par defaut (consentement requis) ou
+    outil sans cookie (Plausible, Umami) ? Decision a trancher.
+31. **Multilingue EN** : templates anglais en parallele ou reporte au 1er client ?
+32. **FAQ dynamique** : editable par le client (CMS) ou figee dans le code ?
+33. **Blog** : hors perimetre v1. Si activation future : statique (11ty/hugo)
+    ou integre au template ?
+34. **Images placeholder** : systeme de placeholders visuels (lorem picsum)
+    ou images sectorielles reelles ?
+35. **Tono de voix** : guide de style par template secteur (chaleureux/pro/
+    moderne/engage) ou ton unique adapte au brief client ?
+36. **Keywords research** : outil recommande pour la recherche de mots-cles
+    locaux ? (Google Keyword Planner, Ubersuggest, AnswerThePublic)
+
 ## Decisions a venir (Phase 0)
 
 | Point | Attendu |
@@ -139,3 +175,6 @@ TVA, CLIENT_TYPE, documents contractuels).
 | **Verification CGV** | **Professionnel pour premiere utilisation (D-LG-04)** |
 | **Mediateur (B2C)** | **Identite, coordonnees si CA >= 5 000 EUR** |
 | **Hebergeur systeme** | **Nom, localisation pour mentions legales** |
+| **Fichier client** | **Format YAML/JSON, structure du client_data.yaml (D-CS-01)** |
+| **Map provider** | **OpenStreetMap ou Google Maps (D-CS-03, cookies D-LG-05)** |
+| **Analytics** | **GA4 / Plausible / Umami / aucun (cookies, consentement)** |

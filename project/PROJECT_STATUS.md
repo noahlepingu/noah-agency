@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (livrables Legal/Compliance).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (livrables Content/SEO).
 
 ## Vue d'ensemble
 
@@ -25,15 +25,15 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-15 (livrables L
 | 2026-09-15 | Phase 0 — Livrables Product Manager | PM | FAIT (PROPOSE) | REQUIREMENTS, USER_STORIES, SCOPE, ROADMAP, BUSINESS_PROCESS, KPIS livres dans product/ ; decisions D-PM-01 a 10 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1) sur : perimetre, prix packages, CLIENT_TYPE, cibles KPI, template flagship, budget.** |
 | 2026-09-15 | Phase 0 — Livrables UX Designer | UX | FAIT (PROPOSE) | SITEMAP_MASTER, UX, DESIGN_SYSTEM_SPECS, TEMPLATE_VISION livres dans design/ux/ ; decisions D-UX-01 a 14 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1/2) sur : sitemap, navigation, mobile UX, etats speciaux, accessibilite, design system (tokens, polices, palettes, composants), templates par secteur.** |
 | 2026-09-15 | Phase 0 — Livrables Legal/Compliance | Legal | FAIT (PROPOSE) | LEGAL_BUSINESS, CONTRACT_TEMPLATES, PRIVACY_REQUIREMENTS_TEMPLATE, LEGAL_SITE_TEMPLATES livres dans content/legal/ ; decisions D-LG-01 a 08 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1) sur : statut juridique (EI), CA previsionnel / regime TVA, CLIENT_TYPE formel, donnees d'identite, verification professionnelle des CGV.** |
+| 2026-09-15 | Phase 0 — Livrables Content/SEO | Content/SEO | FAIT (PROPOSE) | CLIENT_DATA_SCHEMA, SEO_SYSTEM, CONTENT_LIBRARY, CONTENT_GUIDELINES livres dans content/ ; decisions D-CS-01 a 10 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1/2) sur : format fichier client (YAML), structure du schema, types schema.org, patterns metadata, FAQ sectorielle, ton/limites textes, map provider, analytics.** |
 
 ## Prochaine etape
 
-**Phase 0 — Discovery (suite)** : les livrables PM (product/), UX
-(design/ux/) et Legal (content/legal/) sont poses. **En attente de la
-validation Noah (Gate 1) sur les decisions D-PM-01 a 10, D-UX-01 a 14 ET
-D-LG-01 a 08** (DECISIONS.md). Declencher en parallele : content-seo (fichier de
-donnees client + bibliotheque de contenus + SEO local). Apres arbitrage Noah :
-J0 -> Phase 1 (Design & Architecture).
+**Phase 0 — Discovery (terminee pour PM, UX, Legal, Content/SEO)** : les 4
+ensembles de livrables sont poses (product/, design/ux/, content/legal/,
+content/). **En attente de la validation Noah (Gate 1) sur les decisions
+D-PM-01 a 10, D-UX-01 a 14, D-LG-01 a 08 ET D-CS-01 a 10** (DECISIONS.md).
+Apres arbitrage Noah : J0 -> Phase 1 (Design & Architecture).
 
 **Dependances UX -> autres agents :**
 - **content-seo** : contenus des pages (textes, images, metadata, FAQ, SEO local).
@@ -48,15 +48,24 @@ J0 -> Phase 1 (Design & Architecture).
 - **security-engineer** : evaluation cookies/traceurs avant integration des tiers (analytics, maps, video).
 - **solution-architect / devops-engineer** : identite et localisation de l'hebergeur et des sous-traitants pour les pages legales et le registre RGPD.
 
+**Dependances Content/SEO -> autres agents :**
+- **UX Designer** : coherence du schema de donnees client avec les tokens du design system (DESIGN_SYSTEM_SPECS.md section 7), nomenclature des sections (SITEMAP_MASTER.md), etats speciaux (UX.md section 4).
+- **Solution Architect** : faisabilite technique du mapping placeholders -> composants, sitemap.xml dynamique, performance, choix map provider (impact cookies).
+- **Frontend Engineer** : integration des donnees structurees JSON-LD dans le HTML, remplacement des placeholders, generation des balises meta/OG.
+- **Legal / Compliance** : contenu des mentions legales et de la politique de confidentialite (templates genriques a completer).
+- **Noah (Gate 1/2)** : validation D-CS-01 a 10 — format fichier client, schema donnees, types schema.org, patterns metadata, FAQ sectorielle, ton/limites textes, checklist de validation.
+
 ## Dependances
 
 - Aucune phase ne demarre avant la validation de la Phase 0 (jalon J0) — y compris
-  **Gate 1 Noah** sur les decisions D-PM-01 a 10 ET **Gate 1/2 Noah** sur les
-  decisions D-UX-01 a 14 (DECISIONS.md).
+  **Gate 1 Noah** sur les decisions D-PM-01 a 10, D-LG-01 a 08 ET **Gate 1/2 Noah**
+  sur les decisions D-UX-01 a 14 ET D-CS-01 a 10 (DECISIONS.md).
 - Les decisions B2B/B2C et TVA (legal-compliance) conditionnent les templates
   contractuels.
 - Les decisions UX (familles de polices, palettes, map provider, carousel)
   conditionnent l'implementation frontend (Phase 2).
+- Les decisions Content/SEO (format fichier client, map provider, analytics)
+  conditionnent l'implementation technique (Phase 2).
 - Aucune donnee client reelle n'existe encore : tout sera identifie comme manque.
 - Dependances PM vers les autres agents : legal-compliance (CLIENT_TYPE, TVA,
   templates contractuels, PRIVACY_REQUIREMENTS) ; content-seo (fichier de donnees
@@ -71,3 +80,7 @@ J0 -> Phase 1 (Design & Architecture).
   donnees client) ; security-engineer (evaluation cookies) ; devops-engineer
   (identite hebergeur, sous-traitants) ; Noah (validation des documents avant
   toute utilisation commerciale).
+- Dependances Content/SEO vers les autres agents : UX (design system tokens,
+  sitemap, etats speciaux) ; architect (faisabilite placeholders, map,
+  performance) ; frontend (integration JSON-LD, meta, placeholders) ;
+  legal (contenu pages legales) ; Noah (validation D-CS-01 a 10).
