@@ -5,17 +5,19 @@ import PageLayout from '@layouts/PageLayout.astro';
 import Testimonials from '@components/Testimonials.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
-import { buildTitle, buildCanonical, buildHreflang } from '@utils/seo';
+import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
+import { getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const texts = data.texts?.temoignages || {};
+const texts = getPageTexts(data, lang, 'temoignages');
 const siteUrl = data.site_url || 'https://example.com';
-const title = buildTitle({ title: texts.title || 'Avis clients' }, data);
+const title = buildTitle({ title: data.seo_titles?.['/temoignages'] || texts.title || 'Avis clients' }, data);
+const description = buildDescription({ description: data.seo_descriptions?.['/temoignages'] || texts.subtitle || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/temoignages');
 const hreflang = buildHreflang(siteUrl, '/temoignages');
 ---
 
-<PageLayout lang={lang} title={title} description={title} canonical={canonical}
+<PageLayout lang={lang} title={title} description={description} canonical={canonical}
   hreflang={hreflang} ui={ui} data={data}
   heroTitle={texts.title}
   breadcrumb={[

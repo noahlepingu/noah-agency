@@ -63,13 +63,13 @@ const closedJson = JSON.stringify(data.closed_periods || []);
       <div class="ds-form__grid ds-form__grid--reservation">
         <div class="ds-form__field">
           <label for="r-date" class="ds-form__label">{ui.form.date} *</label>
-          <input type="date" id="r-date" name="date" class="ds-form__input" required min={new Date().toISOString().slice(0, 10)} aria-required="true" />
+          <input type="date" id="r-date" name="date" class="ds-form__input" required aria-required="true" aria-describedby="r-date-error" />
           <p class="ds-form__error" id="r-date-error" hidden></p>
         </div>
 
         <div class="ds-form__field">
           <label for="r-time" class="ds-form__label">{ui.form.time} *</label>
-          <select id="r-time" name="time" class="ds-form__input ds-form__select" required aria-required="true" data-time-select>
+          <select id="r-time" name="time" class="ds-form__input ds-form__select" required aria-required="true" aria-describedby="r-time-error" data-time-select>
             <option value="">{ui.form.timeError}</option>
             {(data.time_slots || []).map((s: string) => <option value={s}>{s}</option>)}
           </select>
@@ -78,28 +78,29 @@ const closedJson = JSON.stringify(data.closed_periods || []);
 
         <div class="ds-form__field">
           <label for="r-guests" class="ds-form__label">{ui.form.partySize} *</label>
-          <select id="r-guests" name="guests" class="ds-form__input ds-form__select" required aria-required="true">
+          <select id="r-guests" name="guests" class="ds-form__input ds-form__select" required aria-required="true" aria-describedby="r-guests-error">
             {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
-              <option value={String(n)}>{n} {n === 1 ? 'personne' : 'personnes'}</option>
+              <option value={String(n)}>{n} {n === 1 ? (ui.reservation?.personOne || 'personne') : (ui.reservation?.personMany || 'personnes')}</option>
             ))}
           </select>
+          <p class="ds-form__error" id="r-guests-error" hidden></p>
         </div>
 
         <div class="ds-form__field">
           <label for="r-name" class="ds-form__label">{ui.form.name} *</label>
-          <input type="text" id="r-name" name="name" class="ds-form__input" required autocomplete="name" aria-required="true" />
+          <input type="text" id="r-name" name="name" class="ds-form__input" required autocomplete="name" aria-required="true" aria-describedby="r-name-error" />
           <p class="ds-form__error" id="r-name-error" hidden></p>
         </div>
 
         <div class="ds-form__field">
           <label for="r-email" class="ds-form__label">{ui.form.email} *</label>
-          <input type="email" id="r-email" name="email" class="ds-form__input" required autocomplete="email" aria-required="true" />
+          <input type="email" id="r-email" name="email" class="ds-form__input" required autocomplete="email" aria-required="true" aria-describedby="r-email-error" />
           <p class="ds-form__error" id="r-email-error" hidden></p>
         </div>
 
         <div class="ds-form__field">
           <label for="r-phone" class="ds-form__label">{ui.form.phone}</label>
-          <input type="tel" id="r-phone" name="phone" class="ds-form__input" autocomplete="tel" />
+          <input type="tel" id="r-phone" name="phone" class="ds-form__input" autocomplete="tel" aria-describedby="r-phone-error" />
           <p class="ds-form__error" id="r-phone-error" hidden></p>
         </div>
 
@@ -143,7 +144,7 @@ const closedJson = JSON.stringify(data.closed_periods || []);
         <p class="ds-form__success-title">{ui.states?.reservationOk?.title || 'Reservation confirmee !'}</p>
         <p class="ds-form__success-msg">{(ui.states?.reservationOk?.text || '').replace('{email}', data.email || '')}</p>
         <p class="ds-form__success-modify">{(ui.states?.reservationOk?.modify || '').replace('{phone}', data.phone || '')}</p>
-        <a href={lang === 'en' ? '/en/' : '/'} class="ds-btn ds-btn--primary">{ui.states?.reservationOk?.cta || 'Retour a l\'accueil'}</a>
+        <a href={lang === 'en' ? '/en/' : '/'} class="ds-btn ds-btn--primary">{ui.reservation?.backHome || 'Retour a l\'accueil'}</a>
       </div>
     </form>
   </div>
@@ -191,6 +192,12 @@ const closedJson = JSON.stringify(data.closed_periods || []);
         }
       };
 
+      // Date minimale calculee cote client (heure locale) : jamais fige au build.
+      date.min = (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })();
+
       const refreshSlots = () => {
         const cfg = { schedule, closedPeriods, slots: staticSlots };
         const result = date.value ? getSlotsForDate(date.value, cfg) : { slots: staticSlots, closed: false, reason: null };
@@ -237,36 +244,39 @@ const closedJson = JSON.stringify(data.closed_periods || []);
 
         // Validation des champs (utils/forms.js)
         let count = 0;
+        let firstInvalid: HTMLInputElement | HTMLSelectElement | null = null;
+        const mark = (field: HTMLInputElement | HTMLSelectElement, ok: boolean, msg: string) => {
+          setFieldError(field, ok ? null : msg);
+          if (!ok) {
+            count++;
+            if (!firstInvalid) firstInvalid = field;
+          }
+        };
         const dateOk = !!date.value;
-        setFieldError(date, dateOk ? null : (uiData.dateError || 'Veuillez choisir une date.'));
-        if (!dateOk) count++;
+        mark(date, dateOk, uiData.dateError || 'Veuillez choisir une date.');
 
         const { slots: daySlots } = date.value
           ? getSlotsForDate(date.value, { schedule, closedPeriods, slots: staticSlots })
           : { slots: [] };
         const timeOk = !!time.value && daySlots.includes(time.value);
-        setFieldError(time, timeOk ? null : (uiData.timeError || 'Veuillez choisir un creneau.'));
-        if (!timeOk) count++;
+        mark(time, timeOk, uiData.timeError || 'Veuillez choisir un creneau.');
 
         const guestsOk = !!guests.value;
-        setFieldError(guests, guestsOk ? null : (uiData.partySizeError || 'Veuillez indiquer le nombre de personnes.'));
-        if (!guestsOk) count++;
+        mark(guests, guestsOk, uiData.partySizeError || 'Veuillez indiquer le nombre de personnes.');
 
         const nameOk = name.value.trim().length >= 2;
-        setFieldError(name, nameOk ? null : (uiData.nameError || 'Nom obligatoire'));
-        if (!nameOk) count++;
+        mark(name, nameOk, uiData.nameError || 'Nom obligatoire');
 
         const emailOk = isValidEmail(email.value);
-        setFieldError(email, emailOk ? null : (uiData.emailError || 'Email invalide'));
-        if (!emailOk) count++;
+        mark(email, emailOk, uiData.emailError || 'Email invalide');
 
         const phoneOk = !phone.value || isValidPhoneFr(phone.value);
-        setFieldError(phone, phoneOk ? null : (uiData.phoneError || 'Telephone invalide'));
-        if (!phoneOk) count++;
+        mark(phone, phoneOk, uiData.phoneError || 'Telephone invalide');
 
         if (count > 0) {
           errorGlobal!.textContent = (uiData.globalError || '').replace('{n}', String(count));
           errorGlobal!.hidden = false;
+          firstInvalid?.focus();
           return;
         }
 

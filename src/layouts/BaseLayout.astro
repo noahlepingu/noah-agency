@@ -76,11 +76,8 @@ const headerData = data.components?.header || {
     <meta name="twitter:description" content={twitter['twitter:description'] || description} />
     {twitter['twitter:image'] ? <meta name="twitter:image" content={twitter['twitter:image']} /> : null}
     {hreflang.map((h) => <link rel="alternate" hreflang={h.hreflang} href={h.href} />)}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" />
     {jsonLd.map((schema) => (
-      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+      <script type="application/ld+json" set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />
     ))}
   </head>
   <body>

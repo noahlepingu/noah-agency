@@ -3,19 +3,7 @@
  * Reference : CLIENT_DATA_SCHEMA.md §3 (opening_hours.schedule, closed_periods),
  *             UX.md §4.12 (OpeningHours), DESIGN_SYSTEM_SPECS §5.12
  */
-
-/** Jour FR vers schema.org dayOfWeek */
-const DAY_TO_SCHEMA = {
-  Lundi: 'Monday',
-  Mardi: 'Tuesday',
-  Mercredi: 'Wednesday',
-  Jeudi: 'Thursday',
-  Vendredi: 'Friday',
-  Samedi: 'Saturday',
-  Dimanche: 'Sunday',
-};
-
-const DAY_ORDER = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+import { FR_TO_SCHEMA, DAY_ORDER_FR, DAY_NAMES } from './days.mjs';
 
 /**
  * Formatte le tableau de schedule en texte synthetique (HTML ou texte brut).
@@ -38,8 +26,8 @@ export function formatSchedule(schedule) {
   const openDays = Object.keys(byDay);
   if (openDays.length === 0) return '';
 
-  const firstIdx = DAY_ORDER.indexOf(openDays[0]);
-  const lastIdx = DAY_ORDER.indexOf(openDays[openDays.length - 1]);
+  const firstIdx = DAY_ORDER_FR.indexOf(openDays[0]);
+  const lastIdx = DAY_ORDER_FR.indexOf(openDays[openDays.length - 1]);
   const rangeLabel =
     firstIdx >= 0 && lastIdx >= firstIdx && lastIdx - firstIdx + 1 === openDays.length
       ? `du ${openDays[0]} au ${openDays[lastIdx]}`
@@ -61,16 +49,7 @@ export function getTodayStatus(schedule, closedPeriods) {
   }
 
   const now = new Date();
-  const dayNames = [
-    'Dimanche',
-    'Lundi',
-    'Mardi',
-    'Mercredi',
-    'Jeudi',
-    'Vendredi',
-    'Samedi',
-  ];
-  const todayName = dayNames[now.getDay()];
+  const todayName = DAY_NAMES[now.getDay()];
   const todaySchedule = schedule.filter((s) => s.day === todayName && !s.closed);
 
   if (todaySchedule.length === 0) {
@@ -116,25 +95,30 @@ export function getTodayStatus(schedule, closedPeriods) {
 
 /**
  * Convertit le schedule en format OpeningHoursSpecification schema.org.
+ * Source unique du groupement horaires schema.org (CODE_REVIEW m2 :
+ * l'ancien toOpeningHoursSchema de hours.js et buildOpeningHoursSchema de
+ * schema.js etaient deux copies divergentes du meme objet).
  */
-export function toOpeningHoursSchema(schedule) {
+export function buildOpeningHoursSchema(schedule) {
   if (!schedule || schedule.length === 0) return [];
 
-  // Regrouper par jour (mêmes horaires -> même jour)
+  // Regrouper par creneau identique (open-close) -> jour(s) associe(s)
   const groups = {};
   for (const entry of schedule) {
-    if (entry.closed) continue;
-    const key = `${entry.open || ''}-${entry.close || ''}`;
+    if (entry.closed || !entry.open || !entry.close) continue;
+    const key = `${entry.open}-${entry.close}`;
     if (!groups[key]) groups[key] = { open: entry.open, close: entry.close, days: [] };
-    groups[key].days.push(entry.day);
+    groups[key].days.push(FR_TO_SCHEMA[entry.day] || entry.day);
   }
 
-  return Object.values(groups).map((g) => ({
-    '@type': 'OpeningHoursSpecification',
-    dayOfWeek: g.days.map((d) => DAY_TO_SCHEMA[d]).filter(Boolean),
-    opens: g.open,
-    closes: g.close,
-  }));
+  return Object.values(groups)
+    .filter((g) => g.days.length > 0)
+    .map((g) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: g.days,
+      opens: g.open,
+      closes: g.close,
+    }));
 }
 
 /**
@@ -144,8 +128,7 @@ export function isDayOpen(dateStr, schedule, closedPeriods) {
   if (!schedule || schedule.length === 0) return false;
 
   const date = new Date(dateStr + 'T00:00:00');
-  const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  const dayName = dayNames[date.getDay()];
+  const dayName = DAY_NAMES[date.getDay()];
 
   // Vérifier les fermetures exceptionnelles
   if (closedPeriods && closedPeriods.length > 0) {

@@ -6,6 +6,7 @@
  */
 import SocialLinks from './SocialLinks.astro';
 import Icon from './Icon.astro';
+import { localizePath } from '@utils/i18n';
 
 interface Props {
   lang: 'fr' | 'en';
@@ -18,10 +19,6 @@ const { lang, ui, data, translatedRoutes = [] } = Astro.props;
 const legal = data.legal || [];
 
 const hoursText = data.hours_list || '';
-const localize = (s: string) => {
-  if (lang !== 'en') return s;
-  return translatedRoutes.includes(s) ? `/en${s}` : s;
-};
 ---
 
 <footer class="ds-footer">
@@ -59,7 +56,7 @@ const localize = (s: string) => {
       <nav class="ds-footer__legal" aria-label={ui.footer.legalTitle}>
         <ul class="ds-footer__legal-list">
           {legal.map((l: any) => (
-            <li><a class="ds-footer__link ds-footer__legal-link" href={localize(l.href)}>{l.label}</a></li>
+            <li><a class="ds-footer__link ds-footer__legal-link" href={localizePath(l.href, lang, translatedRoutes)}>{l.label}</a></li>
           ))}
         </ul>
       </nav>

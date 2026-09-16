@@ -9,6 +9,8 @@ l'agent qui la porte, puis validee par le Tech Lead / PM quand requis.
 | Date | Decision | Porteur | Detail |
 | ---- | -------- | ------- | ------ |
 | 2026-09-15 | Initialisation du projet noah-agency | Tech Lead | Nouveau systeme de production de sites web (cahier des charges dedie). L'ancien projet restaurant (thrash/) est abandonne. Equipe de 14 agents conforme aux AGENT 01-14. |
+| 2026-09-16 | **ADR-006 appliquee : surcharge des tokens de marque par le theme client garantie via `@layer`** | Frontend Engineer | `src/styles/tokens.css` : les tokens de marque (couleurs + polices) sont enfermes dans `@layer ds-brand`. En cascade CSS, les styles non layeres (theme.css genere par client) gagnent toujours sur les styles layeres, quel que soit l'ordre de chargement dans le head genere (le theme inline d'Astro pouvait preceder le bundle tokens.css et se faire ecraser). Les valeurs flagship restent des fallbacks. Verifie : build exemple, valeurs effectives = theme client (M6 Phase 6). cf. `project/docs/PHASE6_CORRECTIONS.md` |
+| 2026-09-16 | **ADR-002 consolidee : `src/sites/` gitignore conforme** | Frontend Engineer | Corrige la Phase 6 : generate puis build dans le pipeline valider->generer->build ; `src/translations/fr.json` et `en.json` supprimes (le seul fichier de traduction est `ui.json` avec fr+en) ; SEO `seo_titles`/`seo_descriptions` generes dans `data.json` depuis les patrons `template.yaml` (m6). |
 
 ## Decisions Phase 0 — Product Manager (2026-09-15)
 
@@ -503,3 +505,29 @@ aucune ne remet en cause l'architecture (ADR-001..008). Critere cible : WCAG 2.2
 61. **Mention Google Fonts** (PO-A11YPERF-04 = legal) : tant que le CDN Google
     est actif, mentionner le service tiers (adresse IP transmise) dans la
     politique de confidentialite ; le self-host (D-PERF-01) supprime ce besoin.
+
+## Points ouverts — Phase 6 (Corrections)
+
+62. **Pages legales `description={title}`** (PO-P6-01) : `mentions-legales.astro`
+    et `confidentialite.astro` conservent `description={title}` (contrainte de
+    Phase 6 : ne pas toucher aux templates legaux). Impact limite : pages
+    noindex + nofollow (LegalLayout). A traiter lors d'une prochaine passe
+    avec legal-compliance.
+63. **Patrons seo monolingues** (PO-P6-02) : les patrons `seo_title`/`seo_description`
+    de `template.yaml` sont FR ; les pages EN heritent des titres/descriptions FR.
+    `seo.meta_description_en` du client existe mais n'est consomme par aucune page.
+    A coordonner avec content-seo.
+64. **contrast-check hors CI** (PO-P6-03) : `npm run contrast` (m8) passe mais
+    n'est pas dans le workflow GitHub Actions (ci.yml). Ajout recommande
+    (une ligne, zero dependance).
+65. **Menu.astro fallback FR** (PO-P6-04) : le composant `Menu.astro` garde un
+    repli `'La Carte'` sans traduction EN — composant sans prop ui. A traiter
+    avec les autres composants lors du 2e template.
+66. **Navigation clavier reelle (Gate 4)** (PO-P6-05) : les focus traps et
+    ARIA ont ete corriges (D-A11Y-01/02) mais la verification navigateurs
+    reelle (Chrome/Firefox/Safari/Edge + mobile) reste a la Gate 4 via
+    TODO_PRODUCTION.md (citons PO-QA-02 n°63).
+67. **Astro upgrade 5 -> 7** (PO-P6-06 = n°59) : condition C-01 security
+    (astro@5.18.2 avec vulns critiques auparavant) — l'upgrade reste planifiee
+    par le frontend-engineer avant production d'un 1er client reel (1-2 jours,
+    breaking change). Non bloquant pour le systeme statique genere.

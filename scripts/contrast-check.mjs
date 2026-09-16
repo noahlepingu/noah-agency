@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 /**
  * contrast-check.mjs — Verifie les contrastes d'une palette client
- * Reference : DESIGN_SYSTEM_SPECS.md §4.2
+ * Reference : DESIGN_SYSTEM_SPECS.md §4.2, CODE_REVIEW M6/m8
  *
- * Utilise l'algorithme WCAG 2.x relative luminance.
+ * Utilise l'algorithme WCAG 2.x relative luminance (scripts/color-utils.mjs).
  * Sortie : rapport avec les combinaisons passees/echouees.
+ * Verifie les tokens reels du theme genere, y compris les couples on-*
+ * (le token --color-on-secondary ne doit plus etre #fff sur ambre = 2.1:1)
+ * et les variantes -dark (hex 8 chiffres acceptes).
  *
  * Usage : node scripts/contrast-check.mjs --client <slug>
  */
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { contrastRatio } from './color-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -28,24 +32,9 @@ if (!existsSync(themePath)) {
 
 const theme = readFileSync(themePath, 'utf8');
 const colors = {};
-for (const [, name, hex] of theme.matchAll(/--color-([\w-]+):\s*(#[0-9A-Fa-f]{6})/g)) {
+// Matche les hex 6 chiffres ET 8 chiffres (ex: #B91C1CCC genere a tort avant M6).
+for (const [, name, hex] of theme.matchAll(/--color-([\w-]+):\s*(#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?)/g)) {
   colors[name] = hex;
-}
-
-function luminance(hex) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const toLinear = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-}
-
-function contrastRatio(hex1, hex2) {
-  const l1 = luminance(hex1);
-  const l2 = luminance(hex2);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
 }
 
 const checks = [
@@ -53,6 +42,14 @@ const checks = [
   ['Text on white (secondary)', colors['gray-500'] || '#6B7280', '#FFFFFF', 4.5],
   ['White on primary', '#FFFFFF', colors['primary'] || '#B91C1C', 4.5],
   ['White on accent', '#FFFFFF', colors['accent'] || '#DC2626', 4.5],
+  // Tokens on-* reels : le texte choisi sur son fond (M6 : on-secondary = #1f2937,
+  // plus jamais #fff sur ambre). Remplace la paire naive "white-on-secondary".
+  ['On-primary token on primary', colors['on-primary'] || '#FFFFFF', colors['primary'] || '#B91C1C', 4.5],
+  ['On-secondary token on secondary', colors['on-secondary'] || '#1f2937', colors['secondary'] || '#F59E0B', 4.5],
+  ['On-accent token on accent', colors['on-accent'] || '#FFFFFF', colors['accent'] || '#DC2626', 4.5],
+  // Variantes -dark : ce sont elles du hover/skip-link (m8 : hex 8 chiffres acceptes).
+  ['On-primary-dark token on primary-dark', colors['on-primary-dark'] || '#FFFFFF', colors['primary-dark'] || colors['primary'] || '#B91C1C', 4.5],
+  ['On-accent-dark token on accent-dark', colors['on-accent-dark'] || '#FFFFFF', colors['accent-dark'] || colors['accent'] || '#DC2626', 4.5],
 ];
 
 console.log(`\n  Contrast Check — ${slug}\n`);

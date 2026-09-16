@@ -14,9 +14,7 @@
  * Si aucune des deux sources n'existe, la reservation affichera toujours
  * « aucun creneau » -> etat dedie (UX.md §4.3).
  */
-
-/** Ordre des jours (index = new Date().getDay()) */
-const DAY_NAMES = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+import { DAY_NAMES } from './days.mjs';
 
 /** Nom du jour (FR) pour une date ISO YYYY-MM-DD. */
 export function getDayName(dateStr) {

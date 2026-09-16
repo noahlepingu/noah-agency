@@ -19,15 +19,15 @@ import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildTitle, buildDescription, buildCanonical, buildOG, buildTwitter, buildHreflang, buildRobots } from '@utils/seo';
 import { restaurant, localBusiness, faqSchema } from '@utils/schema';
-import { localizePath } from '@utils/i18n';
+import { localizePath, getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const texts = data.texts?.index || {};
+const texts = getPageTexts(data, lang, 'index');
 const siteUrl = data.site_url || 'https://example.com';
 const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
 
-const title = buildTitle({ title: texts.hero_title || data.business?.name || '' }, data);
-const description = buildDescription({ description: texts.hero_subtitle || data.seo?.meta_description || '' }, data);
+const title = buildTitle({ title: data.seo_titles?.['/'] || texts.hero_title || data.business?.name || '' }, data);
+const description = buildDescription({ description: data.seo_descriptions?.['/'] || texts.hero_subtitle || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/');
 const og = buildOG({ title, description, pageUrl: canonical, siteName: data.business?.name });
 const hreflang = buildHreflang(siteUrl, '/', '/en/');
@@ -41,8 +41,8 @@ const hreflang = buildHreflang(siteUrl, '/', '/en/');
     title={texts.hero_title || ''}
     subtitle={texts.hero_subtitle || ''}
     image={data.hero_image ? { src: data.hero_image.src, alt: data.hero_image.alt } : undefined}
-    cta={{ label: texts.cta_reserve || 'Reserver', href: e('/reservation'), variant: 'primary' }}
-    ctaSecondary={{ label: texts.cta_menu || 'La Carte', href: e('/menu'), variant: 'outline' }}
+    cta={{ label: texts.cta_reserve || ui.header?.ctaLabel || 'Reserver', href: e('/reservation'), variant: 'primary' }}
+    ctaSecondary={{ label: texts.cta_menu || ui.nav?.menu || 'La Carte', href: e('/menu'), variant: 'outline' }}
     layout="centered"
     overlay={!!data.hero_image?.src}
   />
@@ -53,7 +53,7 @@ const hreflang = buildHreflang(siteUrl, '/', '/en/');
       <h2 class="ds-section-head__title">{texts.intro_title || ''}</h2>
       <p>{texts.intro_text || ''}</p>
       <div class="ds-hero__cta" style="margin-top: var(--space-6);">
-        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || 'Reserver'}</CTA>
+        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || ui.header?.ctaLabel || 'Reserver'}</CTA>
       </div>
     </div>
   </section>

@@ -4,19 +4,13 @@ import '$$THEME_CSS_PATH$$';
 import LegalLayout from '@layouts/LegalLayout.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
-import { buildCanonical } from '@utils/seo';
+import { buildCanonical, buildDescription } from '@utils/seo';
+import { getPageTexts, localizePath } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const title = data.texts?.plan_du_site?.title || 'Plan du site';
+const title = getPageTexts(data, lang, 'plan_du_site').title || ui.footer?.sitemap || 'Plan du site';
+const description = buildDescription({ description: data.seo_descriptions?.['/plan-du-site'] || data.seo?.meta_description || title || '' }, data);
 const canonical = buildCanonical(data.site_url || 'https://example.com', '/plan-du-site');
-const siteUrl = data.site_url || 'https://example.com';
-const translatedRoutes = data.translated_routes || [];
-
-// Ne prefixe /en que pour les routes dotees d'une version traduite
-const localize = (route: string) => {
-  if (lang !== 'en' || !translatedRoutes.includes(route)) return route;
-  return route === '/' ? '/en/' : `/en${route}`;
-};
 
 // Pages du site depuis la config
 const pages = data.site_pages || [
@@ -33,13 +27,13 @@ const pages = data.site_pages || [
 ];
 ---
 
-<LegalLayout lang={lang} title={title} description={title} canonical={canonical}
+<LegalLayout lang={lang} title={title} description={description} canonical={canonical}
   ui={ui} data={data}>
   <h1>{title}</h1>
-  <nav aria-label="Plan du site">
+  <nav aria-label={ui.footer?.sitemap || 'Plan du site'}>
     <ul style="list-style: disc; padding-left: var(--space-6); line-height: 2;">
       {pages.map((p: any) => (
-        <li><a href={localize(p.route)}>{p.label}</a></li>
+        <li><a href={localizePath(p.route, lang, data.translated_routes || [])}>{p.label}</a></li>
       ))}
     </ul>
   </nav>

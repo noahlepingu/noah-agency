@@ -47,7 +47,8 @@ const Tag = href ? 'a' : 'button';
 const attrs = href
   ? {
       href,
-      ...(external || target ? { target: target || '_blank', rel: external ? 'noopener noreferrer' : undefined } : {}),
+      // m9 : target="_blank" implique toujours rel="noopener noreferrer"
+      ...(external || target ? { target: target || '_blank', rel: 'noopener noreferrer' } : {}),
       'aria-label': ariaLabel,
       'aria-disabled': disabled || undefined,
     }

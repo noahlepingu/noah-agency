@@ -5,9 +5,9 @@
  * Mobile : logo + CTA compact + burger ; menu plein ecran (z--menu-mobile)
  * Accessibilite : bouton aria-expanded/aria-controls, lien actif aria-current
  */
-import SkipLink from './SkipLink.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import Icon from './Icon.astro';
+import { localizePath } from '@utils/i18n';
 
 interface Props {
   lang: 'fr' | 'en';
@@ -25,17 +25,14 @@ const activePages: string[] = (data.active_pages || []).map((p: string) =>
   lang === 'en' ? (p === '/' ? '/en/' : `/en${p}`) : p,
 );
 
-// Ne prefixe /en que pour les routes dotees d'une version traduite,
-// sinon on conserve le lien vers la page FR (pas de 404).
-const localize = (href: string) => {
-  if (lang !== 'en') return href;
-  if (translatedRoutes.includes(href)) return href === '/' ? '/en/' : `/en${href}`;
-  return href;
-};
+// Cle ui.nav correspondant a un href de nav ('/' -> 'index', '/menu' -> 'menu')
+const navKeyOf = (href: string) => (href === '/' ? 'index' : href.replace(/^\/+|\/+$/g, ''));
 
+// Labels : en FR le label client (YAML) reste la source ; en EN on prefere
+// ui.nav (traduit) pour ne pas propager le contenu FR du YAML (M5/m1).
 const links = navItems.map((item: any) => ({
-  label: item.label,
-  href: localize(item.href),
+  label: lang === 'en' ? ui.nav?.[navKeyOf(item.href)] || item.label : item.label,
+  href: localizePath(item.href, lang, translatedRoutes),
 }));
 
 const isActive = (href: string, currentPath: string) =>
@@ -45,11 +42,11 @@ const isActive = (href: string, currentPath: string) =>
 <header class="ds-header" data-header>
   <a href="#contenu" class="skip-link">{ui.skipLink}</a>
   <div class="ds-header__inner">
-    <a href={lang === 'en' ? '/en/' : '/'} class="ds-header__logo" aria-label={data.logo_text || 'Accueil'}>
+    <a href={lang === 'en' ? '/en/' : '/'} class="ds-header__logo" aria-label={data.logo_text || ui.nav?.index || 'Accueil'}>
       {data.logo_text ? <span class="ds-header__logotext">{data.logo_text}</span> : null}
     </a>
 
-    <nav class="ds-header__nav" aria-label={ui.header.openMenu}>
+    <nav class="ds-header__nav" aria-label={ui.header.desktopNav || 'Navigation principale'}>
       <ul class="ds-header__list">
         {links.map((link: any) => (
           <li>
@@ -71,8 +68,8 @@ const isActive = (href: string, currentPath: string) =>
     <div class="ds-header__actions">
       {langSwitchHref ? <LanguageSwitcher lang={lang} ui={ui} href={langSwitchHref} /> : null}
       {data.cta ? (
-        <a href={localize(data.cta.href)} class="ds-btn ds-btn--primary ds-btn--sm ds-header__cta">
-          {data.cta.label}
+        <a href={localizePath(data.cta.href, lang, translatedRoutes)} class="ds-btn ds-btn--primary ds-btn--sm ds-header__cta">
+          {lang === 'en' ? ui.header?.ctaLabel || data.cta.label : data.cta.label}
         </a>
       ) : null}
       <button
@@ -80,9 +77,11 @@ const isActive = (href: string, currentPath: string) =>
         type="button"
         aria-expanded="false"
         aria-controls="ds-menu-mobile"
+        aria-label={ui.header.openMenu || 'Ouvrir le menu'}
+        data-close-label={ui.header.closeMenu || 'Fermer le menu'}
         data-burger
       >
-        <span class="sr-only">{ui.header.openMenu}</span>
+        <span class="sr-only" data-burger-label>{ui.header.openMenu}</span>
         <Icon name="menu" size={24} />
       </button>
     </div>
@@ -90,7 +89,7 @@ const isActive = (href: string, currentPath: string) =>
 
   <!-- Menu mobile -->
   <div id="ds-menu-mobile" class="ds-menu-mobile" hidden data-menu-mobile>
-    <nav aria-label={ui.header.openMenu}>
+    <nav aria-label={ui.header.mobileNav || 'Menu mobile'}>
       <ul class="ds-menu-mobile__list">
         {links.map((link: any) => (
           <li>
@@ -187,20 +186,45 @@ const isActive = (href: string, currentPath: string) =>
 </style>
 
 <script>
-  // Menu burger mobile (+ fermeture au clic sur un lien)
+  // Menu burger mobile : aria-label/aria-expanded a jour, focus trap,
+  // fermeture au clic sur un lien, Escape, retour focus au burger.
   const burger = document.querySelector('[data-burger]');
   const menu = document.querySelector('[data-menu-mobile]');
   if (burger && menu) {
+    const openLabel = burger.getAttribute('aria-label') || 'Ouvrir le menu';
+    const closeLabel = burger.getAttribute('data-close-label') || 'Fermer le menu';
+    let lastFocused: HTMLElement | null = null;
+
     const toggle = (open?: boolean) => {
       const willOpen = open ?? menu!.hasAttribute('hidden');
       if (willOpen) menu!.removeAttribute('hidden'); else menu!.setAttribute('hidden', '');
       burger!.setAttribute('aria-expanded', String(willOpen));
-      burger!.innerText = willOpen ? '×' : '☰';
+      burger!.setAttribute('aria-label', willOpen ? closeLabel : openLabel);
+      if (willOpen) {
+        lastFocused = document.activeElement as HTMLElement | null;
+        const first = menu!.querySelector('a[href], button:not([disabled])') as HTMLElement | null;
+        if (first) first.focus();
+      } else if (lastFocused) {
+        lastFocused.focus();
+        lastFocused = null;
+      }
     };
+
     burger.addEventListener('click', () => toggle());
     menu.querySelectorAll('[data-menu-close]').forEach((l) => l.addEventListener('click', () => toggle(false)));
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !menu!.hasAttribute('hidden')) toggle(false);
+    });
+
+    // Focus trap dans le menu mobile ouvert
+    menu.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab' || menu!.hasAttribute('hidden')) return;
+      const focusables = Array.from(menu!.querySelectorAll('a[href], button:not([disabled])')) as HTMLElement[];
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
   }
 </script>

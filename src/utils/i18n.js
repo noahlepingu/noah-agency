@@ -72,6 +72,18 @@ export function getLanguageSwitchHref(currentPath, currentLang) {
 }
 
 /**
+ * Resolve les textes de page selon la langue : EN -> texts_en, sinon texts.
+ * @param {object} data - data.json du site ({ texts, texts_en })
+ * @param {'fr'|'en'} lang
+ * @param {string} pageKey - cle de la page ('index', 'contact', ...)
+ * @returns {object}
+ */
+export function getPageTexts(data, lang, pageKey) {
+  const source = lang === 'en' && data?.texts_en ? data.texts_en : data?.texts;
+  return source?.[pageKey] || {};
+}
+
+/**
  * Detecter la langue actuelle depuis localStorage (client) ou defaut.
  * @returns {'fr'|'en'}
  */

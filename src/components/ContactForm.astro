@@ -53,6 +53,7 @@ const uiJson = JSON.stringify({
         required
         autocomplete="name"
         aria-required="true"
+        aria-describedby="cf-name-error"
       />
       <p class="ds-form__error" id="cf-name-error" hidden></p>
     </div>
@@ -67,6 +68,7 @@ const uiJson = JSON.stringify({
         required
         autocomplete="email"
         aria-required="true"
+        aria-describedby="cf-email-error"
       />
       <p class="ds-form__error" id="cf-email-error" hidden></p>
     </div>
@@ -80,6 +82,7 @@ const uiJson = JSON.stringify({
         rows="5"
         required
         aria-required="true"
+        aria-describedby="cf-message-error"
       ></textarea>
       <p class="ds-form__error" id="cf-message-error" hidden></p>
     </div>
@@ -140,21 +143,24 @@ const uiJson = JSON.stringify({
 
     const validate = () => {
       let count = 0;
+      let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
+      const mark = (field: HTMLInputElement | HTMLTextAreaElement, ok: boolean, msg: string) => {
+        setFieldError(field, ok ? null : msg);
+        if (!ok) {
+          count++;
+          if (!firstInvalid) firstInvalid = field;
+        }
+      };
       // Nom
-      const nameOk = (name.value.trim().length >= 2);
-      setFieldError(name, nameOk ? null : (uiData.nameError || 'Nom obligatoire'));
-      if (!nameOk) count++;
+      mark(name, name.value.trim().length >= 2, uiData.nameError || 'Nom obligatoire');
       // Email (regex partagee utils/forms.js)
-      const emailOk = isValidEmail(email.value);
-      setFieldError(email, emailOk ? null : (uiData.emailError || 'Email invalide'));
-      if (!emailOk) count++;
+      mark(email, isValidEmail(email.value), uiData.emailError || 'Email invalide');
       // Message
-      const msgOk = message.value.trim().length > 0;
-      setFieldError(message, msgOk ? null : (uiData.messageError || 'Message obligatoire'));
-      if (!msgOk) count++;
+      mark(message, message.value.trim().length > 0, uiData.messageError || 'Message obligatoire');
       if (count > 0 && errorGlobal) {
         errorGlobal.textContent = (uiData.globalError || '').replace('{n}', String(count));
         errorGlobal.hidden = false;
+        firstInvalid?.focus();
       } else if (errorGlobal) { errorGlobal.hidden = true; }
       return count === 0;
     };

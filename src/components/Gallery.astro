@@ -11,7 +11,7 @@ interface Props {
   data: any; // data.components.gallery { title, images: [{src, alt, caption?}] }
 }
 
-const { data } = Astro.props;
+const { ui, data } = Astro.props;
 const images = data.images || [];
 const emptyText = data.empty_text || 'Aucune photo pour le moment.';
 ---
@@ -52,8 +52,8 @@ const emptyText = data.empty_text || 'Aucune photo pour le moment.';
   </div>
 </section>
 
-<dialog class="ds-lightbox" data-lightbox-dialog aria-label="Galerie">
-  <button type="button" class="ds-lightbox__close" data-lightbox-close aria-label="Fermer">
+<dialog class="ds-lightbox" data-lightbox-dialog aria-label={ui.gallery?.dialogAria || 'Galerie'}>
+  <button type="button" class="ds-lightbox__close" data-lightbox-close aria-label={ui.gallery?.close || 'Fermer'}>
     <Icon name="close" size={24} />
   </button>
   <figure class="ds-lightbox__figure">

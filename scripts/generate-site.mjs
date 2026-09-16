@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { parse } from 'yaml';
 import { validateClientData, deriveClientData, buildValidationReport } from './validation-core.mjs';
+import { pickOnColor, darkTokenPair } from './color-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -207,11 +208,21 @@ const data = {
   texts: textsFr,
   texts_en: textsEn,
   components: filledComponents,
-  third_party: template.third_party || {},
+  // M3 : le third_party du CLIENT est la source de verite ; le template
+  // sert de base (upsert coherent) mais ne remplace jamais une valeur client.
+  third_party: deepMerge(template.third_party || {}, clientData.third_party || {}),
   hero_image: clientData.hero_image || null,
   site_pages: (template.pages || [])
     .filter(p => !['404', '500'].includes(p.route.replace(/^\//, '')))
     .map(p => ({ route: p.route, label: fillTemplate((p.seo_title || '').split('—')[0]?.trim() || p.route, placeholders) })),
+  // m6 : patrons seo_title/seo_description du template, remplis par placeholders,
+  // exposes aux pages pour construire <title> et meta description.
+  seo_titles: Object.fromEntries(
+    (template.pages || []).filter(p => p.seo_title).map(p => [p.route, fillTemplate(p.seo_title, placeholders)])
+  ),
+  seo_descriptions: Object.fromEntries(
+    (template.pages || []).filter(p => p.seo_description).map(p => [p.route, fillTemplate(p.seo_description, placeholders)])
+  ),
   translated_routes: (template.pages || []).filter(p => p.translate).map(p => p.route),
 };
 
@@ -236,27 +247,39 @@ writeFileSync(join(siteDir, 'data.json'), JSON.stringify(data, null, 2), 'utf8')
 console.log('  Created data.json');
 
 // --- 7. Generate theme.css ---
+// Tokens de marque calcules : on-* par contraste WCAG (4.5:1), variantes
+// -dark par assombrissement reel (HSL) ET contraste AA garanti sur le texte
+// (CODE_REVIEW M6 : #fff sur ambre = 2.1:1, #B91C1CCC = alpha 80 %, non sombres).
 const branding = { ...(template.branding || {}), ...(clientData.branding || {}) };
+const cPrimary = branding.primary_color || '#B91C1C';
+const cSecondary = branding.secondary_color || '#F59E0B';
+const cAccent = branding.accent_color || '#DC2626';
+const primaryPair = darkTokenPair(cPrimary);
+const secondaryPair = darkTokenPair(cSecondary);
+const accentPair = darkTokenPair(cAccent);
 const themeCss = `/* Theme genere pour ${slug} — ne pas editer manuellement */
 :root {
   --font-heading: '${branding.fonts?.heading || 'Playfair Display'}', Georgia, serif;
   --font-body: '${branding.fonts?.body || 'Inter'}', system-ui, sans-serif;
-  --color-primary: ${branding.primary_color || '#B91C1C'};
-  --color-primary-light: ${branding.primary_color || '#B91C1C'}15;
-  --color-primary-dark: ${branding.primary_color || '#B91C1C'}CC;
-  --color-secondary: ${branding.secondary_color || '#F59E0B'};
-  --color-secondary-light: ${branding.secondary_color || '#F59E0B'}15;
-  --color-secondary-dark: ${branding.secondary_color || '#F59E0B'}CC;
-  --color-accent: ${branding.accent_color || '#DC2626'};
-  --color-accent-light: ${branding.accent_color || '#DC2626'}15;
-  --color-accent-dark: ${branding.accent_color || '#DC2626'}CC;
-  --color-on-primary: #fff;
-  --color-on-secondary: #fff;
-  --color-on-accent: #fff;
+  --color-primary: ${cPrimary};
+  --color-primary-light: ${cPrimary}15;
+  --color-primary-dark: ${primaryPair.dark};
+  --color-secondary: ${cSecondary};
+  --color-secondary-light: ${cSecondary}15;
+  --color-secondary-dark: ${secondaryPair.dark};
+  --color-accent: ${cAccent};
+  --color-accent-light: ${cAccent}15;
+  --color-accent-dark: ${accentPair.dark};
+  --color-on-primary: ${pickOnColor(cPrimary)};
+  --color-on-secondary: ${pickOnColor(cSecondary)};
+  --color-on-accent: ${pickOnColor(cAccent)};
+  --color-on-primary-dark: ${primaryPair.on};
+  --color-on-secondary-dark: ${secondaryPair.on};
+  --color-on-accent-dark: ${accentPair.on};
   --color-on-surface: #fff;
 }`;
 writeFileSync(join(siteDir, 'theme.css'), themeCss, 'utf8');
-console.log('  Created theme.css');
+console.log('  Created theme.css (tokens on-* calcules WCAG, variantes -dark reelles)');
 
 // --- 8. Copy pages from template ---
 // Pages are at templates/restaurant/pages/*.astro

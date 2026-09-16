@@ -92,17 +92,6 @@ export function checkHoneypot(value) {
   return !value || value.trim().length === 0;
 }
 
-/**
- * Charge les scripts tiers apres consentement (consent.js).
- */
-export function loadConsentedScripts(categories) {
-  if (!categories || typeof window === 'undefined') return;
-  try {
-    const event = new CustomEvent('ds-consent', { detail: categories });
-    window.dispatchEvent(event);
-  } catch {}
-}
-
 /* ---------------------------------------------------------------- */
 /* Endpoint + envoi (FORMS_ARCHITECTURE.md §3)                       */
 /* ---------------------------------------------------------------- */

@@ -5,9 +5,10 @@ import LegalLayout from '@layouts/LegalLayout.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildCanonical } from '@utils/seo';
+import { getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const texts = data.texts?.confidentialite || {};
+const texts = getPageTexts(data, lang, 'confidentialite');
 const title = texts.title || 'Politique de confidentialite';
 const canonical = buildCanonical(data.site_url || 'https://example.com', '/confidentialite');
 ---

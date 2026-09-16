@@ -2,17 +2,7 @@
  * utils/schema.js — Generateurs JSON-LD schema.org
  * Reference : project/content/SEO_SYSTEM.md §3
  */
-
-/** Mapping jours FR -> schema.org (SEO_SYSTEM.md §3.5) */
-const DAY_MAP = {
-  Lundi: 'Monday',
-  Mardi: 'Tuesday',
-  Mercredi: 'Wednesday',
-  Jeudi: 'Thursday',
-  Vendredi: 'Friday',
-  Samedi: 'Saturday',
-  Dimanche: 'Sunday',
-};
+import { buildOpeningHoursSchema } from './hours.js';
 
 /**
  * Schema LocalBusiness (base commune pour tous les templates).
@@ -126,30 +116,6 @@ export function buildMenuSchema(categories) {
       })),
     })),
   };
-}
-
-/**
- * Schema OpeningHoursSpecification (SEO_SYSTEM.md §3.5).
- */
-export function buildOpeningHoursSchema(schedule) {
-  if (!schedule || schedule.length === 0) return [];
-
-  const groups = {};
-  for (const entry of schedule) {
-    if (entry.closed || !entry.open || !entry.close) continue;
-    const key = `${entry.open}-${entry.close}`;
-    if (!groups[key]) groups[key] = { open: entry.open, close: entry.close, days: [] };
-    groups[key].days.push(DAY_MAP[entry.day] || entry.day);
-  }
-
-  return Object.values(groups)
-    .filter((g) => g.days.length > 0)
-    .map((g) => ({
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: g.days,
-      opens: g.open,
-      closes: g.close,
-    }));
 }
 
 /**

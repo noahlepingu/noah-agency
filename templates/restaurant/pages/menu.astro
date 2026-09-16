@@ -6,22 +6,23 @@ import Menu from '@components/Menu.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
+import { getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const texts = data.texts?.menu || {};
+const texts = getPageTexts(data, lang, 'menu');
 const siteUrl = data.site_url || 'https://example.com';
-const title = buildTitle({ title: texts.title || 'La Carte' }, data);
-const description = buildDescription({ description: texts.subtitle || '' }, data);
+const title = buildTitle({ title: data.seo_titles?.['/menu'] || texts.title || ui.nav?.menu || 'La Carte' }, data);
+const description = buildDescription({ description: data.seo_descriptions?.['/menu'] || texts.subtitle || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/menu');
 const hreflang = buildHreflang(siteUrl, '/menu');
 ---
 
 <PageLayout lang={lang} title={title} description={description} canonical={canonical}
   hreflang={hreflang} ui={ui} data={data}
-  heroTitle={texts.title || 'La Carte'}
+  heroTitle={texts.title || ui.nav?.menu || 'La Carte'}
   breadcrumb={[
     { label: ui.nav?.index || 'Accueil', href: '/' },
-    { label: texts.title || 'La Carte', href: '/menu' },
+    { label: texts.title || ui.nav?.menu || 'La Carte', href: '/menu' },
   ]}>
   <Menu data={data.components?.menu || { categories: [], title: texts.title }} />
 </PageLayout>

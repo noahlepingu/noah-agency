@@ -41,9 +41,10 @@ const { ui } = Astro.props;
     display: flex; align-items: center; justify-content: center;
     box-shadow: var(--shadow-md);
     opacity: 0; pointer-events: none;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    visibility: hidden;
+    transition: opacity var(--transition-fast), transform var(--transition-fast), visibility 0s linear var(--transition-fast);
   }
-  .ds-back2top--show { opacity: 1; pointer-events: auto; }
+  .ds-back2top--show { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
   .ds-back2top:hover { background-color: var(--color-primary-dark); transform: scale(1.05); }
   .ds-back2top:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { .ds-back2top { transition: opacity var(--transition-fast); } }

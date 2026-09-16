@@ -1,11 +1,13 @@
 {
   "fr": {
     "skipLink": "Aller au contenu principal",
-    "header": { "openMenu": "Ouvrir le menu de navigation", "closeMenu": "Fermer le menu de navigation" },
+    "header": { "openMenu": "Ouvrir le menu de navigation", "closeMenu": "Fermer le menu de navigation", "desktopNav": "Navigation principale", "mobileNav": "Menu mobile", "ctaLabel": "Reserver" },
     "nav": {
       "index": "Accueil", "menu": "La Carte", "reservation": "Reservation", "a-propos": "A propos",
       "galerie": "Galerie", "temoignages": "Avis", "faq": "FAQ", "contact": "Contact"
     },
+    "breadcrumb": { "ariaLabel": "Fil d'Ariane" },
+    "gallery": { "close": "Fermer", "dialogAria": "Galerie" },
     "language": { "label": "Changer de langue", "fr": "Francais", "en": "English" },
     "footer": { "legalTitle": "Informations", "rights": "Tous droits reserves", "legal": "Mentions legales", "privacy": "Politique de confidentialite", "sitemap": "Plan du site" },
     "form": {
@@ -25,7 +27,7 @@
       "loadError": "Une erreur est survenue lors de l'envoi. Veuillez reessayer ou nous contacter directement."
     },
     "map": { "title": "Localisation", "openExternal": "Voir sur OpenStreetMap", "fallbackHint": "Coordonnees :", "loading": "Carte en chargement" },
-    "hours": { "title": "Horaires d'ouverture", "open": "Ouvert", "closed": "Ferme" },
+    "hours": { "title": "Horaires d'ouverture", "open": "Ouvert", "closed": "Ferme", "today": "(aujourd'hui)" },
     "backToTop": "Retour en haut de page",
     "states": {
       "404": { "title": "Page introuvable", "message": "Oups ! La page que vous cherchez n'existe pas ou a ete deplacee.", "cta1": "Retour a l'accueil", "secondary": "Nous contacter" },
@@ -34,16 +36,18 @@
       "reservationOk": { "title": "Reservation confirmee !", "text": "Un email de confirmation vous a ete envoye a {email}.", "modify": "En cas de modification, appelez-nous au {phone}.", "cta1": "Retour a l'accueil" },
       "noSlot": { "title": "Aucun creneau disponible", "message": "Desole, aucun creneau n'est disponible pour la date demandee.", "cta1": "Choisir une autre date", "cta2": "Nous appeler" }
     },
-    "reservation": { "title": "Reservez votre table", "intro": "Quelques informations pour votre reservation." },
+    "reservation": { "title": "Reservez votre table", "intro": "Quelques informations pour votre reservation.", "personOne": "personne", "personMany": "personnes", "backHome": "Retour a l'accueil" },
     "cookie": { "title": "Ce site utilise des cookies.", "message": "Nous utilisons des cookies pour ameliorer votre experience. En savoir plus dans notre politique de confidentialite.", "accept": "Tout accepter", "reject": "Tout refuser", "customize": "Personnaliser", "save": "Enregistrer mes choix", "privacyLink": "Politique de confidentialite" }
   },
   "en": {
     "skipLink": "Skip to main content",
-    "header": { "openMenu": "Open navigation menu", "closeMenu": "Close navigation menu" },
+    "header": { "openMenu": "Open navigation menu", "closeMenu": "Close navigation menu", "desktopNav": "Main navigation", "mobileNav": "Mobile menu", "ctaLabel": "Book a table" },
     "nav": {
       "index": "Home", "menu": "Menu", "reservation": "Reservation", "a-propos": "About",
       "galerie": "Gallery", "temoignages": "Reviews", "faq": "FAQ", "contact": "Contact"
     },
+    "breadcrumb": { "ariaLabel": "Breadcrumb" },
+    "gallery": { "close": "Close", "dialogAria": "Gallery" },
     "language": { "label": "Change language", "fr": "Francais", "en": "English" },
     "footer": { "legalTitle": "Legal", "rights": "All rights reserved", "legal": "Legal notice", "privacy": "Privacy policy", "sitemap": "Sitemap" },
     "form": {
@@ -63,7 +67,7 @@
       "loadError": "An error occurred. Please try again or contact us directly."
     },
     "map": { "title": "Location", "openExternal": "View on OpenStreetMap", "fallbackHint": "Coordinates:", "loading": "Map loading" },
-    "hours": { "title": "Opening Hours", "open": "Open", "closed": "Closed" },
+    "hours": { "title": "Opening Hours", "open": "Open", "closed": "Closed", "today": "(today)" },
     "backToTop": "Back to top",
     "states": {
       "404": { "title": "Page not found", "message": "The page you are looking for does not exist or has been moved.", "cta1": "Back to home", "secondary": "Contact us" },
@@ -72,7 +76,7 @@
       "reservationOk": { "title": "Reservation confirmed!", "text": "A confirmation email has been sent to {email}.", "modify": "To make changes, call us at {phone}.", "cta1": "Back to home" },
       "noSlot": { "title": "No time slot available", "message": "Sorry, no time slots are available for the selected date.", "cta1": "Choose another date", "cta2": "Call us" }
     },
-    "reservation": { "title": "Reserve your table", "intro": "A few details for your reservation." },
+    "reservation": { "title": "Reserve your table", "intro": "A few details for your reservation.", "personOne": "person", "personMany": "people", "backHome": "Back to home" },
     "cookie": { "title": "This site uses cookies.", "message": "We use cookies to improve your experience. See our privacy policy for details.", "accept": "Accept all", "reject": "Reject all", "customize": "Customize", "save": "Save my choices", "privacyLink": "Privacy policy" }
   }
 }

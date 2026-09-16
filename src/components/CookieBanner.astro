@@ -23,92 +23,110 @@ const cookie = ui.cookie || {};
 ---
 
 {hasThirdParty ? (
-  <div class="ds-cookie" id="ds-cookie-banner" role="dialog" aria-label={cookie.title || 'Cookies'} data-cookie-banner>
-    <div class="ds-cookie__inner">
-      <p class="ds-cookie__title">{cookie.title || ''}</p>
-      <p class="ds-cookie__msg">{cookie.message || ''}</p>
-      <div class="ds-cookie__actions">
-        <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-accept-all>{cookie.accept || 'Tout accepter'}</button>
-        <button class="ds-btn ds-btn--outline ds-btn--sm" data-cookie-reject-all>{cookie.reject || 'Tout refuser'}</button>
-        <button class="ds-btn ds-btn--ghost ds-btn--sm" data-cookie-customize>{cookie.customize || 'Personnaliser'}</button>
-      </div>
-      <div class="ds-cookie__panel" id="ds-cookie-panel" hidden data-cookie-panel>
-        {data.analytics ? (
-          <label class="ds-cookie__option">
-            <input type="checkbox" name="analytics" data-cookie-cb /> {cookie.analytics || 'Mesure d\'audience'}
-            <span class="ds-cookie__opt-desc">{cookie.analyticsDesc || ''}</span>
-          </label>
-        ) : null}
-        {data.maps ? (
-          <label class="ds-cookie__option">
-            <input type="checkbox" name="maps" data-cookie-cb /> {cookie.map || 'Cartes'}
-            <span class="ds-cookie__opt-desc">{cookie.mapDesc || ''}</span>
-          </label>
-        ) : null}
-        <div class="ds-cookie__panel-actions">
-          <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-save>{cookie.save || 'Enregistrer mes choix'}</button>
+  <>
+    <div class="ds-cookie" id="ds-cookie-banner" role="dialog" aria-label={cookie.title || 'Cookies'} data-cookie-banner>
+      <div class="ds-cookie__inner">
+        <p class="ds-cookie__title">{cookie.title || ''}</p>
+        <p class="ds-cookie__msg">{cookie.message || ''}</p>
+        <div class="ds-cookie__actions">
+          <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-accept-all>{cookie.accept || 'Tout accepter'}</button>
+          <button class="ds-btn ds-btn--outline ds-btn--sm" data-cookie-reject-all>{cookie.reject || 'Tout refuser'}</button>
+          <button class="ds-btn ds-btn--ghost ds-btn--sm" data-cookie-customize>{cookie.customize || 'Personnaliser'}</button>
         </div>
+        <div class="ds-cookie__panel" id="ds-cookie-panel" hidden data-cookie-panel>
+          {data.analytics ? (
+            <label class="ds-cookie__option">
+              <input type="checkbox" name="analytics" data-cookie-cb /> {cookie.analytics || 'Mesure d\'audience'}
+              <span class="ds-cookie__opt-desc">{cookie.analyticsDesc || ''}</span>
+            </label>
+          ) : null}
+          {data.maps ? (
+            <label class="ds-cookie__option">
+              <input type="checkbox" name="maps" data-cookie-cb /> {cookie.map || 'Cartes'}
+              <span class="ds-cookie__opt-desc">{cookie.mapDesc || ''}</span>
+            </label>
+          ) : null}
+          <div class="ds-cookie__panel-actions">
+            <button class="ds-btn ds-btn--primary ds-btn--sm" data-cookie-save>{cookie.save || 'Enregistrer mes choix'}</button>
+          </div>
+        </div>
+        <p class="ds-cookie__privacy">
+          <a href={lang === 'en' ? '/en/confidentialite' : '/confidentialite'}>{cookie.privacyLink || 'Politique de confidentialite'}</a>
+        </p>
       </div>
-      <p class="ds-cookie__privacy">
-        <a href={lang === 'en' ? '/en/confidentialite' : '/confidentialite'}>{cookie.privacyLink || 'Politique de confidentialite'}</a>
-      </p>
     </div>
-  </div>
+
+    {/*
+      m7 : script emis UNIQUEMENT si le bandeau est rendu (SSG). is:inline
+      pour etre place verbatim dans le fragment conditionnel — aucun script
+      cookie sur les sites sans tiers.
+    */}
+    <script is:inline>
+      (function () {
+        const banner = document.querySelector('[data-cookie-banner]');
+        if (!banner) return;
+        const STORAGE_KEY = 'ds_consent';
+        const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
+        // Verifier si deja consenti
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const d = JSON.parse(raw);
+            if (d && d.timestamp && (Date.now() - d.timestamp) < EXPIRY_MS) {
+              // Consenti, pas d'affichage
+              window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: d }));
+              return;
+            }
+          }
+        } catch (e) {}
+
+        // Afficher le bandeau
+        banner.hidden = false;
+
+        const acceptAll = banner.querySelector('[data-cookie-accept-all]');
+        const rejectAll = banner.querySelector('[data-cookie-reject-all]');
+        const customize = banner.querySelector('[data-cookie-customize]');
+        const panel = banner.querySelector('[data-cookie-panel]');
+        const save = banner.querySelector('[data-cookie-save]');
+        const cbs = banner.querySelectorAll('[data-cookie-cb]');
+
+        const persist = function (data) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.assign({}, data, { timestamp: Date.now() })));
+            window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: Object.assign({}, data, { timestamp: Date.now() }) }));
+          } catch (e) {}
+          banner.hidden = true;
+        };
+
+        acceptAll && acceptAll.addEventListener('click', function () { persist({ necessary: true, analytics: true, maps: true }); });
+        rejectAll && rejectAll.addEventListener('click', function () { persist({ necessary: true, analytics: false, maps: false }); });
+        customize && customize.addEventListener('click', function () { panel.hidden = false; customize.setAttribute('aria-expanded', 'true'); });
+        save && save.addEventListener('click', function () {
+          const data = { necessary: true };
+          cbs.forEach(function (cb) { data[cb.name] = cb.checked; });
+          persist(data);
+        });
+
+        // Focus trap : tant que le bandeau est ouvert, la Tabulation reste dedans
+        banner.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') { panel.hidden = true; customize && customize.setAttribute('aria-expanded', 'false'); return; }
+          if (e.key !== 'Tab') return;
+          const focusables = Array.from(banner.querySelectorAll('a[href], button:not([disabled])'));
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+
+        // Focus initial dans le bandeau (premier bouton)
+        const firstBtn = banner.querySelector('button');
+        if (firstBtn) firstBtn.focus();
+      })();
+    </script>
+  </>
 ) : null}
-
-<script>
-  (function() {
-    const banner = document.querySelector('[data-cookie-banner]') as HTMLElement | null;
-    if (!banner) return;
-    const STORAGE_KEY = 'ds_consent';
-    const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
-
-    // Verifier si deja consenti
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const d = JSON.parse(raw);
-        if (d && d.timestamp && (Date.now() - d.timestamp) < EXPIRY_MS) {
-          // Consenti, pas d'affichage
-          window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: d }));
-          return;
-        }
-      }
-    } catch {}
-
-    // Afficher le bandeau
-    banner.hidden = false;
-
-    const acceptAll = banner.querySelector('[data-cookie-accept-all]');
-    const rejectAll = banner.querySelector('[data-cookie-reject-all]');
-    const customize = banner.querySelector('[data-cookie-customize]');
-    const panel = banner.querySelector('[data-cookie-panel]');
-    const save = banner.querySelector('[data-cookie-save]');
-    const cbs = banner.querySelectorAll('[data-cookie-cb]');
-
-    const persist = (data: object) => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }));
-        window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: { ...data, timestamp: Date.now() } }));
-      } catch {}
-      banner.hidden = true;
-    };
-
-    acceptAll?.addEventListener('click', () => persist({ necessary: true, analytics: true, maps: true }));
-    rejectAll?.addEventListener('click', () => persist({ necessary: true, analytics: false, maps: false }));
-    customize?.addEventListener('click', () => { panel.hidden = false; customize.setAttribute('aria-expanded', 'true'); });
-    save?.addEventListener('click', () => {
-      const data: any = { necessary: true };
-      cbs.forEach((cb) => { data[(cb as HTMLInputElement).name] = (cb as HTMLInputElement).checked; });
-      persist(data);
-    });
-
-    // Focus trap basique
-    banner.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { panel.hidden = true; customize?.setAttribute('aria-expanded', 'false'); }
-    });
-  })();
-</script>
 
 <style>
   .ds-cookie {
@@ -130,27 +148,3 @@ const cookie = ui.cookie || {};
   .ds-cookie__privacy { margin: var(--space-3) 0 0; font-size: var(--text-sm); }
   .ds-cookie__privacy a { color: var(--color-primary); text-decoration: underline; }
 </style>
-
-<script>
-  // Script dynamique : lit le consentement et charge les scripts tiers si autorises
-  (function() {
-    const STORAGE_KEY = 'ds_consent';
-    const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
-
-    function isAllowed(cat: string) {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return false;
-        const d = JSON.parse(raw);
-        if (!d || !d.timestamp || (Date.now() - d.timestamp) >= EXPIRY_MS) return false;
-        return d[cat] === true;
-      } catch { return false; }
-    }
-
-    // Google Analytics (si autorise et config)
-    window.addEventListener('ds-consent-updated', () => {
-      // Analytics : sinon plus tard
-      // Maps : iframe deja present, OSM = aucun cookie, donc rien a injecter
-    });
-  })();
-</script>

@@ -8,13 +8,14 @@
 interface Props {
   items: { label: string; href: string }[];
   lang?: 'fr' | 'en';
+  ui?: any;
 }
 
-const { items = [], lang = 'fr' } = Astro.props;
+const { items = [], lang = 'fr', ui = {} } = Astro.props;
 const prefix = lang === 'en' ? '/en' : '';
 ---
 
-<nav class="ds-breadcrumb" aria-label="Fil d'Ariane">
+<nav class="ds-breadcrumb" aria-label={ui.breadcrumb?.ariaLabel || "Fil d'Ariane"}>
   <ol class="ds-breadcrumb__list">
     {items.map((item, i) => {
       const isLast = i === items.length - 1;

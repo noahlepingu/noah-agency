@@ -6,14 +6,14 @@ import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
 import { localBusiness } from '@utils/schema';
-import { localizePath } from '@utils/i18n';
+import { localizePath, getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
-const texts = data.texts?.['a-propos'] || {};
+const texts = getPageTexts(data, lang, 'a-propos');
 const siteUrl = data.site_url || 'https://example.com';
 const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
-const title = buildTitle({ title: texts.title || 'A propos' }, data);
-const description = buildDescription({ description: texts.content || '' }, data);
+const title = buildTitle({ title: data.seo_titles?.['/a-propos'] || texts.title || 'A propos' }, data);
+const description = buildDescription({ description: data.seo_descriptions?.['/a-propos'] || texts.content || '' }, data);
 const canonical = buildCanonical(siteUrl, '/a-propos');
 const hreflang = buildHreflang(siteUrl, '/a-propos', '/en/a-propos');
 const schema = localBusiness(data, siteUrl);
