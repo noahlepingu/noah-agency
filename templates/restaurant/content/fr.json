@@ -10,7 +10,7 @@
     },
     "a-propos": {
       "title": "A propos de [Nom]",
-      "content": "[Nom] est né de la passion de son fondateur pour la cuisine [Activite]. Depuis son ouverture a [Ville], notre restaurant s'engage a vous offrir des plats elaborés avec des produits frais et locaux.",
+      "content": "[Nom] est né de la passion de son fondateur pour la [Activite]. Depuis son ouverture a [Ville], notre restaurant s'engage a vous offrir des plats elaborés avec des produits frais et locaux.",
       "values_title": "Nos valeurs",
       "values": ["Produits locaux et de saison", "Cuisine fait maison", "Accueil chaleureux"]
     },

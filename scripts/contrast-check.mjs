@@ -50,6 +50,11 @@ const checks = [
   // Variantes -dark : ce sont elles du hover/skip-link (m8 : hex 8 chiffres acceptes).
   ['On-primary-dark token on primary-dark', colors['on-primary-dark'] || '#FFFFFF', colors['primary-dark'] || colors['primary'] || '#B91C1C', 4.5],
   ['On-accent-dark token on accent-dark', colors['on-accent-dark'] || '#FFFFFF', colors['accent-dark'] || colors['accent'] || '#DC2626', 4.5],
+  // Badges horaires "Ouvert"/"Ferme" (D-A11Y-05, WCAG 1.4.3) : tokens fondationnels
+  // definis dans src/styles/tokens.css (absents du theme.css client) — m8.
+  // --color-success-dark (#047857) = 5.48:1 ; --color-gray-500 (#6B7280) = 4.83:1.
+  ['Success-dark badge on white (Ouvert)', colors['success-dark'] || '#047857', '#FFFFFF', 4.5],
+  ['Gray-500 badge on white (Ferme)', colors['gray-500'] || '#6B7280', '#FFFFFF', 4.5],
 ];
 
 console.log(`\n  Contrast Check — ${slug}\n`);

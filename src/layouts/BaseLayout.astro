@@ -8,6 +8,7 @@ import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/fonts.css';
 import '../styles/utilities.css';
+import '../styles/buttons.css';
 
 import Header from '@components/Header.astro';
 import Footer from '@components/Footer.astro';
@@ -46,6 +47,16 @@ const {
 
 const siteName = data.business?.name || '';
 
+// Q6 — D-CS-05 : og:image partout, resolue automatiquement des que le client
+// fournit une image (hero_image 1200x630 recommandee, chemin local -> URL
+// absolue exigee par Open Graph). Priorite : og page explicite > hero_image.
+// Graceful : aucune balise og:image si aucune image disponible (jamais de
+// placeholder invente — decision D-FE-Q6-01, voir FINAL_REVIEW.md).
+const siteUrlOg = data.site_url || canonical || '';
+const heroSrc = data?.hero_image?.src || '';
+const ogImage = og['og:image']
+  || (heroSrc ? (heroSrc.startsWith('http') ? heroSrc : `${siteUrlOg}${heroSrc}`) : '');
+
 const headerData = data.components?.header || {
   logo_text: siteName,
   nav: ui.nav ? Object.entries(ui.nav).map(([k, v]: [string, any]) => ({
@@ -66,7 +77,7 @@ const headerData = data.components?.header || {
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={og['og:title'] || title} />
     <meta property="og:description" content={og['og:description'] || description} />
-    {og['og:image'] ? <meta property="og:image" content={og['og:image']} /> : null}
+    {ogImage ? <meta property="og:image" content={ogImage} /> : null}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={og['og:locale'] || (lang === 'en' ? 'en_US' : 'fr_FR')} />

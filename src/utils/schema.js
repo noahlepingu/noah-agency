@@ -74,6 +74,18 @@ export function restaurant(client, siteUrl) {
   base['@type'] = 'Restaurant';
   base.acceptsReservations = client.reservation?.enabled ? 'true' : 'false';
 
+  // ServesCuisine depuis le label d'activite client (ex: "cuisine francaise").
+  // Jamais invente : absent si le client n'a pas d'activityLabel.
+  if (client.seo?.activityLabel) {
+    base.servesCuisine = client.seo.activityLabel;
+  }
+
+  // PriceRange (schema.org, ex: "€€") : uniquement si le client le fournit
+  // (clé seo.price_range). Jamais invente (regle RGPD/veracite).
+  if (client.seo?.price_range) {
+    base.priceRange = client.seo.price_range;
+  }
+
   if (client.menu?.enabled && client.menu?.categories) {
     base.hasMenu = buildMenuSchema(client.menu.categories);
   }

@@ -11,42 +11,42 @@ pages:
     translate: true          # Version EN generee
     schema: Restaurant       # schema.org
     seo_title: "[Nom] — Restaurant [Activite] a [Ville]"
-    seo_description: "[Nom], restaurant [Activite] a [Ville]. Menu, reservation et avis clients."
+    seo_description: "Decouvrez [Nom], restaurant [Activite] au coeur de [Ville]. Reservez votre table en ligne et decouvrez notre carte de saison."
   - route: /a-propos
     file: a-propos.astro
     translate: true
     schema: LocalBusiness
     seo_title: "A propos — [Nom]"
-    seo_description: "Decouvrez [Nom], restaurant [Activite] a [Ville]. Notre histoire et nos valeurs."
+    seo_description: "Decouvrez l'histoire de [Nom], restaurant [Activite] au coeur de [Ville]. Produits locaux, cuisine fait maison et accueil chaleureux."
   - route: /menu
     file: menu.astro
     schema: Menu
     seo_title: "La Carte — [Nom]"
-    seo_description: "Consultez la carte et le menu de [Nom] a [Ville]. Plats, desserts, boissons."
+    seo_description: "Consultez la carte de [Nom] a [Ville] : entrees, plats, desserts et boissons prepares avec des produits frais et locaux de saison."
   - route: /reservation
     file: reservation.astro
     schema: ReserveAction
     seo_title: "Reservation — [Nom]"
-    seo_description: "Reservez votre table a [Nom] a [Ville]. Choisissez votre date et votre creneau."
+    seo_description: "Reservez votre table a [Nom] a [Ville] en quelques clics. Choisissez votre date, votre creneau et le nombre de convives."
   - route: /galerie
     file: galerie.astro
     seo_title: "Galerie — [Nom]"
-    seo_description: "Photos de [Nom] restaurant a [Ville]. Nos plats et notre espace."
+    seo_description: "Decouvrez [Nom], restaurant [Activite] a [Ville], en images : nos plats, notre salle et notre terrasse au coeur de la ville."
   - route: /temoignages
     file: temoignages.astro
     seo_title: "Avis clients — [Nom]"
-    seo_description: "Les avis de nos clients sur [Nom] restaurant a [Ville]."
+    seo_description: "Lisez les avis de nos clients sur [Nom], restaurant [Activite] a [Ville] : qualite des plats, service et ambiance sur place."
   - route: /faq
     file: faq.astro
     schema: FAQPage
     seo_title: "Questions frequentes — [Nom]"
-    seo_description: "Reponses aux questions frequentes sur [Nom] restaurant a [Ville]."
+    seo_description: "Questions frequentes sur [Nom], restaurant [Activite] a [Ville] : reservation, menu enfant, animaux admis, paiement et plus encore."
   - route: /contact
     file: contact.astro
     translate: true
     schema: ContactPoint
     seo_title: "Contact — [Nom]"
-    seo_description: "Contactez [Nom] restaurant a [Ville]. Telephone, email, formulaire."
+    seo_description: "Contactez [Nom], restaurant [Activite] a [Ville], par telephone, email ou via notre formulaire en ligne. Reponse rapide garantie."
   - route: /mentions-legales
     file: mentions-legales.astro
     seo_title: "Mentions legales — [Nom]"

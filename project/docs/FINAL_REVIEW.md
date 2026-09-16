@@ -250,3 +250,201 @@ La réutilisabilité pour un 2e client restaurant sera immédiate (nouveau YAML 
 
 *Rapport généré par AGENT 14 — Final Product Reviewer*
 *Base : build dist/exemple-restaurant/ régénéré le 2026-09-16, 13h26*
+
+---
+
+# Sprint Qualité Q1-Q6 — Corrections Phase 7
+
+Date : 2026-09-16
+Responsable : AGENT 05 — Frontend Engineer
+Portée : corrections de qualité recommandées avant Gate 3 (Q1-Q6 du verdict Phase 7).
+
+## Résumé exécutif
+
+Les 6 corrections sont implementées et vérifiées. Le pipeline est intact :
+30/30 tests, validate:example exit 0, build 16 pages, contrast all pass.
+CSS bundle global unique (17 Ko au lieu de 14,8 + 4,1 Ko = 18,9 Ko) —
+régression de taille, avantage a11y et maintenabilité.
+
+## Q1 — BUG-QA-02 « cuisine cuisine » (MAJEUR) — CORRIGÉ
+
+**Problème** : `fr.json` a-propos.content contient « pour la cuisine [Activite] » ;
+avec `activityLabel = "cuisine francaise"`, la phrase génère « la cuisine cuisine
+française ». Même issue côté EN (« [Activite] cuisine » → « cuisine française cuisine »).
+
+**Correctif** :
+- `fr.json` : « pour la cuisine [Activite] » → « pour la [Activite] »
+- `en.json` : « for [Activite] cuisine » → « for [Activite] »
+
+**Fichiers modifiés** : `templates/restaurant/content/fr.json`, `templates/restaurant/content/en.json`
+
+**Vérification** :
+```bash
+grep -r "cuisine cuisine" dist/exemple-restaurant/ | wc -l  # → 0
+# FR : "passion de son fondateur pour la cuisine francaise"
+# EN : "born from a passion for cuisine francaise"
+```
+
+---
+
+## Q2 — Contraste badges horaires WCAG 1.4.3 (MAJEUR) — CORRIGÉ
+
+**Problème** : badge « Ouvert » en `--color-success` (#059669, 3.77:1) et
+« Fermé » en `--color-gray-400` (#9CA3AF, 2.54:1) — tous deux sous 4.5:1.
+
+**Correctif** :
+1. `tokens.css` : ajout `--color-success-dark: #047857;` (5.48:1)
+2. `OpeningHours.astro` : `.ds-opening__open` → `--color-success-dark`,
+   `.ds-opening__closed` et `.ds-opening__hours--closed` → `--color-gray-500` (#6B7280, 4.83:1)
+3. `contrast-check.mjs` : ajout des 2 paires badges (D-A11Y-05, m8) :
+   `Success-dark badge on white (Ouvert)` et `Gray-500 badge on white (Ferme)`
+
+**Fichiers modifiés** : `src/styles/tokens.css`, `src/components/OpeningHours.astro`,
+`scripts/contrast-check.mjs`
+
+**Token ajouté** : `--color-success-dark: #047857;`
+
+**Vérification** :
+```bash
+npm run contrast
+# [PASS] Success-dark badge on white (Ouvert): #047857 on #FFFFFF = 5.48:1 (min 4.5:1)
+# [PASS] Gray-500 badge on white (Ferme): #6B7280 on #FFFFFF = 4.83:1 (min 4.5:1)
+# All checks passed!
+```
+
+---
+
+## Q3 — 404/500 : bundle CSS sans `.ds-btn` (MAJEUR) — CORRIGÉ
+
+**Problème** : les pages 404/500 ne chargeaient que le bundle global (tokens,
+base, utilities) qui ne contenait pas `.ds-btn`. Les boutons CTA du StatePage
+et du Header n'étaient pas stylés. Le scope Astro du composant `CTA.astro`
+(data-astro-cid) empêchait la propagation même aux autres composants utilisant
+`.ds-btn` en HTML brut (Header, CookieBanner, StatePage, ContactForm, ReservationForm).
+
+**Correctif** :
+1. Création `src/styles/buttons.css` — styles `.ds-btn` **globaux** (non scopeés)
+2. Import dans `BaseLayout.astro` : `import '../styles/buttons.css';`
+3. Suppression du `<style>` dans `CTA.astro` (dupliqué maintenant)
+
+**Conséquence** : le build Astro fusionne tous les styles en un seul bundle
+(`confidentialite.*.css`, ~17 Ko). Ce bundle est chargé par toutes les pages
+y compris 404/500. Le CSS total est réduit (17 Ko au lieu de 18,9 Ko)
+et les boutons sont stylés partout.
+
+**Fichiers modifiés** : `src/layouts/BaseLayout.astro`, `src/components/CTA.astro`
+**Fichier ajouté** : `src/styles/buttons.css`
+
+**Vérification** :
+```bash
+# 404.html charge le bundle global contenant .ds-btn (unscoped)
+grep -o '/_astro/[^"]*\.css' dist/exemple-restaurant/404.html | xargs -I{} grep -c '\.ds-btn{' dist/exemple-restaurant/{}  # → 1
+# Le sélecteur .ds-btn{ est global (pas de [data-astro-cid-XXXX])
+```
+
+---
+
+## Q4 — JSON-LD Restaurant jamais émis (MAJEUR) — CORRIGÉ
+
+**Problème** : la fonction `restaurant()` existait dans `schema.js` mais
+n'était jamais appelée. `data.json` ne contenait pas `menu`/`reservation`/
+`reviews`/`opening_hours` au top-level, rendant les champs `hasMenu`,
+`acceptsReservations` et `openingHoursSpecification` manquants même pour
+`localBusiness()` (sous-parti « PARTIEL » du rapport).
+
+**Correctif** :
+1. `generate-site.mjs` : ajout de 4 clés au top-level de `data.json` :
+   `opening_hours`, `menu`, `reservation`, `reviews` (copie depuis clientData)
+2. `schema.js` `restaurant()` : ajout de `servesCuisine` (depuis `seo.activityLabel`)
+   et `priceRange` (optionnel, depuis `seo.price_range` si fourni par le client)
+3. `index.astro` : appel `restaurant(data, siteUrl)` et passage `jsonLd={[schema]}`
+
+**Clés ajoutées à data.json** : `opening_hours`, `menu`, `reservation`, `reviews`
+
+**Fichiers modifiés** : `scripts/generate-site.mjs`, `src/utils/schema.js`,
+`templates/restaurant/pages/index.astro`
+
+**Vérification** :
+```bash
+grep -c '"Restaurant"' dist/exemple-restaurant/index.html  # → 1
+# Schema complet : @type Restaurant, acceptsReservations: true,
+# hasMenu (La Carte), openingHoursSpecification (4 entries),
+# servesCuisine: "cuisine francaise", aggregateRating, name, address, url
+# Bonus : a-propos LocalBusiness possede maintenant openingHoursSpecification (4)
+```
+
+---
+
+## Q5 — Meta descriptions trop courtes (MINEUR) — CORRIGÉ
+
+**Problème** : les descriptions SEO (63-95 car.) étaient sous la cible 120-160 car.
+
+**Correctif** : enrichissement des 8 patrons `seo_description` dans
+`templates/restaurant/template.yaml` avec des textes plus complets contenant
+CTA, activité et localisation. Longueurs après remplissage : 128-148 car.
+
+**Fichiers modifiés** : `templates/restaurant/template.yaml`
+
+**Vérification** :
+```bash
+python3 -c "
+import re
+paths = ['dist/exemple-restaurant/index.html', ..., 'dist/exemple-restaurant/en/a-propos/index.html']
+for p in paths:
+    m = re.search(r'content=\"(.*?)\"', open(p).read().split('name=\"description\"')[1][:200])
+    ok = 120 <= len(m.group(1)) <= 160
+    print(('OK' if ok else 'FAIL'), len(m.group(1)))
+"  # → OK 140, OK 148, OK 138, OK 128, OK 139, OK 139, OK 146, OK 144 (FR+EN)
+```
+
+---
+
+## Q6 — og:image absent (MINEUR) — CORRIGÉ
+
+**Problème** : aucune balise `og:image` dans le build (D-CS-05 requiert 1200×630).
+
+**Correctif** : résolution automatique dans `BaseLayout.astro` — émet `og:image`
+avec URL absolue quand `data.hero_image.src` existe, graceful (jamais de tag) sans image.
+
+**Décision D-FE-Q6-01** : pas de placeholder local (image placeholder visible
+dans les partages sociaux = mauvaise UX). Implémentation graceful — quand un
+client fournit `hero_image` (1200×630), la balise `og:image` apparaît automatiquement.
+Le champ `hero_image` est déjà requis dans `client_data.yaml` (schema = champ
+SHOULD au niveau système, REQUIRED pour tout site social-media-ready).
+
+**Fichiers modifiés** : `src/layouts/BaseLayout.astro`
+
+**Vérification** :
+```bash
+# Sans hero_image (client exemple) : graceful absent
+grep -c 'og:image' dist/exemple-restaurant/index.html  # → 0
+# Test avec hero_image injecté temporairement : émet URL absolue
+# https://la-table-dessai-demo.example.com/images/hero.jpg ✓
+```
+
+---
+
+## Stats post-sprint
+
+| Metrique | Avant | Après |
+|----------|-------|-------|
+| npm test | 30/30 | 30/30 ✓ |
+| validate:example | exit 0 | exit 0 ✓ |
+| build pages | 16 | 16 ✓ |
+| contrast | all pass (10 paires) | all pass (12 paires) ✓ |
+| CSS bundles | 2 (14,8 + 4,1 = 18,9 Ko) | 1 (17 Ko) ✓ |
+| cuisine cuisine | 2 occurrences | 0 ✓ |
+| JSON-LD Restaurant | absent | émis (complet) ✓ |
+| og:image | absent | graceful (0 ou URL) ✓ |
+| meta descriptions | 63-95 car. | 128-148 car. ✓ |
+| Pages 404/500 .ds-btn | non stylé | stylé (bundle global) ✓ |
+| LocalBusiness openingHours | manquant | 4 entries ✓ |
+
+## Dépendances
+
+- **DevOps (B1)** : l'upgrade Astro ≥ 7.3.2 (npm audit) reste prerequisite
+  avant production — les changements du sprint sont indépendants du versionnage.
+- **DevOps (B2)** : `public/_headers` (CSP, X-Frame-Options) pas impacté.
+- **content-seo** : le champ `seo.price_range` (COULD) est requis pour
+  l'émission `priceRange` dans le JSON-LD Restaurant — à documenter
+  dans CLIENT_DATA_VALIDATION.md et CLIENT_DATA_SCHEMA.md.

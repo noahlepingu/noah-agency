@@ -10,7 +10,7 @@
     },
     "a-propos": {
       "title": "About [Nom]",
-      "content": "[Nom] was born from a passion for [Activite] cuisine. Since opening in [Ville], our restaurant is committed to offering dishes made with fresh, local ingredients.",
+      "content": "[Nom] was born from a passion for [Activite]. Since opening in [Ville], our restaurant is committed to offering dishes made with fresh, local ingredients.",
       "values_title": "Our values",
       "values": ["Local and seasonal produce", "Homemade dishes", "Warm welcome"]
     },

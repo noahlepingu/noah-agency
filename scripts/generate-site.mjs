@@ -212,6 +212,15 @@ const data = {
   // sert de base (upsert coherent) mais ne remplace jamais une valeur client.
   third_party: deepMerge(template.third_party || {}, clientData.third_party || {}),
   hero_image: clientData.hero_image || null,
+  // Sections semantiques client exposees au top-level de data.json :
+  // consommees par les generateurs JSON-LD (schema.js) — restaurant()
+  // lit client.menu / client.reservation / client.reviews, localBusiness()
+  // lit client.opening_hours. Sans ces cles, le schema serait incomplet
+  // (hasMenu absent, acceptsReservations errone a "false", pas d'avis).
+  opening_hours: clientData.opening_hours || null,
+  menu: clientData.menu || null,
+  reservation: clientData.reservation || null,
+  reviews: clientData.reviews || null,
   site_pages: (template.pages || [])
     .filter(p => !['404', '500'].includes(p.route.replace(/^\//, '')))
     .map(p => ({ route: p.route, label: fillTemplate((p.seo_title || '').split('—')[0]?.trim() || p.route, placeholders) })),

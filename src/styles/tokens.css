@@ -102,6 +102,7 @@
 
   /* ---------------------------------------------------------------- 4.1 Couleurs fonctionnelles */
   --color-success: #059669;
+  --color-success-dark: #047857;
   --color-success-light: #d1fae5;
   --color-error: #dc2626;
   --color-error-light: #fee2e2;

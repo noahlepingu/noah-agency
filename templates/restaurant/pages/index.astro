@@ -29,12 +29,18 @@ const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
 const title = buildTitle({ title: data.seo_titles?.['/'] || texts.hero_title || data.business?.name || '' }, data);
 const description = buildDescription({ description: data.seo_descriptions?.['/'] || texts.hero_subtitle || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/');
+// og:image — D-CS-05 : resolue par BaseLayout depuis data.hero_image
+// (voir note dans BaseLayout.astro). Ici simple passage sans imageUrl.
 const og = buildOG({ title, description, pageUrl: canonical, siteName: data.business?.name });
 const hreflang = buildHreflang(siteUrl, '/', '/en/');
+// Q4 — D-CS-03 : schema.org Restaurant emis sur la homepage (hasMenu,
+// acceptsReservations, openingHoursSpecification, servesCuisine, priceRange).
+const schema = restaurant(data, siteUrl);
 ---
 
 <BaseLayout lang={lang} title={title} description={description} canonical={canonical}
   og={og} hreflang={hreflang} robots="index,follow" ui={ui} data={data}
+  jsonLd={[schema]}
   langSwitchHref={lang === 'en' ? '/' : '/en/'}>
 
   <Hero

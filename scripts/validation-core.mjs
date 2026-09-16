@@ -122,6 +122,7 @@ const FIELDS = [
   { path: 'seo.keywords', level: 'SHOULD', label: 'Mots-cles', action: 'Lister 5 a 10 mots-cles principaux', type: 'array', min: 1 },
   { path: 'seo.domain', level: 'REQUIRED', label: 'Domaine du site', action: 'Fournir le nom de domaine (canonical, sitemap, Open Graph) — regle C-17', type: 'string', format: 'domain' },
   { path: 'seo.google_business_id', level: 'COULD', label: 'ID Google Business', type: 'string' },
+  { path: 'seo.price_range', level: 'COULD', label: 'Fourchette de prix', action: 'Indiquer la fourchette de prix (schema.org priceRange, ex: "€€") — emise dans le JSON-LD Restaurant', type: 'string', min: 1, max: 12 },
 
   // --- SERVICES ---
   { path: 'services', level: 'REQUIRED', label: 'Services / prestations', action: 'Ajouter au moins un service', type: 'array', min: 1 },
