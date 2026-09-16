@@ -1,10 +1,11 @@
 # DEPLOYMENT.md — Procedures operationnelles de deploiement
 
-Version : 0.1 (Phase 3 — Infrastructure)
+Version : 0.2 (Phase 7 — Sprint Gate 4 : security headers, security.txt, dependabot)
 Porteur : DevOps Engineer (AGENT 12)
 Statut : ACTE — procedures applicables des que le depot GitHub est accessible.
 Reference : ADR-005 (Cloudflare Pages reference, Gate 4), CI_CD.md (pipeline),
-TECHNICAL_ARCHITECTURE.md §4 (pipeline de generation).
+TECHNICAL_ARCHITECTURE.md §4 (pipeline de generation),
+FINAL_REVIEW.md (conditions C-04, C-07, C-08, C-09).
 
 ---
 
@@ -226,6 +227,9 @@ qu'il est vert (les tests passent, le build exemple fonctionne).
 - [ ] Domaine achete et DNS configure (section 3)
 - [ ] Validation Noah de la preview locale (Gate 3)
 - [ ] `TODO_PRODUCTION.md` cochee (toutes les etapes)
+- [ ] `security.txt` du client complete (**§12.4** : contact + canonical + expires)
+- [ ] Endpoints de formulaire (si tiers actives) declares dans la CSP
+      (**§12.3** : connect-src + form-action)
 
 ### 6.2 Deploiement via GitHub Actions (recommande)
 
@@ -255,6 +259,10 @@ npx wrangler pages deploy dist/<slug> --project-name=<slug> --branch=production
 4. Tester sur mobile (responsive).
 5. Tester les liens internes (pas de 404).
 6. Google Rich Results Test (optionnel) : verifier le JSON-LD.
+7. **Verifier les en-tetes de securite (§12.2)** :
+   `curl -sI https://<domaine>/ | grep -iE 'strict-transport|x-content-type|x-frame|referrer-policy|permissions-policy|content-security-policy'`.
+8. **Verifier `security.txt`** : `curl -s https://<domaine>/.well-known/security.txt`
+   retourne le fichier complete (aucun placeholder `[CONTACT-EMAIL]` restant).
 
 ---
 
@@ -371,3 +379,125 @@ En resume rapide :
   fournies par Noah (point ouvert LEGAL n°24) — pas de les inventer.
 - **Service de formulaire** : a choisir avec le 1er client (point ouvert
   n°38/49). Le deploiement n'en depend pas (endpoint dans le YAML).
+
+---
+
+## 12. Securite HTTP et divulgation responsable (Sprint Gate 4)
+
+Ajoute en Phase 7 — Sprint Gate 4 (FINAL_REVIEW Phase 7, conditions
+C-04 / C-07 / C-08 / C-09). Justification complete de chaque en-tete et
+chaque champ : `project/docs/FINAL_REVIEW.md` (section « Sprint Gate 4 —
+Infrastructure securite »).
+
+### 12.1 En-tetes de securite — fichier `_headers` (format Cloudflare Pages)
+
+Le fichier `_headers` (format Cloudflare Pages : chemin puis directives
+indentees, commentaires `#` supportes) est applique a TOUTES les reponses
+statiques du site (HTTPS automatique). Il defense : clickjacking
+(X-Frame-Options + frame-ancestors), MIME sniffing (nosniff), downgrade
+HTTP (HSTS), fuite de Referer, activations de features navigateur non
+necessaires (Permissions-Policy), et restreint les sources de contenu
+(CSP).
+
+**Ou vivent les fichiers (attention au pipeline)** :
+
+- **Location canonique (deployee)** : `templates/<template>/public/_headers` —
+  copiee par `scripts/generate-site.mjs` §9 dans `src/sites/<slug>/public/`
+  puis dans `dist/<slug>/` par Astro. Chaque site client genere la recoit.
+- **Miroir documentaire** : `public/_headers` a la racine. Ce pipeline (v1)
+  ne copie que le favicon depuis la racine `public/` ; le miroir sert de
+  reference et evite une regression silencieuse si le pipeline evolue.
+  **Ne pas desynchroniser les deux copies.**
+
+**Verification dans le build** :
+
+```bash
+npm run build:example
+ls dist/exemple-restaurant/_headers          # fichier copie par Astro
+grep -c 'Strict-Transport-Security' dist/exemple-restaurant/_headers
+```
+
+### 12.2 Headers appliques et commande de verification
+
+| Header | Valeur | Effet |
+| ------ | ------ | ----- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS (1 an) — Cloudflare Pages est HTTPS par defaut, le HTTP redirige deja |
+| `X-Content-Type-Options` | `nosniff` | Interdit le MIME sniffing |
+| `X-Frame-Options` | `DENY` | Interdit l'encapsulation iframe (clickjacking) |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Referer : origine seule en cross-origin, complet en same-origin |
+| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), document-domain=()` | Desactive les features non utilisees ; fullscreen autorise sur le site (galerie) ; document-domain bloque |
+| `Content-Security-Policy` | voir §12.3 | Restreint les sources de scripts, styles, images, polices, connexions, iframes |
+
+**Verification post-deploy** :
+
+```bash
+curl -sI https://<domaine>/ | grep -iE 'strict-transport|x-content-type|x-frame|referrer-policy|permissions-policy|content-security-policy'
+```
+
+Les 6 en-tetes doivent etre presents et conformes au tableau ci-dessus.
+
+### 12.3 Content-Security-Policy — directives et regle operationnelle
+
+CSP appliquee (minimum viabilite pour un site statique Astro, zero tiers par
+defaut — ADR-008) :
+
+```text
+default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src https://www.openstreetmap.org; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+```
+
+| Directive | Valeur | Pourquoi (prouve par grep sur le build exemple) |
+| --------- | ------ | ----------------------------------------------- |
+| `default-src 'self'` | meme-origine par defaut | Aucun tiers par defaut ; toute ressource externe doit etre explicitement listee |
+| `script-src 'self' 'unsafe-inline'` | bundles `/_astro/*.js` + blocs inline | `'self'` : 3 bundles (ContactForm, ReservationForm, OpeningHours). `'unsafe-inline'` : 39 blocs `<script type="module">` inline generes par Astro (lang-switcher 178 o, burger menu 1 111 o, back-to-top 253 o). Compromis v1 documente : hashs/nonces = amelioration future (cf. SECURITY_AUDIT.md §6). Le JSON-LD (`application/ld+json`) n'est pas executable : non bloque par la CSP |
+| `style-src 'self' 'unsafe-inline'` | bundle CSS `/_astro/*.css` + `<style>` inline | Astro inline les styles : 2 blocs `<style>` par page (16/16 pages) + 24 attributs `style=""` dans le build |
+| `img-src 'self' data:` | images du site + data URIs | Images client (hero/gallery) servies en same-origin ; data: pour icones inline eventuelles |
+| `font-src 'self' data:` | polices self-hosted `/fonts/*.woff2` | ADR-010 (self-host) ; data: pour @font-face data-URI |
+| `connect-src 'self'` | fetch/XHR same-origin | Defaut = formulaire mailto (navigation, pas fetch) : OK. **Des qu'un endpoint formulaire tiers est configure (Web3Forms/Formspree), ajouter son origine ici** |
+| `frame-src https://www.openstreetmap.org` | iframe carte | Map OpenStreetMap (ADR-007) : 4 occurrences `embed.html` dans le build |
+| `base-uri 'self'` | anti injection `<base>` | Defense en profondeur |
+| `form-action 'self'` | cibles de soumission natives | **Des qu'un endpoint formulaire tiers est configure, ajouter son origine ici** (la soumission JS passe par fetch/connect-src, la soumission native sans JS par form-action) |
+| `frame-ancestors 'none'` | anti clickjacking | Plus fort que X-Frame-Options ; les deux sont poses (compatibilite navigateurs) |
+
+**Regle operationnelle (formulaire tiers)** : le jour ou un client active un
+endpoint externe (ex. `https://api.web3forms.com`), Noah met a jour
+`_headers` (canonique template) :
+
+```text
+connect-src 'self' https://api.web3forms.com; form-action 'self' https://api.web3forms.com
+```
+
+Puis redeploiement (Gate 4) et verification curl (le formulaire envoie bien).
+
+### 12.4 security.txt (RFC 9116)
+
+`/.well-known/security.txt` permet a quiconque de signaler une vulnerabilite.
+Format RFC 9116, servi en `text/plain` (automatique).
+
+| Champ | Valeur (modèle) | A remplir par Noah AVANT production reelle |
+| ----- | --------------- | ------------------------------------------- |
+| `Contact` | `mailto:[CONTACT-EMAIL]` | Email de contact securite du site client (jamais invente) |
+| `Expires` | `2027-09-16T00:00:00.000Z` | A renouveler chaque annee (RFC 9116 : max 1 an) — voir MAINTENANCE_PLAN.md §6.2 |
+| `Preferred-Languages` | `fr, en` | Ne change pas |
+| `Canonical` | `[SECURITY-TXT-URL]` | URL absolue du fichier sur le domaine du client (`https://<domaine>/.well-known/security.txt`) |
+| `Policy` | `tbd` | URL d'une politique de divulgation si Noah en publie une (sinon `tbd`) |
+
+**Ou vivent les fichiers** : `templates/<template>/public/.well-known/security.txt`
+(canonique, copie dans chaque build) + miroir `public/.well-known/`.
+Aucun placeholder ne doit rester dans le build deploie :
+
+```bash
+grep -c 'CONTACT-EMAIL' dist/<slug>/.well-known/security.txt   # doit retourner 0
+```
+
+### 12.5 Dependabot et npm audit (CI)
+
+- `.github/dependabot.yml` : ecosystem `npm`, directory `/`, **weekly**
+  (CVE npm traitees rapidement ; avec 2 dependances + dev-deps, le volume
+  de PR reste faible), `open-pull-requests-limit: 3`, reviewer Noah a
+  activer (ligne commentee dans le fichier).
+- CI (`ci.yml`) : etape `npm audit --audit-level=high` — **la CI echoue si
+  une vulnerabilite >= high apparait** (moderees et basses tolerees,
+  documentees dans FINAL_REVIEW.md). Completee par `npm run contrast`
+  (WCAG 1.4.3) apres les tests.
+- Alerte supplementaire : GitHub Security Advisories + Dependabot alerts
+  (Settings -> Code security du depot).

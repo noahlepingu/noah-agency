@@ -64,16 +64,13 @@ Une version majeure n'est appliquee qu'apres :
 3. Meme procedure que ci-dessus avec `npm install <package>@next` (ou la
    version stable ciblee) apres lecture du changelog.
 
-### 3.4 Dependabot (optionnel, recommande)
+### 3.4 Dependabot (configure — .github/dependabot.yml, weekly, 3 PR max)
 
-Activer Dependabot sur GitHub (Security -> Dependabot -> Enable) :
-
-- Watch npm ecosystem, weekly, dev dependencies incluses.
-- Il cree des PR automatiquement -> la CI les verifie -> Noah/agent les
-  merge apres validation.
-
-**Delai contractuel** : CVE critique traitee sous 7 jours (MAINTENANCE_PLAN
-architecte §2).
+- Watch npm ecosystem, weekly, dev dependencies incluses ; chaque PR est
+  verifiee par la CI (tests + `npm audit --audit-level=high` + build).
+- Reviewer Noah : decommenter la ligne dans `.github/dependabot.yml`.
+- **Delai contractuel** : CVE critique traitee sous 7 jours (MAINTENANCE_PLAN
+  architecte §2).
 
 ## 4. Renouvellement du domaine — procedure concrete
 
@@ -123,6 +120,11 @@ Cf. MONITORING.md. En resume :
       donnees encore exactes
 - [ ] Horaires/menu : aucun changement a faire ce mois-ci ? (sinon mise a
       jour YAML a la demande du client)
+- [ ] `security.txt` : date `Expires` encore valide (RFC 9116, max 1 an —
+      renouveler/verifier si < 6 mois) ; contact/canonical a jour
+      (DEPLOYMENT.md §12.4)
+- [ ] En-tetes de securite toujours poses : `curl -sI https://<domaine>/`
+      contient bien HSTS, nosniff, DENY, Referrer-Policy et la CSP
 - [ ] Performance : PageSpeed Insights >= 90 (si regression, ticket)
 
 ### 6.3 Domaine

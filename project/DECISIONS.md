@@ -535,3 +535,36 @@ aucune ne remet en cause l'architecture (ADR-001..008). Critere cible : WCAG 2.2
 | 2026-09-16 | **D-FE-Q6-01 : og:image graceful, jamais de placeholder invente** | Frontend Engineer | Sprint qualite Q1-Q6 (Phase 7). og:image resolue dans BaseLayout depuis `data.hero_image.src` (URL absolue construite via `data.site_url`), priorite sur `og['og:image']` explicite ; aucune balise emise si aucune image (pas de placeholder local : image placeholder visible dans les partages sociaux = mauvaise UX). Des qu'un client fournit `hero_image` 1200x630, toutes les pages emettent automatiquement og:image. |
 | 2026-09-16 | **D-FE-Q6-02 : styles `.ds-btn` globalises (D-PERF-02)** | Frontend Engineer | Sprint qualite Q1-Q6 (Phase 7). Les styles `.ds-btn` sont deplaces du `<style>` scope du composant CTA vers `src/styles/buttons.css` (global, importe par BaseLayout). Raison : Header, StatePage (404/500), CookieBanner, ContactForm, ReservationForm utilisent `.ds-btn` en HTML brut ; le scoping Astro du composant CTA (`[data-astro-cid-4xty6sx2]`) les laissait non styles sur toutes les pages sans <CTA>. Resultat : bundle CSS global unique (17 Ko < 18,9 Ko), pages 404/500 conformes. |
 | 2026-09-16 | **D-FE-Q6-03 : JSON-LD complete via data.json top-level** | Frontend Engineer | Sprint qualite Q1-Q6 (Phase 7). Ajout de `opening_hours`, `menu`, `reservation`, `reviews` au top-level de data.json (copie depuis clientData). Les generateurs schema.js (restaurant/localBusiness) lisent ces sections ; leur absence produisait un schema incomplet (hasMenu absent, acceptsReservations errone a "false", openingHoursSpecification manquant). `priceRange` n'est emis que si le client fournit `seo.price_range` (champ COULD ajoute a la validation) — jamais invente. |
+
+## Decisions Phase 7 — Sprint Gate 4 — Infrastructure securite (2026-09-16)
+
+Statut : **ACTEES** — decisions prises par le DevOps Engineer pour lever les
+conditions bloquantes Gate 4 (C-04, C-07, C-08, C-09) du FINAL_REVIEW Phase 7.
+Reference : SECURITY_AUDIT.md §6/§12 (REC-06, REC-08), FINAL_REVIEW.md
+(section « Sprint Gate 4 — Infrastructure securite »), DEPLOYMENT.md §12.
+Livrables : `templates/restaurant/public/_headers` (canonique) + miroir
+`public/_headers`, `templates/restaurant/public/.well-known/security.txt`
+(canonique) + miroir `public/.well-known/`, `.github/dependabot.yml`,
+etapes `npm audit --audit-level=high` + `npm run contrast` dans `ci.yml`,
+Node 22 dans `ci.yml`, docs (DEPLOYMENT, TODO_PRODUCTION, CI_CD,
+MAINTENANCE_PLAN, FINAL_REVIEW).
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-DEVOPS-10 | **Headers HTTP dans `templates/<template>/public/_headers` (canonique) + miroir `public/`** | Le pipeline ADR-002 copie `templates/<template>/public/` dans chaque build client (la racine `public/` ne fournit que le favicon). Le fichier canonique vit donc dans le template ; le miroir racine documente l'intention et protege d'une regression si le pipeline evolue. Format Cloudflare Pages (`/*` + directives indentees, commentaires `#` OK). Headers : HSTS, nosniff, DENY, Referrer-Policy, Permissions-Policy (8 features desactivees + fullscreen=self + document-domain), CSP stricte (default-src 'self', script/style 'unsafe-inline' justifie par 39 blocs inline Astro, img/font self+data, connect-src 'self', frame-src OSM, base-uri, form-action 'self', frame-ancestors 'none') | OUI (config deploiement — C-04) |
+| D-DEVOPS-11 | **CSP : `unsafe-inline` assume en v1, hashs/nonces en evolution future** | Le build Astro genere 39 blocs `<script type="module">` inline (burger, back-to-top, lang-switcher, lightbox) et 2 `<style>` par page : une CSP sans `unsafe-inline` casserait le site. Les hashs/nonces exigent une etape de post-build (hors perimetre, sprint Astro en cours). Seuil : `connect-src`/`form-action` 'self' + regle operationnelle (ajouter l'origine du prestataire formulaire quand un endpoint tiers est active — DEPLOYMENT.md §12.3) | OUI (niveau de securite) |
+| D-DEVOPS-12 | **security.txt RFC 9116 dans `templates/<template>/public/.well-known/` + miroir racine** | Placeholders `[CONTACT-EMAIL]`, `[SECURITY-TXT-URL]`, `Policy: tbd`, `Expires: 2027-09-16` (a renouveler annuellement — RFC 9116 max 1 an). Noah remplit les placeholders par client avant production reelle (checklist TODO_PRODUCTION §3.3, MAINTENANCE_PLAN §6.2) | OUI (contact securite reel — C-07) |
+| D-DEVOPS-13 | **CI : `npm audit --audit-level=high` bloquant** | La CI echoue si une vulnerabilite >= high apparait (Gate 4 sur les dependances). Niveau high retenu : moderees/basses non bloquantes mais suivies par Dependabot weekly. `--omit=dev` non retenu (les dev-deps esbuild/sharp impactent le build en CI). Pratique : `npm audit` = 0 vuln (astro@7.3.2, sprint parallele) | — (C-09) |
+| D-DEVOPS-14 | **Dependabot : npm weekly, 3 PR max, reviewer Noah placeholder** | Weekly retenu pour un delai court sur les CVE npm (volume faible, plafonne). Reviewer Noah en placeholder commente (compte GitHub reel a confirmer). Chaque PR passe par la CI (audit inclus) avant merge | — (C-08) |
+| D-DEVOPS-15 | **Node 22 dans ci.yml (dependance du sprint Astro 7)** | Astro 7 refuse Node 20 (`engines >= 22.12.0` exiges par le sprint parallele). Node 22 convient aussi a Astro 5 : mise a jour CI sans risque. **Dependance signalee : `deploy-site.yml` utilise toujours node-version: 20 et cassera avec astro@7.3.2 — a aligner par le sprint frontend (hors perimetre de cette mission)** | — (dependance croisee) |
+
+### Points ouverts — Sprint Gate 4 (DevOps)
+
+68. **deploy-site.yml Node 20 -> 22** : dependance croisee avec le sprint
+    frontend Astro (a aligner, 1 ligne).
+69. **Reviewer Noah Dependabot** : le compte GitHub reel de Noah doit etre
+    renseigne (ligne commentee dans `.github/dependabot.yml`).
+70. **Endpoint formulaire tiers -> CSP** : procedurale (DEPLOYMENT.md §12.3),
+    a executer au 1er client reel activant Formspree/Web3Forms.
+71. **Hashs/nonces CSP** : evolution future (post-build) pour retirer
+    `unsafe-inline` de script-src — non bloquante Gate 4.

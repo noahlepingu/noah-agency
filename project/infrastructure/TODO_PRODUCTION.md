@@ -32,7 +32,10 @@ et avant chaque livraison client.
 - [ ] Workflow `deploy-site.yml` visible dans Actions (declencheur manuel)
 - [ ] (Recommande) Protection de branche `main` : PR requise
 - [ ] (Recommande) Environnement « production » avec reviewer « Noah »
-- [ ] (Optionnel) Dependabot active
+- [ ] Dependabot actif (`.github/dependabot.yml`, weekly, lim. 3 PR) — verifier
+      qu'une alerte npm CVE cree bien une PR (Settings -> Code security)
+- [ ] CI `ci.yml` contient les etapes securite : `npm audit --audit-level=high`
+      + `npm run contrast` (Sprint Gate 4, C-09)
 
 ### 2.2 Hebergeur et domaine du systeme
 
@@ -89,6 +92,9 @@ et avant chaque livraison client.
       duree, droits) affichee sous le formulaire
 - [ ] Le service de formulaire est declare comme **sous-traitant** dans le
       registre RGPD du projet ; ses conditions/quotas documentes
+- [ ] **Si endpoint formulaire tiers actif** : l'origine du prestataire est
+      ajoutee a la CSP (`connect-src` + `form-action`) dans le `_headers`
+      canonique (DEPLOYMENT.md §12.3) — sinon les envois seront bloques
 
 ### 3.3 Domaine, DNS, HTTPS
 
@@ -97,6 +103,13 @@ et avant chaque livraison client.
 - [ ] Domaine ajoute dans Cloudflare Pages -> Custom Domains
 - [ ] HTTPS actif et renouvelable automatiquement (verif :
       `curl -I https://<domaine>/` -> HTTP 200, certificat valide)
+- [ ] En-tetes de securite poses (Sprint Gate 4, C-04) :
+      `curl -sI https://<domaine>/ | grep -iE 'strict-transport|x-content-type|x-frame|referrer-policy|permissions-policy|content-security-policy'`
+      -> les 6 en-tetes presents et conformes (DEPLOYMENT.md §12.2)
+- [ ] `security.txt` complete par Noah (Sprint Gate 4, C-07) :
+      Contact + Canonical + Expires valides, **aucun placeholder
+      `[CONTACT-EMAIL]` / `[SECURITY-TXT-URL]`** dans
+      `dist/<slug>/.well-known/security.txt` (DEPLOYMENT.md §12.4)
 - [ ] UptimeRobot monitor cree pour `https://<domaine>/`
 
 ### 3.4 Deploiement (Gate 3 -> Gate 4)

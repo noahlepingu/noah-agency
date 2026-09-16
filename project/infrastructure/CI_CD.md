@@ -70,17 +70,23 @@ Deux workflows dans `.github/workflows/` :
 Sur **chaque push `main`** et **chaque PR vers `main`** :
 
 1. `actions/checkout@v4`
-2. `actions/setup-node@v4` — Node 20 LTS (compatible `engines` package.json)
+2. `actions/setup-node@v4` — Node 22 LTS (requis par `engines` >=22.12.0
+   apres l'upgrade Astro 7 du sprint parallele ; la CI a ete alignee sur 22)
 3. `npm ci` (installation reproductible depuis package-lock.json)
 4. `npm test` — 30 tests unitaires (validation, reservation, forms)
-5. `npm run validate:example` — validation du client exemple (code 0 attendu)
-6. `npm run build:example` — generation + build Astro du client exemple
+5. `npm audit --audit-level=high` — **echec si vulnerabilite >= high**
+   (Sprint Gate 4, condition C-09)
+6. `npm run contrast` — contraste des tokens design system (WCAG 1.4.3)
+7. `npm run validate:example` — validation du client exemple (code 0 attendu)
+8. `npm run build:example` — generation + build Astro du client exemple
    (sortie `dist/exemple-restaurant/`)
-7. Upload de `dist/` en artefact (optionnel, conserve 7 jours) pour
+9. Upload de `dist/` en artefact (optionnel, conserve 7 jours) pour
    inspection/preview manuelle si besoin
 
-La CI ne deploie **jamais** : elle verifie uniquement que le systeme est
-sain. Le commit du client exemple bloque s'il est invalide.
+En resume : la CI garantit la sante du systeme (tests,
+audit des dependances, contraste, validation client exemple, build de
+reference). Elle bloque un commit/PR invalide ou vulnerable (>= high).
+La CD (deploiement) est uniquement manuelle (Gate 4).
 
 ### 3.2 `deploy-site.yml` — deploiement d'un site client (Gate 4)
 

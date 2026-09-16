@@ -25,10 +25,10 @@ jobs:
       - name: Recuperer le depot
         uses: actions/checkout@v4
 
-      - name: Installer Node.js 20 LTS
+      - name: Installer Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Installer les dependances (reproductible)
@@ -36,6 +36,12 @@ jobs:
 
       - name: Tests unitaires (node:test)
         run: npm test
+
+      - name: Audit de securite des dependances (echec si >= high)
+        run: npm audit --audit-level=high
+
+      - name: Contraste des tokens du design system (WCAG 1.4.3)
+        run: npm run contrast
 
       - name: Valider le client exemple (code 0 obligatoire)
         run: npm run validate:example

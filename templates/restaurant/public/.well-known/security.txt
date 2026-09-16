@@ -1,0 +1,24 @@
+# security.txt — RFC 9116 (https://www.rfc-editor.org/rfc/rfc9116)
+#
+# Fichier de divulgation responsable : permet a quiconque de signaler une
+# vulnerabilite de securite au responsable du site. Servi sous
+# /.well-known/security.txt, Content-Type text/plain (automatique).
+#
+# LOCATION CANONIQUE : templates/<template>/public/.well-known/security.txt
+#   -> copie par scripts/generate-site.mjs §9 dans chaque build client.
+#   La copie a la racine public/.well-known/ est un MIROIR documentaire.
+#
+# A COMPLETER PAR NOAH AVANT TOUTE MISE EN PRODUCTION REELLE
+# (un fichier par site client — voir DEPLOYMENT.md §12.4 et TODO_PRODUCTION.md) :
+#   [CONTACT-EMAIL]  -> email de contact securite du client
+#                       (ex. security@latabledessai.fr)
+#   [SECURITY-TXT-URL] -> URL canonique du fichier sur le domaine du client
+#                       (ex. https://latabledessai.fr/.well-known/security.txt)
+#   Expires          -> a renouveler chaque annee (RFC 9116 : <= 1 an)
+#   Policy           -> URL vers la politique de divulgation (ou "tbd")
+
+Contact: mailto:[CONTACT-EMAIL]
+Expires: 2027-09-16T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: [SECURITY-TXT-URL]
+Policy: tbd

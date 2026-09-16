@@ -1,0 +1,17 @@
+# noah-agency — Security Headers Cloudflare Pages (condition C-04 du FINAL_REVIEW Phase 7)
+#
+# MIROIR DOCUMENTAIRE : la LOCATION CANONIQUE est templates/<template>/public/_headers
+# (copiee dans chaque build client par scripts/generate-site.mjs §9).
+# Ce pipeline (v1) ne copie que le favicon depuis la racine public/ ; ce
+# miroir documente l'intention et sert de reference si le pipeline evolue.
+# Ne pas desynchroniser les deux copies (meme contenu).
+#
+# Format Cloudflare Pages : [url] puis lignes indentees `  [Nom]: valeur`.
+# Justification : project/docs/FINAL_REVIEW.md (« Sprint Gate 4 »).
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), document-domain=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src https://www.openstreetmap.org; base-uri 'self'; form-action 'self'; frame-ancestors 'none'

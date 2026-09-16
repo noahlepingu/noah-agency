@@ -448,3 +448,240 @@ grep -c 'og:image' dist/exemple-restaurant/index.html  # → 0
 - **content-seo** : le champ `seo.price_range` (COULD) est requis pour
   l'émission `priceRange` dans le JSON-LD Restaurant — à documenter
   dans CLIENT_DATA_VALIDATION.md et CLIENT_DATA_SCHEMA.md.
+
+---
+
+# Sprint Gate 4 — Infrastructure securite
+
+Date : 2026-09-16
+Responsable : AGENT 12 — DevOps Engineer
+Portée : conditions bloquantes Gate 4 du verdict FINAL_REVIEW Phase 7 :
+**B2 / C-04** (headers HTTP), **B4 / C-07** (security.txt), **B5 / C-09**
+(npm audit CI), **B6 / C-08** (Dependabot). Bonus : `npm run contrast` dans
+la CI.
+Périmètre respecté : `public/` + miroir `templates/restaurant/public/`,
+`.github/`, `project/infrastructure/`, `project/docs/`. **Aucune
+modification de `package.json` / `src/`** (sprint frontend Astro 5→7 en
+parallèle — celui-ci est arrivé à astro@7.3.2, `npm audit` = 0 vulnérabilité).
+
+## Résumé exécutif
+
+Les 4 conditions (C-04, C-07, C-08, C-09) sont levées. Vérifications :
+
+- `npm audit` **0 vulnérabilité** (astro@7.3.2 déjà installé par le sprint
+  parallèle) → l'étape CI `npm audit --audit-level=high` passe au vert.
+- `npm run build:example` : **16 pages OK** — `dist/exemple-restaurant/_headers`
+  et `dist/exemple-restaurant/.well-known/security.txt` présents.
+- 30/30 tests PASS, `validate:example` exit 0, `contrast` all pass.
+
+## B2 / C-04 — Fichier `_headers` (MAJEUR — corrigé)
+
+### Emplacement (point important, variance documentée au pipeline)
+
+Le pipeline réel (ADR-002) ne copie **pas** la racine `public/` en bloc : 
+`scripts/generate-site.mjs` §9 ne récupère que `favicon.svg` de la racine
+et copie **`templates/<template>/public/`** dans `src/sites/<slug>/public/`
+(→ `dist/<slug>/` par Astro). Deux choix d'implantation cohérents avec
+l'énoncé de mission (« cree `public/_headers` ») :
+
+1. **Canonique (déployée)** : `templates/restaurant/public/_headers` —
+   copiée dans **chaque** build client par le pipeline, vérifiée dans `dist/`.
+2. **Miroir** : `public/_headers` — même contenu, sert de référence
+   documentaire (et évite une régression silencieuse si le pipeline évolue
+   vers une copie de la racine). `grep` de désynchronisation possible.
+
+Le format Cloudflare Pages est confirmé sur la doc officielle
+(developers.cloudflare.com/pages/configuration/headers/) : chemin / glob puis
+lignes indentées `  [Nom]: valeur` ; les **commentaires `#` sont supportés**.
+Un seul glob `/*` suffit (le site entier est l'application ; les en-têtes
+sur les assets `/_astro/*` sont inoffensifs) — pas de globs supplémentaires
+nécessaires.
+
+### Contenu exact (identique dans les 2 copies)
+
+```text
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), document-domain=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src https://www.openstreetmap.org; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+```
+
+### Justification de chaque directive (preuves grep sur le build 16 pages)
+
+| Directive | Valeur | Preuve grep (build exemple) | Pourquoi |
+| --------- | ------ | --------------------------- | -------- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | — | Force HTTPS 1 an (y compris sous-domaines). Cloudflare Pages = HTTPS par défaut (certificat auto, HTTP→HTTPS) : HSTS valide sans risque de blocage en HTTP |
+| `X-Content-Type-Options` | `nosniff` | — | Anti MIME sniffing |
+| `X-Frame-Options` | `DENY` | — | Anti clickjacking (compatible navigateurs ne supportant pas `frame-ancestors`) |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | — | Referer complet en même-origine, origine seule en cross-origin ; cohérent avec la correction mineure Map (no-referrer, REC-05) |
+| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), document-domain=()` | aucun usage de ces features dans le build | Désactive les features non utilisées (privacy by design) ; `fullscreen=(self)` conservé (galerie) ; `document-domain=()` ajouté (durcissement, exemple officiel Cloudflare) |
+| `default-src 'self'` | même-origine par défaut | 0 requête tierce dans le build (aucun `src/href` http(s) externe hors OSM) | Zéro tiers par défaut (ADR-008) ; toute ressource externe devra être listée explicitement |
+| `script-src 'self' 'unsafe-inline'` | bundles + blocs inline | `grep -rho '<script type="module">' dist/ | wc -l` = **39** ; bundles externes : ContactForm (2), OpeningHours (4), ReservationForm (1) | `'self'` : les 3 bundles `/_astro/*.js`. `'unsafe-inline'` : **obligatoire en v1** — Astro génère des blocs inline exécutables : burger menu (16×, 1 111 o), back-to-top (16×, 253 o), lang-switcher (6×, 178 o), lightbox galerie (1×). Les blocs JSON-LD (7×) ne sont pas exécutés (non bloqués par CSP). Compromis documenté (SECURITY_AUDIT §6) : hashs/nonces = évolution future nécessitant une étape de post-build (hors périmètre v1, sprint Astro en cours) |
+| `style-src 'self' 'unsafe-inline'` | bundle CSS + styles inline | `<style>` sur **16/16** pages (2 blocs/page) ; attributs `style="` : **24** | Astro inline les styles (2 blocs par page) + attributes inline du theme : `'unsafe-inline'` requis |
+| `img-src 'self' data:` | images same-origin + data URIs | 0 data:image dans le build actuel | Images client réelles (hero/gallery) servies en même-origine ; data: pour icônes inline futures |
+| `font-src 'self' data:` | polices self-hosted | `fonts.css` déclare `@font-face` vers `/fonts/*.woff2` (ADR-010) | Polices self-hosted (plus de CDN Google — B2 fixé Phase 6) ; data: pour @font-face data-URI |
+| `connect-src 'self'` | fetch/XHR même-origine | formulaire démo = fallback **mailto** (navigation, pas fetch) ; `src/utils/forms.js` n'utilise fetch que si `form_endpoint` http | **Règle opérationnelle documentée** : dès qu'un client active un endpoint tiers (Web3Forms/Formspree), ajouter son origine à `connect-src` ET `form-action` (DEPLOYMENT.md §12.3, TODO_PRODUCTION.md) |
+| `frame-src https://www.openstreetmap.org` | iframe carte | `grep -rho 'src="https://www.openstreetmap.org[^"]*"' dist/` = **4** embed.html | Map OpenStreetMap (ADR-007) — seule iframe du système |
+| `base-uri 'self'` | anti `<base>` | — | Defense en profondeur |
+| `form-action 'self'` | soumissions natives | formulaires en JS (preventDefault + fetch) en v1 ; same caveat endpoint tier | même règle opérationnelle que `connect-src` ; en l'absence de JS c'est la soumission native qui est contrôlée |
+| `frame-ancestors 'none'` | anti clickjacking | — | Plus fort que X-Frame-Options (CSP3) ; les deux posés (défense en profondeur) |
+
+Non inclus (documenté) : `upgrade-insecure-requests` (site 100 % HTTPS via
+HSTS + Cloudflare, aucune ressource http://) ; `X-Robots-Tag` (l'indexation
+est gérée par `robots.txt` ; les pages légales ont déjà `<meta
+robots="noindex">` via LegalLayout). `script-src-attr`/`style-src-attr` :
+aucun handler inline (`onclick=` : **0**, `javascript:` : **0**) — couverts
+par défaut.
+
+## B4 / C-07 — security.txt (RFC 9116) (MAJEUR — corrigé)
+
+Créé dans `templates/restaurant/public/.well-known/security.txt` (canonique,
+copié dans chaque build) + miroir `public/.well-known/`. Vérifié dans
+`dist/exemple-restaurant/.well-known/security.txt`.
+
+```text
+Contact: mailto:[CONTACT-EMAIL]
+Expires: 2027-09-16T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: [SECURITY-TXT-URL]
+Policy: tbd
+```
+
+**Placeholders à remplacer par Noah avant production réelle** (champ par
+champ, DEPLOYMENT.md §12.4, TODO_PRODUCTION.md §3.3) :
+
+| Placeholder | Remplacer par | Exemple |
+| ----------- | ------------- | ------- |
+| `[CONTACT-EMAIL]` | Email de contact sécurité **du site client** (jamais inventé) | `security@latabledessai.fr` |
+| `[SECURITY-TXT-URL]` | URL absolue du fichier sur le domaine du client | `https://latabledessai.fr/.well-known/security.txt` |
+| `Expires` | Date ≤ 1 an après publication (RFC 9116) | `2027-09-16T00:00:00.000Z` — **renouveler chaque année** (ajouté à la checklist mensuelle MAINTENANCE_PLAN.md §6.2) |
+| `Policy` | URL d'une politique de divulgation (sinon `tbd`) | `tbd` par défaut |
+
+Vérification pré-production : `grep -c 'CONTACT-EMAIL' dist/<slug>/.well-known/security.txt`
+— doit retourner **0** (aucun placeholder restant ; le build démo conserve les
+placeholders tant que Noah n'a pas défini le contact réel du client).
+
+## B5 / C-09 — npm audit dans le CI (MAJEUR — corrigé)
+
+Dans `.github/workflows/ci.yml`, après les tests :
+
+```yaml
+- name: Audit de securite des dependances (echec si >= high)
+  run: npm audit --audit-level=high
+```
+
+**Choix du niveau `high`** : la CI échoue si une vulnérabilité **haute ou
+critique** apparaît (bloquant Gate 4), tout en tolérant les niveaux modérés
+et bas (non bloquants, suivis par Dependabot weekly). Pour un site statique
+zero-exécution-serveur, le risque exploitable est concentré au build
+(cf. audit Phase 4) ; les vulnérabilités hautes/critiques dans les
+dépendances de build sont donc le bon seuil de blocage, sans immobiliser le
+pipeline pour des niveaux modérés sans impact. Le sprint parallèle ayant
+porté astro à 7.3.2, `npm audit --audit-level=high` passe à 0 vulnérabilité.
+`--omit=dev` non retenu : les vulnérabilités de dev-deps (esbuild/sharp)
+impactent le build (exécution en CI) ; les garder dans le périmètre.
+
+**Note exercée par le DevOps** : le sprint parallèle Astro exigent
+`engines >=22.12.0` (Astro 7 refuse Node 20) — `ci.yml` charge maintenant
+Node 22 (setup-node). **Dépendance signalée au sprint frontend** :
+`.github/workflows/deploy-site.yml` utilise encore `node-version: 20`
+(ligne 53) et cassera avec astro@7.3.2 — à aligner sur 22 par le sprint
+Astro (CD hors périmètre de celui-ci).
+
+## C-08 / B6 — Dependabot (MINEUR — corrigé)
+
+`.github/dependabot.yml` :
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    reviewers:
+      # - "yugmerabtene"   # à activer : reviewer Noah
+```
+
+**Choix weekly vs monthly** : le rythme hebdomadaire est retenu car les CVE
+npm (astro, yaml) justifient un délai court de prise en compte ; le volume
+est faible (2 dépendances + dev-deps) et plafonné par
+`open-pull-requests-limit: 3`. Chaque PR Dependabot est vérifiée par le CI
+(dont `npm audit --audit-level=high`) avant merge par Noah — cohérent avec
+la procédure « CVE critique < 7 jours » (MAINTENANCE_PLAN.md §3.4). Le
+reviewer Noah est laissé en placeholder commenté (compte GitHub réel à
+confirmer).
+
+## Bonus — `npm run contrast` dans la CI
+
+Ajouté après `npm test` (script existant, zéro dépendance) :
+
+```yaml
+- name: Contraste des tokens du design system (WCAG 1.4.3)
+  run: npm run contrast
+```
+
+Verrouille la régression de contraste du thème généré (M6 Phase 6, Q2)
+à chaque push/PR.
+
+## Checklist mise à jour (TODO_PRODUCTION.md)
+
+- **§2.1 Système** : Dependabot actif (obligatoire, plus optionnel),
+  CI avec audit + contrast.
+- **§3.3 Client** : en-têtes de sécurité vérifiés au post-deploy (curl des
+  6 headers), `security.txt` complété (aucun placeholder), endpoints
+  formulaire tiers intégrés à la CSP (`connect-src` + `form-action`).
+- **§3.4 Gate 3→4** : renvois à DEPLOYMENT.md §12.
+- **MAINTENANCE_PLAN.md §6.2** : renouvellement annuel `Expires` de
+  security.txt + re-vérification mensuelle des en-têtes.
+
+## Vérifications finales (exécutées)
+
+```bash
+npm run build:example        # 16 pages OK (Node 22, astro@7.3.2)
+ls dist/exemple-restaurant/_headers                        # présent
+ls dist/exemple-restaurant/.well-known/security.txt        # présent
+grep -c 'Strict-Transport-Security' dist/exemple-restaurant/_headers  # 1
+grep -rho '<script type="module">' dist/exemple-restaurant/ | wc -l   # 39 (inline)
+grep -rho '<style' dist/exemple-restaurant/ | wc -l                  # 32 (2/page, 16 pages)
+grep -rho 'src="https://www.openstreetmap.org[^"]*"' dist/exemple-restaurant/ | wc -l  # 4
+npm test                    # 30/30 PASS
+npm run validate:example    # exit 0
+npm run contrast            # all pass
+npm audit --audit-level=high  # 0 vulnérabilité
+```
+
+## Conformité avec SECURITY_AUDIT.md (§6)
+
+La condition C-04 reprend exactement la recommandation REC-06 :
+HSTS, nosniff, DENY, Referrer-Policy, Permissions-Policy, CSP. La CSP
+appliquée est **stricte** (plus restrictive que le modèle de l'audit :
+`font-src` sans `*`, `base-uri`, `frame-ancestors`) mais prouvée
+compatible avec le build réel (grep ci-dessus). `security.txt` est créé
+(attendu par l'audit §6). Dependabot + npm audit CI résolvent REC-08.
+Aucun conflit relevé — la preuve applicative (build + curl dist) prime sur
+le modèle théorique ; chaque écart au modèle de l'audit est explicitement
+justifié ci-dessus.
+
+## Points ouverts transmis
+
+1. **deploy-site.yml Node 20 → 22** : à traiter par le sprint Astro
+   (dépendance croisée signalée).
+2. **Hashs/nonces CSP** (`script-src` sans `unsafe-inline`) : évolution
+   future (post-build) — documentée, non bloquante Gate 4.
+3. **Endpoint formulaire tiers** : l'activation d'un endpoint externe chez
+   un client réel exige la mise à jour `connect-src`/`form-action` de la
+   CSP (procédure DEPLOYMENT.md §12.3, checklist TODO_PRODUCTION §3.2).
+4. **security.txt par client** : placeholders à remplir par Noah avant
+   chaque mise en production réelle (le template fournit le squelette
+   commun).

@@ -1,0 +1,18 @@
+# security.txt — RFC 9116 (https://www.rfc-editor.org/rfc/rfc9116)
+#
+# MIROIR DOCUMENTAIRE : la LOCATION CANONIQUE est
+# templates/<template>/public/.well-known/security.txt (copiee dans chaque
+# build client par scripts/generate-site.mjs §9). Ce pipeline (v1) ne copie
+# que le favicon depuis la racine public/.
+#
+# A COMPLETER PAR NOAH AVANT TOUTE MISE EN PRODUCTION REELLE
+# (voir DEPLOYMENT.md §12.4 et TODO_PRODUCTION.md) :
+#   [CONTACT-EMAIL]    -> email de contact securite du client
+#   [SECURITY-TXT-URL] -> URL canonique sur le domaine du client
+#   Expires            -> a renouveler chaque annee (RFC 9116 : <= 1 an)
+
+Contact: mailto:[CONTACT-EMAIL]
+Expires: 2027-09-16T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: [SECURITY-TXT-URL]
+Policy: tbd

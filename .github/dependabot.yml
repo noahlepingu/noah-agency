@@ -1,0 +1,27 @@
+# dependabot.yml — mise a jour automatique des dependances npm (condition C-08)
+#
+# Choix documentes (project/docs/FINAL_REVIEW.md, section « Sprint Gate 4 ») :
+#   - schedule weekly : les CVE npm (astro, yaml) meritent un delai court ;
+#     avec 2 dependances + dev-deps, le volume de PR reste < 3/mois.
+#   - open-pull-requests-limit: 3 : plafonne le bruit et les conflits.
+#   - Chaque PR Dependabot est verifiee par la CI (ci.yml : tests + audit
+#     + validate + build) avant merge par Noah.
+#   - CVE critique (niveau >= high) : traitee sous 7 jours (MAINTENANCE_PLAN.md §3.4).
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    reviewers:
+      # Decommenter et renseigner le compte GitHub de Noah pour qu'il soit
+      # reviewer automatique des PR Dependabot :
+      # - "yugmerabtene"
