@@ -40,14 +40,17 @@ jobs:
       - name: Audit de securite des dependances (echec si >= high)
         run: npm audit --audit-level=high
 
-      - name: Contraste des tokens du design system (WCAG 1.4.3)
-        run: npm run contrast
-
       - name: Valider le client exemple (code 0 obligatoire)
         run: npm run validate:example
 
       - name: Build du client exemple (generation + astro build)
         run: npm run build:example
+
+      # Le contraste lit src/sites/<slug>/theme.css, genere par le build
+      # (src/sites/ n'est pas commite : le site exemple est entierement genere).
+      # L'etape doit donc tourner APRES le build, pas avant.
+      - name: Contraste des tokens du design system (WCAG 1.4.3)
+        run: npm run contrast
 
       - name: Uploader l'artefact dist (inspection, 7 jours)
         uses: actions/upload-artifact@v4
