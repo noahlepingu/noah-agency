@@ -123,9 +123,9 @@ third_party:
 
 # Branding defaut (theme.css genere depuis branding du client_data.yaml)
 branding:
-  primary_color: "#B91C1C"
-  secondary_color: "#F59E0B"
-  accent_color: "#DC2626"
+  primary_color: "#3A2E27"
+  secondary_color: "#A67C52"
+  accent_color: "#B4542C"
   fonts:
-    heading: "Playfair Display"
+    heading: "Fraunces"
     body: "Inter"

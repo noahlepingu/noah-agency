@@ -1,10 +1,11 @@
 ---
 /**
- * Footer.astro — Pied de page (DESIGN_SYSTEM_SPECS.md §5.2, SITEMAP_MASTER §6.2)
- * 3 colonnes desktop (infos, horaires, reseaux+legal), 1 colonne mobile.
- * Coordonnees cliquables (tel:, mailto:), liens legaux obligatoires.
+ * Footer.astro — Pied de page (DESIGN_SYSTEM_SPECS §5.2, DA §5.10)
+ * Layout DA : 4 colonnes desktop (logo+baseline / plan du site / coordonnees
+ * / legal), 1 colonne mobile. Fond surface-dark, tokens footer
+ * (surface-dark-text / surface-dark-muted). Coordonnees cliquables.
+ * Bas : border-top rgba(255,255,255,.12), droits, langue, "Site fait a Lyon".
  */
-import SocialLinks from './SocialLinks.astro';
 import Icon from './Icon.astro';
 import { localizePath } from '@utils/i18n';
 
@@ -12,75 +13,93 @@ interface Props {
   lang: 'fr' | 'en';
   ui: any;
   data: any; // data.components.footer
+  navItems?: any[]; // plan du site (data.components.header.nav)
   translatedRoutes?: string[];
-  thirdParty?: any; // data.third_party — C-06 : conditionne le lien "Gerer les cookies"
+  thirdParty?: any; // C-06 : conditionne le lien "Gerer les cookies"
 }
 
-const { lang, ui, data, translatedRoutes = [], thirdParty = {} } = Astro.props;
+const { lang, ui, data, navItems = [], translatedRoutes = [], thirdParty = {} } = Astro.props;
 const legal = data.legal || [];
-
-const hoursText = data.hours_list || '';
+const nav = navItems || [];
 
 // C-06 — la CNIL exige un mecanisme de retrait/modification du consentement.
 // Le lien "Gerer les cookies" n'apparait que si le site a des tiers actifs
 // (meme condition que le CookieBanner : third_party.analytics || third_party.maps).
 const hasThirdParty = !!(thirdParty.analytics || thirdParty.maps);
+
+// Lien plan du site (colonne nav) — href localise EN si besoin
+const navHref = (href: string) => localizePath(href, lang, translatedRoutes);
 ---
 
 <footer class="ds-footer">
   <div class="ds-container ds-footer__grid">
+    <!-- Colonne 1 : identite (logo Fraunces 600 creme + baseline 14px) -->
     <div class="ds-footer__col">
       <p class="ds-footer__logo">{data.logo_text || ''}</p>
+      {data.baseline ? <p class="ds-footer__baseline">{data.baseline}</p> : null}
+    </div>
+
+    <!-- Colonne 2 : plan du site (creme 14px) -->
+    <nav class="ds-footer__col" aria-label={ui.footer?.sitemapTitle || 'Plan du site'}>
+      <h2 class="ds-footer__title">{ui.footer?.sitemapTitle || 'Plan du site'}</h2>
+      <ul class="ds-footer__sitemap">
+        {nav.map((item: any) => (
+          <li>
+            <a class="ds-footer__link" href={navHref(item.href)}>
+              {lang === 'en' ? ui.nav?.[(item.href === '/' ? 'index' : item.href.replace(/^\/+|\/+$/g, ''))] || item.label : item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <!-- Colonne 3 : coordonnees (creme, tel accent-light) -->
+    <div class="ds-footer__col">
+      <h2 class="ds-footer__title">{ui.footer?.contactTitle || 'Contact'}</h2>
       {data.address ? (
         <address class="ds-footer__address">
-          <span class="ds-footer__line"><Icon name="pin" size={16} />{data.address}</span>
+          <span class="ds-footer__line"><Icon name="pin" size={16} aria-hidden="true" />{data.address}</span>
         </address>
       ) : null}
       {data.phone ? (
-        <a class="ds-footer__line ds-footer__link" href={`tel:${data.phone_href || data.phone}`}>
-          <Icon name="phone" size={16} />{data.phone}
+        <a class="ds-footer__line ds-footer__link ds-footer__tel" href={`tel:${data.phone_href || data.phone}`}>
+          <Icon name="phone" size={16} aria-hidden="true" />{data.phone}
         </a>
       ) : null}
       {data.email ? (
         <a class="ds-footer__line ds-footer__link" href={`mailto:${data.email}`}>
-          <Icon name="mail" size={16} />{data.email}
+          <Icon name="mail" size={16} aria-hidden="true" />{data.email}
         </a>
       ) : null}
     </div>
 
-    {hoursText ? (
-      <div class="ds-footer__col">
-        <h2 class="ds-footer__title">{ui.hours.title}</h2>
-        <p class="ds-footer__hours">{hoursText}</p>
-      </div>
-    ) : null}
-
+    <!-- Colonne 4 : legal (12px, muted) -->
     <div class="ds-footer__col">
-      {data.socials && data.socials.length > 0 ? (
-        <SocialLinks links={data.socials} ui={ui} size="sm" variant="icons" />
-      ) : null}
-      <nav class="ds-footer__legal" aria-label={ui.footer.legalTitle}>
-        <ul class="ds-footer__legal-list">
-          {legal.map((l: any) => (
-            <li><a class="ds-footer__link ds-footer__legal-link" href={localizePath(l.href, lang, translatedRoutes)}>{l.label}</a></li>
-          ))}
-          {hasThirdParty ? (
-            <li>
-              <button
-                type="button"
-                class="ds-footer__link ds-footer__legal-link ds-footer__cookie-link"
-                data-manage-consent
-                aria-haspopup="dialog"
-              >
-                {ui.footer?.manageCookies || 'Gerer les cookies'}
-              </button>
-            </li>
-          ) : null}
-        </ul>
-      </nav>
-      <p class="ds-footer__copyright">
+      <h2 class="ds-footer__title ds-footer__title--muted">{ui.footer?.legalTitle || 'Informations'}</h2>
+      <ul class="ds-footer__legal-list">
+        {legal.map((l: any) => (
+          <li><a class="ds-footer__legal-link" href={localizePath(l.href, lang, translatedRoutes)}>{l.label}</a></li>
+        ))}
+        {hasThirdParty ? (
+          <li>
+            <button type="button" class="ds-footer__legal-link ds-footer__cookie-link" data-manage-consent aria-haspopup="dialog">
+              {ui.footer?.manageCookies || 'Gerer les cookies'}
+            </button>
+          </li>
+        ) : null}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bas de footer : border-top, droits, langue, "Site fait a Lyon" -->
+  <div class="ds-container">
+    <div class="ds-footer__bottom">
+      <p class="ds-footer__rights">
         &copy; {new Date().getFullYear()} {data.copyright || ''} — {ui.footer.rights}
       </p>
+      {data.locale_note || ui.footer?.madeIn ? (
+        <p class="ds-footer__madein">{ui.footer?.madeIn || 'Site fait a Lyon'}</p>
+      ) : null}
     </div>
   </div>
 </footer>
@@ -106,46 +125,107 @@ const hasThirdParty = !!(thirdParty.analytics || thirdParty.maps);
 
 <style>
   .ds-footer {
-    background-color: var(--color-gray-900);
-    color: var(--color-gray-300);
-    padding: var(--space-12) 0 var(--space-8);
+    background-color: var(--color-surface-dark);
+    color: var(--color-surface-dark-text);
+    padding: var(--space-12) 0 var(--space-6);
   }
   .ds-footer__grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-8);
   }
+  .ds-footer__col { min-width: 0; }
+
+  /* Logo : Fraunces 600, 24px, creme (DA §5.10) */
   .ds-footer__logo {
     font-family: var(--font-heading);
-    font-size: var(--text-2xl);
-    font-weight: 700;
-    color: var(--color-white);
-    margin: 0 0 var(--space-4);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-surface-raised);
+    margin: 0 0 var(--space-2);
   }
+  /* Baseline : 14px, surface-dark-text (#C9BFAF) (DA §5.10) */
+  .ds-footer__baseline {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-surface-dark-text);
+  }
+
   .ds-footer__title {
+    font-family: var(--font-body);
     font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-white);
+    letter-spacing: 0.14em;
+    color: var(--color-surface-dark-muted);
     margin: 0 0 var(--space-3);
   }
+  .ds-footer__title--muted { color: var(--color-surface-dark-muted); }
+
+  .ds-footer__sitemap,
+  .ds-footer__legal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* Liens nav : creme 14px (DA §5.10) */
+  .ds-footer__link {
+    color: var(--color-surface-raised);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .ds-footer__link:hover { color: var(--color-accent-light); text-decoration: underline; }
+  .ds-footer__link:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
+
   .ds-footer__line {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
     font-style: normal;
+    font-size: var(--text-sm);
+    line-height: 1.6;
     margin-bottom: var(--space-2);
   }
-  .ds-footer__link { color: var(--color-gray-300); text-decoration: none; }
-  .ds-footer__link:hover { color: var(--color-white); text-decoration: underline; }
   .ds-footer__address { margin: 0; }
-  .ds-footer__hours { margin: 0; line-height: 1.6; }
-  .ds-footer__legal-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }
-  .ds-footer__cookie-link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
-  .ds-footer__copyright { margin: var(--space-6) 0 0; font-size: var(--text-sm); color: var(--color-gray-400); }
+  /* Tel : accent-light (DA §5.10) */
+  .ds-footer__tel { color: var(--color-accent-light); font-weight: 500; }
+
+  /* Lien legal : 12px, muted (#A99F93) (DA §5.10) */
+  .ds-footer__legal-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 12px;
+    color: var(--color-surface-dark-muted);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .ds-footer__legal-link:hover { color: var(--color-surface-dark-text); text-decoration: underline; }
+  .ds-footer__legal-link:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 2px; }
+
+  /* Bas : border-top rgba(255,255,255,.12) (DA §5.10) */
+  .ds-footer__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-10);
+    padding-top: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+    color: var(--color-surface-dark-muted);
+  }
+  .ds-footer__rights { margin: 0; }
 
   @media (min-width: 768px) {
-    .ds-footer__grid { grid-template-columns: repeat(3, 1fr); }
+    .ds-footer__bottom { flex-direction: row; justify-content: space-between; align-items: center; }
+  }
+  @media (min-width: 1024px) {
+    .ds-footer__grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-8); }
   }
 </style>

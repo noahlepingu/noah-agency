@@ -28,8 +28,8 @@ body {
   font-family: var(--font-body);
   font-size: var(--text-base);
   line-height: var(--body-line-height);
-  color: var(--color-gray-800);
-  background-color: var(--color-white);
+  color: var(--color-ink);
+  background-color: var(--color-surface);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -46,7 +46,7 @@ video {
 img {
   /* Images de contenu : mode decoratif par defaut si alt vide (UX.md §5.5) */
   font-style: italic;
-  background-color: var(--color-gray-100);
+  background-color: var(--color-surface-alt);
 }
 
 input,
@@ -65,15 +65,15 @@ button {
 }
 
 a {
-  color: var(--color-primary-dark);
+  color: var(--color-accent-dark); /* liens en terracotta sombre (6.84:1 AA) */
   text-underline-offset: 2px;
 }
 
 a:hover {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
-/* ------------------------------------------------------------------ Title hierarchy (UX.md §5.2) */
+/* ------------------------------------------------------------------ Title hierarchy (UX.md §5.2, UX_REDESIGN §3.3) */
 h1,
 h2,
 h3,
@@ -81,20 +81,20 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  color: var(--color-gray-900);
+  color: var(--color-ink);
   line-height: var(--heading-1-line-height);
   overflow-wrap: break-word;
 }
 
 h1 {
-  font-size: var(--text-4xl);
+  font-size: clamp(var(--text-3xl), 5vw, var(--text-4xl));
   font-weight: var(--heading-1-weight);
   line-height: var(--heading-1-line-height);
-  letter-spacing: -0.01em;
+  /* letter-spacing 0 par defaut — Fraunces est condensee (UX_REDESIGN §3.5) */
 }
 
 h2 {
-  font-size: var(--text-3xl);
+  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-4xl));
   font-weight: var(--heading-2-weight);
   line-height: var(--heading-2-line-height);
 }

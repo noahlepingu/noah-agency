@@ -259,32 +259,37 @@ console.log('  Created data.json');
 // Tokens de marque calcules : on-* par contraste WCAG (4.5:1), variantes
 // -dark par assombrissement reel (HSL) ET contraste AA garanti sur le texte
 // (CODE_REVIEW M6 : #fff sur ambre = 2.1:1, #B91C1CCC = alpha 80 %, non sombres).
+// Variantes explicites (primary_light, accent_dark, on_accent, ...) fournies
+// dans branding : utilisees telles quelles (fidelite DA requise) — sinon
+// calculees. Defauts = palette DA 2.6 (RE_DESIGN).
 const branding = { ...(template.branding || {}), ...(clientData.branding || {}) };
-const cPrimary = branding.primary_color || '#B91C1C';
-const cSecondary = branding.secondary_color || '#F59E0B';
-const cAccent = branding.accent_color || '#DC2626';
+const cPrimary = branding.primary_color || '#3A2E27';
+const cSecondary = branding.secondary_color || '#A67C52';
+const cAccent = branding.accent_color || '#B4542C';
 const primaryPair = darkTokenPair(cPrimary);
 const secondaryPair = darkTokenPair(cSecondary);
 const accentPair = darkTokenPair(cAccent);
+// Variante explicite si fournie, sinon calcul (comme avant)
+const v = (br, key, fallback) => br[key] || fallback;
 const themeCss = `/* Theme genere pour ${slug} — ne pas editer manuellement */
 :root {
   --font-heading: '${branding.fonts?.heading || 'Playfair Display'}', Georgia, serif;
   --font-body: '${branding.fonts?.body || 'Inter'}', system-ui, sans-serif;
   --color-primary: ${cPrimary};
-  --color-primary-light: ${cPrimary}15;
-  --color-primary-dark: ${primaryPair.dark};
+  --color-primary-light: ${v(branding, 'primary_light', cPrimary + '15')};
+  --color-primary-dark: ${v(branding, 'primary_dark', primaryPair.dark)};
   --color-secondary: ${cSecondary};
-  --color-secondary-light: ${cSecondary}15;
-  --color-secondary-dark: ${secondaryPair.dark};
+  --color-secondary-light: ${v(branding, 'secondary_light', cSecondary + '15')};
+  --color-secondary-dark: ${v(branding, 'secondary_dark', secondaryPair.dark)};
   --color-accent: ${cAccent};
-  --color-accent-light: ${cAccent}15;
-  --color-accent-dark: ${accentPair.dark};
-  --color-on-primary: ${pickOnColor(cPrimary)};
-  --color-on-secondary: ${pickOnColor(cSecondary)};
-  --color-on-accent: ${pickOnColor(cAccent)};
-  --color-on-primary-dark: ${primaryPair.on};
-  --color-on-secondary-dark: ${secondaryPair.on};
-  --color-on-accent-dark: ${accentPair.on};
+  --color-accent-light: ${v(branding, 'accent_light', cAccent + '15')};
+  --color-accent-dark: ${v(branding, 'accent_dark', accentPair.dark)};
+  --color-on-primary: ${v(branding, 'primary_on', pickOnColor(cPrimary))};
+  --color-on-secondary: ${v(branding, 'secondary_on', pickOnColor(cSecondary))};
+  --color-on-accent: ${v(branding, 'accent_on', pickOnColor(cAccent))};
+  --color-on-primary-dark: ${v(branding, 'primary_on_dark', primaryPair.on)};
+  --color-on-secondary-dark: ${v(branding, 'secondary_on_dark', secondaryPair.on)};
+  --color-on-accent-dark: ${v(branding, 'accent_on_dark', accentPair.on)};
   --color-on-surface: #fff;
 }`;
 writeFileSync(join(siteDir, 'theme.css'), themeCss, 'utf8');

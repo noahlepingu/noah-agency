@@ -1,8 +1,9 @@
 ---
 /**
- * Testimonials.astro — Avis clients (DESIGN_SYSTEM_SPECS.md §5.7)
- * Layout : grid. Avis REELS uniquement (jamais fabriques).
- * Etoiles (note /5), nom, source (Google, TripAdvisor...).
+ * Testimonials.astro — Avis clients (DESIGN_SYSTEM_SPECS §5.7, DA §5.5)
+ * Sans card, sans border : citations Fraunces italic, author ink-soft,
+ * single colonne, content-max, étoiles warning-dark, note moyenne 14px.
+ * Avis REELS uniquement (jamais fabriques).
  */
 import Icon from './Icon.astro';
 
@@ -15,63 +16,120 @@ const reviews = data.reviews || [];
 const showRating = data.show_rating !== false;
 const showSource = data.show_source !== false;
 const stars = [1, 2, 3, 4, 5];
+const avg =
+  reviews.length && showRating
+    ? (reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    : '4.8';
+const avgStars = Math.round(Number(avg));
 ---
 
-<section class="ds-section">
-  <div class="ds-container">
-    <div class="ds-section-head">
-      <h2 class="ds-section-head__title">{data.title || 'Avis clients'}</h2>
+<section class:list={['ds-section', { 'ds-section--alt': true }]}>
+  <div class="ds-container ds-container--content">
+    <div class="ds-section-head ds-section-head--centered">
+      <h2 class="ds-section-head__title">{data.title || 'Ils nous font confiance'}</h2>
     </div>
 
     {reviews.length === 0 ? (
       <p class="ds-t__empty">{data.empty_text || 'Aucun avis pour le moment.'}</p>
     ) : (
-      <ul class="ds-t__grid">
-        {reviews.map((r: any) => (
-          <li class="ds-card ds-card--padded ds-t__item">
+      <>
+        <div class="ds-t__list">
+          {reviews.slice(0, 5).map((r: any) => (
             <blockquote class="ds-t__quote">
-              <p class="ds-t__text">“{r.text}”</p>
+              <footer class="ds-t__footer">
+                {showRating && r.rating ? (
+                  <div class="ds-t__rating" role="img" aria-label={`${r.rating}/5`} title={`${r.rating}/5`}>
+                    {stars.map((s) => (
+                      <span class:list={['ds-t__star', { 'ds-t__star--on': s <= Math.round(r.rating) }]} aria-hidden="true">
+                        <Icon name="star" size={16} />
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </footer>
+              <p class="ds-t__text">« {r.text} »</p>
+              <cite class="ds-t__attrib">
+                — {r.name || ''}
+                {showSource && r.source ? <span class="ds-t__source"> ({r.source})</span> : null}
+              </cite>
             </blockquote>
-            <footer class="ds-t__footer">
-              {showRating && r.rating ? (
-                <div
-                  class="ds-t__rating"
-                  role="img"
-                  aria-label={`${r.rating}/5`}
-                  title={`${r.rating}/5`}
-                >
-                  {stars.map((s) => (
-                    <span
-                      class:list={['ds-t__star', { 'ds-t__star--on': s <= Math.round(r.rating) }]}
-                      aria-hidden="true"
-                    >
-                      <Icon name="star" size={16} />
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <cite class="ds-t__name">— {r.name || ''}</cite>
-              {showSource && r.source ? <span class="ds-t__source">{r.source}</span> : null}
-            </footer>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+
+        {showRating ? (
+          <p class="ds-t__avg">
+            Note moyenne : <strong>{avg}/5</strong>
+            <span class="ds-t__avg-stars" aria-hidden="true">
+              {stars.map((s) => (
+                <Icon name="star" size={14} class:list={['ds-t__avg-star', { 'ds-t__avg-star--on': s <= avgStars }]} />
+              ))}
+            </span>
+          </p>
+        ) : null}
+      </>
     )}
   </div>
 </section>
 
 <style>
-  .ds-t__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
-  .ds-t__item { display: flex; flex-direction: column; }
-  .ds-t__quote { margin: 0; }
-  .ds-t__text { color: var(--color-gray-700); line-height: 1.6; }
-  .ds-t__rating { display: flex; gap: 2px; margin-bottom: var(--space-2); }
-  .ds-t__star { color: var(--color-gray-300); }
-  .ds-t__star--on { color: var(--color-warning); }
-  .ds-t__name { font-style: normal; font-weight: 600; color: var(--color-gray-900); }
-  .ds-t__source { display: block; color: var(--color-gray-500); font-size: var(--text-sm); }
-  .ds-t__empty { color: var(--color-gray-500); }
+  .ds-t__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20);
+  }
 
-  @media (min-width: 768px) { .ds-t__grid { grid-template-columns: 1fr 1fr; } }
-  @media (min-width: 1024px) { .ds-t__grid { grid-template-columns: repeat(3, 1fr); } }
+  /* Citation : Fraunces italic, 26px, sans card/border/shadow (DA §5.5) */
+  .ds-t__quote {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .ds-t__text {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.625rem; /* 26px */
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+  .ds-t__footer { margin: 0; }
+
+  /* Etoiles warning-dark (DA §5.5) */
+  .ds-t__rating { display: flex; gap: 2px; }
+  .ds-t__star {
+    display: inline-flex;
+    color: var(--color-line-strong);
+  }
+  .ds-t__star--on { color: var(--color-warning-dark); }
+
+  .ds-t__attrib {
+    font-style: normal;
+    font-size: var(--text-sm); /* 14px */
+    font-weight: 400;
+    color: var(--color-ink-soft);
+  }
+  .ds-t__source { font-size: var(--text-sm); }
+
+  /* Note moyenne : 14px, warning-dark (DA §5.5) */
+  .ds-t__avg {
+    margin: var(--space-12) 0 0;
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--color-ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+  .ds-t__avg strong { color: var(--color-ink); font-weight: 600; }
+  .ds-t__avg-stars { display: inline-flex; gap: 2px; }
+  .ds-t__avg-star { display: inline-flex; color: var(--color-line-strong); }
+  .ds-t__avg-star--on { color: var(--color-warning-dark); }
+
+  .ds-t__empty { color: var(--color-ink-soft); text-align: center; }
 </style>

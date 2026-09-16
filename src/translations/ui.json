@@ -30,13 +30,13 @@
     "hours": { "title": "Horaires d'ouverture", "open": "Ouvert", "closed": "Ferme", "today": "(aujourd'hui)" },
     "backToTop": "Retour en haut de page",
     "states": {
-      "404": { "title": "Page introuvable", "message": "Oups ! La page que vous cherchez n'existe pas ou a ete deplacee.", "cta1": "Retour a l'accueil", "secondary": "Nous contacter" },
-      "500": { "title": "Erreur temporaire", "message": "Notre site rencontre un probleme temporaire. Veuillez reessayer dans quelques instants.", "cta1": "Reessayer", "cta2": "Nous contacter" },
+      "404": { "title": "Cette page est partie gouter ailleurs", "message": "La page que vous cherchez n'existe pas ou a ete deplacee. Retournez a la maison : l'assiette vous y attend.", "cta1": "Retour a l'accueil", "secondary": "Nous contacter" },
+      "500": { "title": "Une erreur de cuisine", "message": "Notre site rencontre un probleme temporaire. Veuillez reessayer dans quelques instants.", "cta1": "Reessayer", "cta2": "Nous contacter" },
       "confirmation": { "title": "Merci pour votre message !", "text": "Nous vous repondrons dans les meilleurs delais.", "cta1": "Retour a l'accueil" },
       "reservationOk": { "title": "Reservation confirmee !", "text": "Un email de confirmation vous a ete envoye a {email}.", "modify": "En cas de modification, appelez-nous au {phone}.", "cta1": "Retour a l'accueil" },
       "noSlot": { "title": "Aucun creneau disponible", "message": "Desole, aucun creneau n'est disponible pour la date demandee.", "cta1": "Choisir une autre date", "cta2": "Nous appeler" }
     },
-    "reservation": { "title": "Reservez votre table", "intro": "Quelques informations pour votre reservation.", "personOne": "personne", "personMany": "personnes", "backHome": "Retour a l'accueil" },
+    "reservation": { "title": "Reservez votre table", "intro": "Quelques informations pour votre reservation.", "personOne": "personne", "personMany": "personnes", "backHome": "Retour a l'accueil", "note": "Sur reservation de plus de 8 personnes, merci de nous appeler directement.", "addressLabel": "Adresse", "phoneLabel": "Telephone", "emailLabel": "Email" },
     "cookie": { "title": "Ce site utilise des cookies.", "message": "Nous utilisons des cookies pour ameliorer votre experience. En savoir plus dans notre politique de confidentialite.", "accept": "Tout accepter", "reject": "Tout refuser", "customize": "Personnaliser", "save": "Enregistrer mes choix", "privacyLink": "Politique de confidentialite" }
   },
   "en": {
@@ -70,13 +70,13 @@
     "hours": { "title": "Opening Hours", "open": "Open", "closed": "Closed", "today": "(today)" },
     "backToTop": "Back to top",
     "states": {
-      "404": { "title": "Page not found", "message": "The page you are looking for does not exist or has been moved.", "cta1": "Back to home", "secondary": "Contact us" },
-      "500": { "title": "Temporary error", "message": "Our site is experiencing a temporary issue. Please try again shortly.", "cta1": "Try again", "cta2": "Contact us" },
+      "404": { "title": "This page has wandered off", "message": "The page you are looking for does not exist or has been moved. Head back home - a plate is waiting for you.", "cta1": "Back to home", "secondary": "Contact us" },
+      "500": { "title": "A kitchen mishap", "message": "Our site is experiencing a temporary issue. Please try again shortly.", "cta1": "Try again", "cta2": "Contact us" },
       "confirmation": { "title": "Thank you for your message!", "text": "We will get back to you as soon as possible.", "cta1": "Back to home" },
       "reservationOk": { "title": "Reservation confirmed!", "text": "A confirmation email has been sent to {email}.", "modify": "To make changes, call us at {phone}.", "cta1": "Back to home" },
       "noSlot": { "title": "No time slot available", "message": "Sorry, no time slots are available for the selected date.", "cta1": "Choose another date", "cta2": "Call us" }
     },
-    "reservation": { "title": "Reserve your table", "intro": "A few details for your reservation.", "personOne": "person", "personMany": "people", "backHome": "Back to home" },
+    "reservation": { "title": "Reserve your table", "intro": "A few details for your reservation.", "personOne": "person", "personMany": "people", "backHome": "Back to home", "note": "For parties of more than 8, please call us directly.", "addressLabel": "Address", "phoneLabel": "Phone", "emailLabel": "Email" },
     "cookie": { "title": "This site uses cookies.", "message": "We use cookies to improve your experience. See our privacy policy for details.", "accept": "Accept all", "reject": "Reject all", "customize": "Customize", "save": "Save my choices", "privacyLink": "Privacy policy" }
   }
 }

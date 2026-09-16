@@ -5,10 +5,11 @@ import PageLayout from '@layouts/PageLayout.astro';
 import ContactForm from '@components/ContactForm.astro';
 import Map from '@components/Map.astro';
 import OpeningHours from '@components/OpeningHours.astro';
+import Icon from '@components/Icon.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
-import { localBusiness, contactPoint } from '@utils/schema';
+import { localBusiness } from '@utils/schema';
 import { getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
@@ -19,6 +20,13 @@ const description = buildDescription({ description: data.seo_descriptions?.['/co
 const canonical = buildCanonical(siteUrl, '/contact');
 const hreflang = buildHreflang(siteUrl, '/contact', '/en/contact');
 const schema = localBusiness(data, siteUrl);
+
+const footer = data.components?.footer || {};
+const address = footer.address || '';
+const phone = footer.phone || data.contact?.phone || '';
+const phoneHref = footer.phone_href || data.contact?.phone || phone;
+const email = footer.email || data.contact?.email || '';
+const hasSchedule = data.components?.opening_hours?.schedule?.length > 0;
 ---
 
 <PageLayout lang={lang} title={title} description={description} canonical={canonical}
@@ -30,17 +38,79 @@ const schema = localBusiness(data, siteUrl);
     { label: ui.nav?.index || 'Accueil', href: '/' },
     { label: texts.title || 'Contact', href: '/contact' },
   ]}>
-  <section class="ds-section">
-    <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
-      <ContactForm ui={ui} data={data.components?.contact_form || {}} lang={lang} />
+
+  <!-- DA §5.7 : grille 7/5 — formulaire carte + colonne infos -->
+  <section class="ds-section ds-section--open">
+    <div class="ds-container ds-layout-form">
+      <div class="ds-form-card">
+        <ContactForm ui={ui} data={data.components?.contact_form || {}} lang={lang} />
+      </div>
+
+      <aside class="ds-form-side">
+        {hasSchedule ? (
+          <OpeningHours data={data.components.opening_hours} ui={ui} />
+        ) : null}
+
+        {address || phone || email ? (
+          <div class="ds-form-side__block">
+            <h3 class="ds-form-side__title">{ui.reservation?.addressLabel || 'Adresse'}</h3>
+            {address ? <p class="ds-form-side__text">{address}</p> : null}
+            {phone ? (
+              <p class="ds-form-side__line">
+                <Icon name="phone" size={16} aria-hidden="true" />
+                <a href={`tel:${phoneHref}`} class="ds-form-side__link">{phone}</a>
+              </p>
+            ) : null}
+            {email ? (
+              <p class="ds-form-side__line">
+                <Icon name="mail" size={16} aria-hidden="true" />
+                <a href={`mailto:${email}`} class="ds-form-side__link">{email}</a>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </aside>
     </div>
   </section>
+
+  <!-- Carte (OpenStreetMap, aucun cookie) -->
   <section class="ds-section ds-section--alt">
-    <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
-      {data.components?.opening_hours?.schedule?.length > 0 ? (
-        <OpeningHours data={data.components.opening_hours} ui={ui} />
-      ) : null}
+    <div class="ds-container">
       <Map data={data.components?.map || {}} ui={ui} />
     </div>
   </section>
 </PageLayout>
+
+<style>
+  .ds-form-side__block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .ds-form-side__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    color: var(--color-ink);
+    margin: 0 0 var(--space-2);
+  }
+  .ds-form-side__text {
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--color-ink-soft);
+    line-height: 1.5;
+  }
+  .ds-form-side__line {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+  .ds-form-side__link {
+    color: var(--color-accent-dark);
+    text-decoration: none;
+    font-size: var(--text-base);
+  }
+  .ds-form-side__link:hover { text-decoration: underline; }
+</style>

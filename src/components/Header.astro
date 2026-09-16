@@ -1,9 +1,13 @@
 ---
 /**
- * Header.astro — Navigation principale (DESIGN_SYSTEM_SPECS.md §5.1, SITEMAP_MASTER §6.1)
+ * Header.astro — Navigation principale
+ * (DESIGN_SYSTEM_SPECS.md §5.1, UX_REDESIGN_RESTAURANT.md §5.0)
  * Desktop : logo + nav horizontale (max 6) + CTA + LanguageSwitcher
  * Mobile : logo + CTA compact + burger ; menu plein ecran (z--menu-mobile)
- * Accessibilite : bouton aria-expanded/aria-controls, lien actif aria-current
+ * DA 5.0 : header TRANSPARENT en etat hero (texte ink ; theme clair si hero
+ * sombre), puis SOLIDE au scroll (> 40px) : surface-raised + border-bottom,
+ * ombre supprimee (P2). 404/500 (aucun hero) : solide par defaut.
+ * Accessibilite : bouton aria-expanded/aria-controls, lien actif aria-current.
  */
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import Icon from './Icon.astro';
@@ -102,44 +106,79 @@ const isActive = (href: string, currentPath: string) =>
 </header>
 
 <style>
+  /* --- Etat hero (haut de page) : transparent, sans ombre (DA §5.0) --- */
   .ds-header {
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
-    background-color: var(--color-white);
-    box-shadow: var(--shadow-sm);
+    background-color: transparent;
+    box-shadow: none;
+    transition: background-color 0.2s ease;
   }
+  /* --- Etat scrolle (> 40px) : surface-raised + border-bottom, pas d'ombre --- */
+  .ds-header--solid {
+    background-color: var(--color-surface-raised);
+    border-bottom: 1px solid var(--color-line);
+  }
+
   .ds-header__inner {
-    max-width: var(--container);
+    max-width: var(--container-max);
     margin-inline: auto;
     display: flex;
     align-items: center;
     gap: var(--space-6);
     padding: var(--space-3) var(--space-4);
   }
+  /* Logo : Fraunces 600 24px, letter-spacing -0.01em, ink (DA §3.3) */
   .ds-header__logo {
     font-family: var(--font-heading);
-    font-size: var(--text-xl);
-    font-weight: 700;
-    color: var(--color-primary);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
     text-decoration: none;
     white-space: nowrap;
   }
   .ds-header__nav { margin-left: auto; }
   .ds-header__list { display: flex; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+  /* Nav : Inter 500, 15px, letter-spacing 0.01em (DA §3.3) */
   .ds-header__link {
     display: inline-block;
     padding: var(--space-2) var(--space-3);
-    font-size: var(--text-base);
+    font-size: 15px;
     font-weight: 500;
-    color: var(--color-gray-700);
+    letter-spacing: 0.01em;
+    color: var(--color-ink);
     text-decoration: none;
     border-radius: var(--radius-sm);
   }
-  .ds-header__link:hover { color: var(--color-gray-900); background-color: var(--color-gray-100); }
-  .ds-header__link--active { color: var(--color-primary); }
+  .ds-header__link:hover { color: var(--color-accent-dark); }
+  .ds-header__link--active {
+    color: var(--color-accent-dark);
+    text-decoration: underline;
+    text-underline-offset: 8px;
+    text-decoration-thickness: 2px;
+  }
   .ds-header__actions { display: flex; align-items: center; gap: var(--space-3); }
   .ds-header__burger { display: none; }
+
+  /* --- Theme clair (hero sombre : variantes A image voilee / C surface-dark) --- */
+  .ds-header--dark .ds-header__logo,
+  .ds-header--dark .ds-header__link {
+    color: var(--color-surface-raised);
+  }
+  .ds-header--dark .ds-header__link:hover,
+  .ds-header--dark .ds-header__link--active {
+    color: var(--color-accent-light);
+  }
+  .ds-header--dark .ds-header__burger { color: var(--color-surface-raised); }
+  .ds-header--dark .ds-burger__icon { color: var(--color-surface-raised); }
+
+  /* LanguageSwitcher (pill) en theme clair — via :global (composant separe) */
+  .ds-header--dark :global(.ds-lang) {
+    color: var(--color-surface-raised);
+    border-color: var(--color-line-strong);
+  }
 
   /* Mobile */
   @media (max-width: 1023px) {
@@ -152,17 +191,17 @@ const isActive = (href: string, currentPath: string) =>
       height: 44px;
       border: none;
       background: transparent;
-      color: var(--color-gray-800);
+      color: var(--color-ink);
       cursor: pointer;
       border-radius: var(--radius-sm);
     }
-    .ds-header__burger:hover { background-color: var(--color-gray-100); }
+    .ds-header__burger:hover { background-color: var(--color-surface-alt); }
 
     .ds-menu-mobile {
       position: fixed;
       inset: 0;
       z-index: var(--z-menu-mobile);
-      background-color: var(--color-white);
+      background-color: var(--color-surface-raised);
       padding: var(--space-8) var(--space-4);
       overflow-y: auto;
     }
@@ -173,11 +212,11 @@ const isActive = (href: string, currentPath: string) =>
       padding: var(--space-4) var(--space-3);
       font-size: var(--text-xl);
       font-weight: 600;
-      color: var(--color-gray-900);
+      color: var(--color-ink);
       text-decoration: none;
       border-radius: var(--radius-md);
     }
-    .ds-menu-mobile__link:hover { background-color: var(--color-gray-100); }
+    .ds-menu-mobile__link:hover { background-color: var(--color-surface-alt); }
   }
 
   @media (min-width: 1024px) {
@@ -226,5 +265,25 @@ const isActive = (href: string, currentPath: string) =>
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
+  }
+
+  // DA 5.0 — transparent puis solide : etat au scroll et selon la presence
+  // d'un hero plein cadre. Le hero marque data-hero-full (variantes A/C
+  // sombres et image) passe le header en theme clair (texte creme).
+  const header = document.querySelector('[data-header]');
+  if (header) {
+    const heroFull = document.querySelector('[data-hero-full]') as HTMLElement | null;
+    const heroDark = heroFull?.hasAttribute('data-hero-dark') ?? false;
+
+    const update = () => {
+      const scrolled = window.scrollY > 40;
+      const solid = !heroFull || scrolled;
+      header!.classList.toggle('ds-header--solid', solid);
+      // Theme clair uniquement en etat hero NON scrolle sur un hero sombre
+      header!.classList.toggle('ds-header--dark', !solid && heroDark);
+    };
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
   }
 </script>

@@ -1,40 +1,63 @@
 ---
 /**
- * Menu.astro — Page menu restaurant (DESIGN_SYSTEM_SPECS.md §5.11)
- * Affiche les categories via MenuCard. Grille responsive.
+ * Menu.astro — Page menu / section menu (DESIGN_SYSTEM_SPECS §5.11)
+ * Presentation typographique (DA §5.3) : categories separées par --space-28.
+ * Contenu centre (content-max) sur page menu ; grilles simples sur preview.
  */
 import MenuCard from './MenuCard.astro';
 
 interface Props {
-  data: any; // data.components.menu
+  data: any;
+  preview?: boolean; // mode preview (accueil : 3-4 plats signature)
+  maxItems?: number; // nombre max de plats à afficher en preview
 }
 
-const { data } = Astro.props;
+const { data, preview = false, maxItems } = Astro.props;
 const categories = data.categories || [];
+
+// En preview : limiter à 2-3 catégories, 1 plat chacune ; en page complète : tout afficher
+const displayCategories = preview
+  ? categories.slice(0, 3).map((cat: any) => ({
+      ...cat,
+      items: (cat.items || []).slice(0, 1),
+    }))
+  : categories;
 ---
 
-<section class="ds-section" id="menu">
-  <div class="ds-container">
+<section class:list={['ds-section', { 'ds-section--alt': !preview }]} id="menu">
+  <div class:list={['ds-container', !preview && 'ds-container--content']}>
     <div class="ds-section-head ds-section-head--centered">
       <h2 class="ds-section-head__title">{data.title || 'La Carte'}</h2>
       {data.subtitle ? <p class="ds-section-head__subtitle">{data.subtitle}</p> : null}
     </div>
 
-    {categories.length === 0 ? (
+    {displayCategories.length === 0 ? (
       <p class="ds-section__empty">{data.empty_text || 'Le menu sera bientot disponible.'}</p>
     ) : (
-      <div class="ds-menu__grid">
-        {categories.map((cat: any) => (
+      <div>
+        {displayCategories.map((cat: any) => (
           <MenuCard category={cat.name} items={cat.items || []} />
         ))}
       </div>
     )}
+
+    {preview && data.categories?.length > 0 ? (
+      <div class="ds-menu__more">
+        <a href={`/${Astro.url.pathname.split('/')[1] === 'en' ? 'en/' : ''}menu`} class="ds-btn ds-btn--secondary">
+          {Astro.url.pathname.startsWith('/en') ? 'See the full menu' : 'Voir toute la carte'}
+        </a>
+      </div>
+    ) : null}
   </div>
 </section>
 
 <style>
-  .ds-menu__grid { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
-  .ds-section__empty { text-align: center; color: var(--color-gray-500); }
-
-  @media (min-width: 768px) { .ds-menu__grid { grid-template-columns: 1fr 1fr; } }
+  .ds-section__empty {
+    text-align: center;
+    color: var(--color-ink-soft);
+  }
+  .ds-menu__more {
+    text-align: center;
+    margin-top: var(--space-12);
+  }
 </style>

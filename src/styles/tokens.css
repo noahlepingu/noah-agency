@@ -24,6 +24,9 @@
   --space-16: 64px;
   --space-20: 80px;
   --space-24: 96px;
+  --space-28: 112px; /* espace entre sections majeures (desktop, UX_REDESIGN §4.1) */
+  --space-32: 128px; /* ouverture hero typographique -> premiere section */
+  --space-40: 160px; /* CTA final seul (pause avant footer) */
 
   /* ---------------------------------------------------------------- 2.2 Border radius */
   --radius-none: 0;
@@ -71,17 +74,21 @@
   --text-base: 16px;
   --text-lg: 18px;
   --text-xl: 20px;
-  --text-2xl: 24px;
+  --text-2xl: 26px;
   --text-3xl: 28px;
   --text-4xl: 32px;
   --text-5xl: 40px;
+  --text-6xl: 64px; /* H1 hero (clamp 2.5rem -> 4rem en CSS), UX_REDESIGN §3.2 */
+  --text-7xl: 120px; /* numero 404, monogramme filigrane */
 
-  /* ---------------------------------------------------------------- 3.3 Poids / line-height */
-  --heading-1-weight: 700;
-  --heading-2-weight: 600;
-  --heading-3-weight: 600;
-  --heading-1-line-height: 1.2;
-  --heading-2-line-height: 1.3;
+  /* ---------------------------------------------------------------- 3.3 Poids / line-height
+     UX_REDESIGN_RESTAURANT.md §3.3 : les TITRES ne sont jamais en 700.
+     H1 : 400-500, H2/H3 : 500. Le gras 700 est reserve aux boutons/badges. */
+  --heading-1-weight: 500;
+  --heading-2-weight: 500;
+  --heading-3-weight: 500;
+  --heading-1-line-height: 1.1;
+  --heading-2-line-height: 1.2;
   --heading-3-line-height: 1.3;
   --body-line-height: 1.6;
   --caption-line-height: 1.4;
@@ -104,18 +111,23 @@
   --color-success: #059669;
   --color-success-dark: #047857;
   --color-success-light: #d1fae5;
-  --color-error: #dc2626;
-  --color-error-light: #fee2e2;
+    --color-error: #dc2626;
+    --color-error-light: #fee2e2;
+    --color-error-dark: #991b1b;
+    --color-error-soft: #fdf0ee; /* banniere erreur globale — DA §5.7 */
+    --color-error-border: #f4c6bc; /* bordure banniere erreur — DA §5.7 */
   --color-warning: #d97706;
   --color-warning-light: #fef3c7;
+  --color-warning-dark: #92400e;
   --color-info: #2563eb;
   --color-info-light: #dbeafe;
   --color-focus-ring: #3b82f6;
 
-  /* ---------------------------------------------------------------- Grille / conteneur */
-  --container-max: 1200px;
+  /* ---------------------------------------------------------------- Grille / conteneur
+     UX_REDESIGN_RESTAURANT.md §4.2 : colonne plus etroite = facture artisanale */
+  --container-max: 1160px;
   --container-padding: var(--space-4);
-  --content-max: 760px;
+  --content-max: 680px;
 }
 
 /* ---------------------------------------------------------------- 4.2 Couleurs de marque
@@ -128,32 +140,52 @@
    system (le theme.css inline pouvait preceder le bundle tokens.css). */
 @layer ds-brand {
   :root {
-    --color-primary: #b91c1c;
-    --color-primary-light: #fee2e2;
-    --color-primary-dark: #7f1d1d;
-    --color-secondary: #f59e0b;
-    --color-secondary-light: #fef3c7;
-    --color-secondary-dark: #b45309;
-    --color-accent: #dc2626;
-    --color-accent-light: #fee2e2;
-    --color-accent-dark: #991b1b;
-    --color-on-primary: #ffffff;
-    --color-on-accent: #ffffff;
-    --color-on-primary-dark: #ffffff;
-    --color-on-secondary: #1f2937;
-    --color-on-secondary-dark: #ffffff;
+    /* ---- Couleurs de marque — palette par defaut « Bistrot lyonnais »
+       (UX_REDESIGN_RESTAURANT.md §2.6, D-UX-06, D-UX-07)
+       Surchargees par le theme.css du client (ADR-006). Les composants ne
+       lisent QUE ces variables. */
+    --color-primary: #3a2e27; /* brun sombre chaud — identite, liens, boutons secondaires */
+    --color-primary-light: #efe5d8; /* variante claire (survol outline, fonds) */
+    --color-primary-dark: #241b16; /* variante foncee (hover, skip-link) */
+    --color-secondary: #a67c52; /* laiton — ornements + titres decoratifs UNIQUEMENT (3.50:1) */
+    --color-secondary-light: #f0e4d3;
+    --color-secondary-dark: #7d5a36; /* version TEXTE du laiton (5.80:1 AA) */
+    --color-accent: #b4542c; /* terracotta — CTA principal, accents */
+    --color-accent-light: #f2dccf;
+    --color-accent-dark: #8f3e1f; /* liens texte, hover, focus accent (6.84:1 AA) */
+    --color-on-primary: #fbf7f0;
+    --color-on-primary-dark: #fbf7f0;
+    --color-on-secondary: #241b16;
+    --color-on-secondary-dark: #fbf7f0;
+    --color-on-accent: #fbf7f0;
+    --color-on-accent-dark: #fbf7f0;
 
-    /* 3.1 Familles de polices (self-hosted, ADR-010) */
-    --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    /* ---- Surfaces chaudes (nouveaux tokens consommes par les composants) */
+    --color-surface: #fbf7f0;
+    --color-surface-raised: #fffdf9;
+    --color-surface-alt: #f3ebdf;
+    --color-surface-dark: #2b2320;
+    --color-ink: #2a211c;
+    --color-ink-soft: #5c5148;
+    --color-line: #e4d9c8;
+    --color-line-strong: #9a7b5e;
+
+    /* ---- Textes sur fond sombre (footer surface-dark, UX_REDESIGN §5.10) */
+    --color-surface-dark-text: #c9bfaf; /* baseline footer, contraste ~8.9:1 */
+    --color-surface-dark-muted: #a99f93; /* mentions legales footer */
+
+    /* ---- Typographies */
+    --font-heading: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif;
     --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
 }
 
-/* Ajustements typographiques desktop (DESIGN_SYSTEM_SPECS.md §3.2) */
+/* Ajustements typographiques desktop (DESIGN_SYSTEM_SPECS.md §3.2,
+   UX_REDESIGN_RESTAURANT.md §3.2 : 4xl = 40px H2 de section) */
 @media (min-width: 768px) {
   :root {
     --text-3xl: 30px;
-    --text-4xl: 36px;
+    --text-4xl: 40px;
     --text-5xl: 48px;
     --container-padding: var(--space-6);
   }

@@ -1,0 +1,101 @@
+---
+/**
+ * MobileStickyCTA.astro — Barre CTA fixe mobile (DA §5.6)
+ * Affichee uniquement < 768px, cachee sur /reservation et /contact.
+ * Elements : bouton "Reserver" (href=/reservation) + bouton telephone.
+ * Safe-area padding bottom pour les appareils a encoche.
+ * Props passees depuis BaseLayout (data + ui + lang).
+ */
+import { localizePath } from '@utils/i18n';
+
+interface Props {
+  lang: 'fr' | 'en';
+  ui: any;
+  data: any;
+  translatedRoutes?: string[];
+}
+
+const { lang, ui, data, translatedRoutes = [] } = Astro.props;
+
+const reserv = data.reservation || {};
+const ctaHref = localizePath('/reservation', lang, translatedRoutes);
+// Telephone : recherche multi-sources (composants exposes dans data.json)
+const phone = data.phone || data.footer?.phone || data.contact_form?.phone || '';
+const phoneHref = data.phone_href || phone;
+const ctaLabel = ui.header?.ctaLabel || reserv?.ctaLabel || 'Reserver';
+
+// Pages ou la barre est cachee (reservation = inutile, contact = formulaire deja la)
+const currentPath = Astro.url.pathname;
+const hideOn = ['/reservation', '/contact', '/en/reservation', '/en/contact'];
+const isHidden = hideOn.some((p) => currentPath === p || currentPath === p + '/');
+--->
+
+{!isHidden ? (
+  <div class="ds-sticky-cta" data-sticky-cta>
+    <a href={ctaHref} class="ds-sticky-cta__btn ds-btn ds-btn--primary ds-btn--sm ds-sticky-cta__reserv">
+      {ctaLabel}
+    </a>
+    {phone ? (
+      <a href={`tel:${phoneHref}`} class="ds-sticky-cta__btn ds-sticky-cta__tel" aria-label={`Appeler ${phone}`}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      </a>
+    ) : null}
+  </div>
+) : null}
+
+<style>
+  .ds-sticky-cta {
+    display: none; /* cachee par defaut, affichee < 768px */
+  }
+
+  @media (max-width: 767px) {
+    .ds-sticky-cta {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: var(--z-sticky);
+      display: flex;
+      gap: 8px;
+      padding: 12px var(--space-4);
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      background-color: var(--color-surface-raised);
+      border-top: 1px solid var(--color-line);
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .ds-sticky-cta__reserv {
+      flex: 1;
+      text-align: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .ds-sticky-cta__tel {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1.5px solid var(--color-line-strong);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--color-accent-dark);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .ds-sticky-cta__tel:hover {
+      background-color: var(--color-surface-alt);
+    }
+    .ds-sticky-cta__tel:focus-visible {
+      outline: 3px solid var(--color-focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .ds-sticky-cta { display: none !important; }
+  }
+</style>

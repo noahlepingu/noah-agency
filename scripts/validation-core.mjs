@@ -33,7 +33,7 @@ export const PACKAGES = ['vitrine', 'vitrine_reservation', 'vitrine_ecommerce'];
 export const RESERVATION_METHODS = ['form', 'external_link', 'phone_only'];
 export const REVIEW_SOURCES = ['google', 'tripadvisor', 'facebook', 'custom'];
 export const MAINTENANCE_FREQUENCIES = ['mensuel', 'bimensuel', 'trimestriel'];
-export const FONTS = ['Inter', 'Playfair Display', 'DM Sans', 'Libre Baskerville'];
+export const FONTS = ['Inter', 'Playfair Display', 'DM Sans', 'Libre Baskerville', 'Fraunces'];
 
 /** Regex de reference (CLIENT_DATA_VALIDATION.md §3.2) */
 export const FORMATS = {

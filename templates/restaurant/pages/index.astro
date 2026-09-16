@@ -1,8 +1,9 @@
 ---
 /**
- * index.astro — Page d'accueil restaurant
- * Sections : Hero + Intro + CTA + Menu + Galerie + Avis + FAQ + Map + Contact.
- * $$LANG$$ est remplace par "fr" ou "en" lors de la generation.
+ * index.astro — Page d'accueil restaurant (DA §5.2)
+ * Ordre sections : Hero (A/B/C) + Intro + Menu preview + Gallery + Avis
+ * + OpeningHours+Map + CTA final (surface-dark).
+ * $$LANG$$ remplace par "fr" ou "en" lors de la generation.
  */
 const lang = "$$LANG$$";
 import '$$THEME_CSS_PATH$$';
@@ -11,14 +12,13 @@ import Hero from '@components/Hero.astro';
 import Menu from '@components/Menu.astro';
 import Gallery from '@components/Gallery.astro';
 import Testimonials from '@components/Testimonials.astro';
-import FAQ from '@components/FAQ.astro';
 import Map from '@components/Map.astro';
 import CTA from '@components/CTA.astro';
 import OpeningHours from '@components/OpeningHours.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
-import { buildTitle, buildDescription, buildCanonical, buildOG, buildTwitter, buildHreflang, buildRobots } from '@utils/seo';
-import { restaurant, localBusiness, faqSchema } from '@utils/schema';
+import { buildTitle, buildDescription, buildCanonical, buildOG, buildHreflang } from '@utils/seo';
+import { restaurant } from '@utils/schema';
 import { localizePath, getPageTexts } from '@utils/i18n';
 
 const ui = uiStrings[lang] || uiStrings.fr;
@@ -29,13 +29,27 @@ const e = (p: string) => localizePath(p, lang, data.translated_routes || []);
 const title = buildTitle({ title: data.seo_titles?.['/'] || texts.hero_title || data.business?.name || '' }, data);
 const description = buildDescription({ description: data.seo_descriptions?.['/'] || texts.hero_subtitle || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/');
-// og:image — D-CS-05 : resolue par BaseLayout depuis data.hero_image
-// (voir note dans BaseLayout.astro). Ici simple passage sans imageUrl.
 const og = buildOG({ title, description, pageUrl: canonical, siteName: data.business?.name });
 const hreflang = buildHreflang(siteUrl, '/', '/en/');
-// Q4 — D-CS-03 : schema.org Restaurant emis sur la homepage (hasMenu,
-// acceptsReservations, openingHoursSpecification, servesCuisine, priceRange).
 const schema = restaurant(data, siteUrl);
+
+// Hero : variante A si hero_image, sinon variante C (DA §5.2)
+const hasHeroImage = !!data.hero_image?.src;
+const heroImage = hasHeroImage ? { src: data.hero_image.src, alt: data.hero_image.alt || '' } : undefined;
+
+// Badge Ouvert/Ferme (variante A) — schedule + labels
+const schedule = data.components?.opening_hours?.schedule || [];
+const statusBadge = hasHeroImage && schedule.length > 0
+  ? { schedule, openLabel: ui.hours?.open || 'Ouvert', closedLabel: ui.hours?.closed || 'Ferme' }
+  : undefined;
+
+// Menu preview : 3 premières categories, 1 plat chacune (DA §5.2)
+const menuPreviewData = data.components?.menu
+  ? { ...data.components.menu, categories: (data.components.menu.categories || []).slice(0, 3).map((c: any) => ({ ...c, items: (c.items || []).slice(0, 1) })) }
+  : null;
+
+// CTA final phrase (DA §5.2)
+const ctaFinalPhrase = texts.cta_final_phrase || 'Envie de gouter ? Rejoignez-nous.';
 ---
 
 <BaseLayout lang={lang} title={title} description={description} canonical={canonical}
@@ -43,34 +57,47 @@ const schema = restaurant(data, siteUrl);
   jsonLd={[schema]}
   langSwitchHref={lang === 'en' ? '/' : '/en/'}>
 
+  <!-- 1. Hero (DA §5.2 : A si image, C sinon) -->
   <Hero
-    title={texts.hero_title || ''}
+    title={texts.hero_title || data.business?.name || ''}
     subtitle={texts.hero_subtitle || ''}
-    image={data.hero_image ? { src: data.hero_image.src, alt: data.hero_image.alt } : undefined}
-    cta={{ label: texts.cta_reserve || ui.header?.ctaLabel || 'Reserver', href: e('/reservation'), variant: 'primary' }}
-    ctaSecondary={{ label: texts.cta_menu || ui.nav?.menu || 'La Carte', href: e('/menu'), variant: 'outline' }}
-    layout="centered"
-    overlay={!!data.hero_image?.src}
+    eyebrow={texts.hero_eyebrow || ''}
+    image={heroImage}
+    cta={{ label: texts.cta_reserve || ui.header?.ctaLabel || 'Reserver une table', href: e('/reservation'), variant: 'primary' }}
+    textLink={{ label: texts.cta_menu || 'Voir la carte', href: e('/menu') }}
+    monogram={data.business?.name ? data.business.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() : undefined}
+    status={statusBadge}
+    layout={hasHeroImage ? 'full' : 'type'}
   />
 
-  <!-- Introduction -->
+  <!-- 2. Introduction (DA §5.2 : surtitre + H2 Fraunces 500 + chapeau) -->
   <section class="ds-section">
-    <div class="ds-container ds-prose">
-      <h2 class="ds-section-head__title">{texts.intro_title || ''}</h2>
-      <p>{texts.intro_text || ''}</p>
-      <div class="ds-hero__cta" style="margin-top: var(--space-6);">
-        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || ui.header?.ctaLabel || 'Reserver'}</CTA>
+    <div class="ds-container ds-container--content" style="text-align: center;">
+      {texts.intro_title ? <p class="ds-intro__eyebrow">{texts.intro_title}</p> : null}
+      {texts.intro_subtitle ? <h2 class="ds-intro__heading">{texts.intro_subtitle}</h2> : null}
+      {texts.intro_text ? <p class="ds-intro__chapeau">{texts.intro_text}</p> : null}
+      <div style="margin-top: var(--space-6);">
+        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || ui.header?.ctaLabel || 'Reserver une table'}</CTA>
       </div>
     </div>
   </section>
 
-  <!-- Menu -->
-  {data.components?.menu?.categories?.length > 0 ? <Menu data={data.components.menu} /> : null}
+  <!-- 3. Menu preview (DA §5.2 : 3-4 plats signature + CTA "Voir toute la carte") -->
+  {menuPreviewData && menuPreviewData.categories.length > 0 ? (
+    <Menu data={menuPreviewData} preview={true} />
+  ) : null}
 
-  <!-- Galerie -->
-  {data.components?.gallery?.images?.length > 0 ? <Gallery ui={ui} data={data.components.gallery} /> : null}
+  <!-- 4. Galerie (surface-alt, DA §5.4) -->
+  {data.components?.gallery?.images?.length > 0 ? (
+    <Gallery ui={ui} data={data.components.gallery} />
+  ) : null}
 
-  <!-- Horaires + Map en grille -->
+  <!-- 5. Avis (DA §5.5 : citations, content-max) -->
+  {data.components?.testimonials?.reviews?.length > 0 ? (
+    <Testimonials data={data.components.testimonials} />
+  ) : null}
+
+  <!-- 6. Horaires + Map (DA §5.2) -->
   <section class="ds-section ds-section--alt">
     <div class="ds-container" style="display: grid; grid-template-columns: 1fr; gap: var(--space-8);">
       {data.components?.opening_hours?.schedule?.length > 0 ? (
@@ -80,10 +107,80 @@ const schema = restaurant(data, siteUrl);
     </div>
   </section>
 
-  <!-- Avis -->
-  {data.components?.testimonials?.reviews?.length > 0 ? <Testimonials data={data.components.testimonials} /> : null}
-
-  <!-- FAQ -->
-  {data.components?.faq?.questions?.length > 0 ? <FAQ data={data.components.faq} /> : null}
+  <!-- 7. CTA final (DA §5.2 : surface-dark, phrase + accent CTA + tel) -->
+  <section class="ds-section ds-section--cta ds-cta-final">
+    <div class="ds-container" style="text-align: center; max-width: var(--content-max); margin-inline: auto;">
+      <p class="ds-cta-final__phrase">{ctaFinalPhrase}</p>
+      <div class="ds-cta-final__actions">
+        <CTA href={e('/reservation')} variant="primary">{texts.cta_reserve || 'Reserver une table'}</CTA>
+        {data.phone ? (
+          <a href={`tel:${data.phone_href || data.phone}`} class="ds-btn ds-btn--outline ds-btn--on-dark">
+            {data.phone}
+          </a>
+        ) : null}
+      </div>
+    </div>
+  </section>
 
 </BaseLayout>
+
+<style>
+  /* Introduction (DA §5.2) */
+  .ds-intro__eyebrow {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent-dark);
+    margin: 0 0 var(--space-3);
+  }
+  .ds-intro__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-4xl);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-ink);
+    margin: 0 0 var(--space-4);
+  }
+  .ds-intro__chapeau {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--text-xl);
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    margin: 0;
+  }
+
+  /* CTA final surface-dark (DA §5.2) */
+  .ds-cta-final {
+    background-color: var(--color-surface-dark);
+    color: var(--color-surface-raised);
+    text-align: center;
+  }
+  .ds-cta-final__phrase {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--text-2xl);
+    color: var(--color-surface-raised);
+    margin: 0 0 var(--space-8);
+  }
+  .ds-cta-final__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: center;
+  }
+  /* Bouton outline sur fond sombre (DA §5.2 : lien tel creme sur dark) */
+  .ds-btn--on-dark {
+    color: var(--color-surface-raised);
+    border-color: var(--color-surface-dark-text);
+  }
+  .ds-btn--on-dark:hover {
+    color: var(--color-surface-raised);
+    border-color: var(--color-surface-raised);
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+</style>

@@ -43,25 +43,25 @@ const defaultOpen = typeof data.default_open === 'number' ? data.default_open : 
 <style>
   .ds-faq__list { display: flex; flex-direction: column; gap: var(--space-3); max-width: 48rem; margin-inline: auto; }
   .ds-faq__item {
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--color-line);
     border-radius: var(--radius-md);
-    background-color: var(--color-white);
+    background-color: var(--color-surface-raised);
   }
   .ds-faq__summary {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
     cursor: pointer; list-style: none;
-    font-weight: 600; color: var(--color-gray-900);
+    font-weight: 600; color: var(--color-ink);
     font-size: var(--text-base);
   }
   .ds-faq__summary::-webkit-details-marker { display: none; }
-  .ds-faq__summary:hover { background-color: var(--color-gray-50); }
+  .ds-faq__summary:hover { background-color: var(--color-surface-alt); }
   .ds-faq__summary:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: -3px; border-radius: var(--radius-md); }
   .ds-faq__item[open] .ds-faq__chevron { transform: rotate(180deg); }
   .ds-faq__chevron { transition: transform var(--transition-fast); flex-shrink: 0; }
-  .ds-faq__a { padding: 0 var(--space-5) var(--space-4); color: var(--color-gray-600); line-height: 1.6; }
+  .ds-faq__a { padding: 0 var(--space-5) var(--space-4); color: var(--color-ink-soft); line-height: 1.6; }
   .ds-faq__a p { margin: 0; }
-  .ds-faq__empty { color: var(--color-gray-500); text-align: center; }
+  .ds-faq__empty { color: var(--color-ink-soft); text-align: center; }
 
   @media (prefers-reduced-motion: reduce) { .ds-faq__chevron { transition: none; } }
 </style>

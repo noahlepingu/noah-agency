@@ -3,6 +3,8 @@ const lang = "$$LANG$$";
 import '$$THEME_CSS_PATH$$';
 import PageLayout from '@layouts/PageLayout.astro';
 import ReservationForm from '@components/ReservationForm.astro';
+import OpeningHours from '@components/OpeningHours.astro';
+import Icon from '@components/Icon.astro';
 import data from '$$DATA_PATH$$';
 import uiStrings from '@translations/ui.json';
 import { buildTitle, buildDescription, buildCanonical, buildHreflang } from '@utils/seo';
@@ -15,6 +17,14 @@ const title = buildTitle({ title: data.seo_titles?.['/reservation'] || texts.tit
 const description = buildDescription({ description: data.seo_descriptions?.['/reservation'] || texts.intro || data.seo?.meta_description || '' }, data);
 const canonical = buildCanonical(siteUrl, '/reservation');
 const hreflang = buildHreflang(siteUrl, '/reservation');
+
+// Coordonnees (data.components.footer ou data.contact)
+const footer = data.components?.footer || {};
+const address = footer.address || '';
+const phone = footer.phone || data.contact?.phone || '';
+const phoneHref = footer.phone_href || data.contact?.phone || phone;
+const email = footer.email || data.contact?.email || '';
+const hasSchedule = data.components?.opening_hours?.schedule?.length > 0;
 ---
 
 <PageLayout lang={lang} title={title} description={description} canonical={canonical}
@@ -24,5 +34,72 @@ const hreflang = buildHreflang(siteUrl, '/reservation');
     { label: ui.nav?.index || 'Accueil', href: '/' },
     { label: texts.title || 'Reservation', href: '/reservation' },
   ]}>
-  <ReservationForm ui={ui} data={data.components?.reservation_form || {}} lang={lang} />
+
+  <!-- DA §5.7 : grille 7/5 — formulaire carte + colonne infos -->
+  <section class="ds-section ds-section--open">
+    <div class="ds-container ds-layout-form">
+      <ReservationForm ui={ui} data={data.components?.reservation_form || {}} lang={lang} card={true} />
+
+      <aside class="ds-form-side">
+        {hasSchedule ? (
+          <OpeningHours data={data.components.opening_hours} ui={ui} />
+        ) : null}
+
+        {address || phone || email ? (
+          <div class="ds-form-side__block">
+            <h3 class="ds-form-side__title">{ui.reservation?.addressLabel || 'Adresse'}</h3>
+            {address ? <p class="ds-form-side__text">{address}</p> : null}
+            {phone ? (
+              <p class="ds-form-side__line">
+                <Icon name="phone" size={16} aria-hidden="true" />
+                <a href={`tel:${phoneHref}`} class="ds-form-side__link">{phone}</a>
+              </p>
+            ) : null}
+            {email ? (
+              <p class="ds-form-side__line">
+                <Icon name="mail" size={16} aria-hidden="true" />
+                <a href={`mailto:${email}`} class="ds-form-side__link">{email}</a>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        <p class="ds-form-side__note">{ui.reservation?.note || ''}</p>
+      </aside>
+    </div>
+  </section>
 </PageLayout>
+
+<style>
+  .ds-form-side__block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .ds-form-side__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    color: var(--color-ink);
+    margin: 0 0 var(--space-2);
+  }
+  .ds-form-side__text {
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--color-ink-soft);
+    line-height: 1.5;
+  }
+  .ds-form-side__line {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+  .ds-form-side__link {
+    color: var(--color-accent-dark);
+    text-decoration: none;
+    font-size: var(--text-base);
+  }
+  .ds-form-side__link:hover { text-decoration: underline; }
+</style>

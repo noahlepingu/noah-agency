@@ -1,110 +1,397 @@
 ---
 /**
- * Hero.astro — Section hero (DESIGN_SYSTEM_SPECS.md §5.3)
- * Layouts : centered | left | split. Overlay sombre optionnel.
- * H1 UNIQUE par page. CTA + CTA secondaire.
+ * Hero.astro — Section hero (UX_REDESIGN_RESTAURANT.md §5.1, DESIGN_SYSTEM_SPECS §5.3)
+ * Variantes :
+ *  - full    (A) : image plein cadre 92svh, titre blanc en bas a gauche,
+ *                  badge Ouvert/Ferme en haut gauche, CTA accent + lien texte.
+ *  - split   (B) : grille 12 cols, texte span 7 (surface-alt) + image span 5 (4:5).
+ *  - type    (C) : fond surface-dark sans image, monogramme en filigrane,
+ *                  surtitre italic accent-light, CTA accent + lien texte.
+ *  - compact  : en-tete de page interieure (surface-alt), titre aligne.
+ *  - centered : alias retrocompatible de compact (pages internes existantes).
+ * H1 UNIQUE par page. CTA + lien texte (max 1 + 1).
  */
 import CTA from './CTA.astro';
 
 interface Props {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
   image?: { src: string; alt: string };
   cta?: { label: string; href: string; variant?: any };
   ctaSecondary?: { label: string; href: string; variant?: any };
-  layout?: 'centered' | 'left' | 'split';
+  textLink?: { label: string; href: string };
+  layout?: 'full' | 'split' | 'type' | 'compact' | 'centered';
   overlay?: boolean;
+  monogram?: string; // variante C — initiales / nom en filigrane
+  status?: { schedule: any[]; openLabel: string; closedLabel: string }; // variante A
 }
 
 const {
   title,
   subtitle,
+  eyebrow,
   image,
   cta,
   ctaSecondary,
-  layout = 'centered',
-  overlay = false,
+  textLink,
+  layout = 'full',
+  monogram,
+  status,
 } = Astro.props;
 
+// 'centered' (ancien layout PageLayout) => compact
+const variant = layout === 'centered' ? 'compact' : layout;
 const hasImage = !!image?.src;
+
+// Defensif : variante A demande sans image -> bascule sur C (DA §6).
+const effective = variant === 'full' && !hasImage ? 'type' : variant;
+
+// Le hero sombre (A image voilee / C surface-dark) impose le theme clair du
+// header (texte creme) — DA §5.0 (documente dans le rapport frontend).
+const darkTheme = effective === 'full' || effective === 'type';
+
+const scheduleJson = JSON.stringify(status?.schedule || []);
+const openLabel = status?.openLabel || 'Ouvert';
+const closedLabel = status?.closedLabel || 'Ferme';
 ---
 
-<section class:list={['ds-hero', `ds-hero--${layout}`]}>
-  {hasImage ? (
-    <img
-      class="ds-hero__img"
-      src={image!.src}
-      alt={image!.alt}
-      loading="eager"
-      fetchpriority="high"
-      width="1600"
-      height="800"
-    />
+<section
+  class:list={['ds-hero', `ds-hero--${effective}`, { 'ds-hero--dark': darkTheme }]}
+  data-hero-full
+  {...(darkTheme ? { 'data-hero-dark': '' } : {})}
+>
+  {effective === 'full' && hasImage ? (
+    <>
+      <img
+        class="ds-hero__img"
+        src={image!.src}
+        alt={image!.alt}
+        loading="eager"
+        fetchpriority="high"
+        width="1200"
+        height="800"
+      />
+      <span class="ds-hero__veil" aria-hidden="true"></span>
+    </>
   ) : null}
-  <div class:list={['ds-hero__content', { 'ds-hero__content--overlay': overlay }]}>
-    <div class="ds-container ds-hero__inner">
-      <h1 class="ds-hero__title">{title}</h1>
-      {subtitle ? <p class="ds-hero__subtitle">{subtitle}</p> : null}
-      {(cta || ctaSecondary) ? (
-        <div class="ds-hero__cta">
-          {cta ? <CTA href={cta.href} variant={cta.variant || 'primary'} size="lg">{cta.label}</CTA> : null}
-          {ctaSecondary ? <CTA href={ctaSecondary.href} variant={ctaSecondary.variant || 'outline'} size="lg">{ctaSecondary.label}</CTA> : null}
+
+  {effective === 'split' && hasImage ? (
+    <div class="ds-container ds-hero__split">
+      <div class="ds-hero__split-text">
+        <div class="ds-hero__inner">
+          {eyebrow ? <p class="ds-hero__eyebrow ds-hero__eyebrow--plain">{eyebrow}</p> : null}
+          <h1 class="ds-hero__title ds-hero__title--ink">{title}</h1>
+          {subtitle ? <p class="ds-hero__subtitle ds-hero__subtitle--ink-soft">{subtitle}</p> : null}
+          {cta ? (
+            <div class="ds-hero__cta">
+              <CTA href={cta.href} variant={cta.variant || 'secondary'}>{cta.label}</CTA>
+              {textLink ? <a class="ds-hero__textlink ds-hero__textlink--soft" href={textLink.href}>{textLink.label}</a> : null}
+            </div>
+          ) : null}
         </div>
+      </div>
+      <figure class="ds-hero__split-figure">
+        <img class="ds-hero__img-figure" src={image!.src} alt={image!.alt} loading="eager" fetchpriority="high" width="800" height="1000" />
+      </figure>
+    </div>
+  ) : effective === 'type' ? (
+    <div class="ds-container ds-hero__type">
+      {monogram ? <span class="ds-hero__monogram" aria-hidden="true">{monogram}</span> : null}
+      <div class="ds-hero__inner">
+        {eyebrow ? <p class="ds-hero__eyebrow">{eyebrow}</p> : null}
+        <h1 class="ds-hero__title">{title}</h1>
+        {subtitle ? <p class="ds-hero__subtitle ds-hero__subtitle--pale">{subtitle}</p> : null}
+        {cta ? (
+          <div class="ds-hero__cta">
+            <CTA href={cta.href} variant={cta.variant || 'primary'}>{cta.label}</CTA>
+            {textLink ? <a class="ds-hero__textlink ds-hero__textlink--light" href={textLink.href}>{textLink.label}</a> : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  ) : (
+    /* full (A) avec image / compact (en-tete page) */
+    <div class="ds-container ds-hero__inner">
+      {effective === 'full' && status && status.schedule?.length ? (
+        <div
+          class="ds-hero__badge"
+          data-hero-status
+          data-schedule={scheduleJson}
+          data-ui-open={openLabel}
+          data-ui-closed={closedLabel}
+          role="status"
+        ></div>
+      ) : null}
+      {effective === 'full' ? (
+        <>
+          {eyebrow ? <p class="ds-hero__eyebrow ds-hero__eyebrow--light">{eyebrow}</p> : null}
+          <h1 class="ds-hero__title">{title}</h1>
+          {subtitle ? <p class="ds-hero__subtitle ds-hero__subtitle--pale">{subtitle}</p> : null}
+          {cta ? (
+            <div class="ds-hero__cta">
+              <CTA href={cta.href} variant={cta.variant || 'primary'}>{cta.label}</CTA>
+              {textLink ? <a class="ds-hero__textlink ds-hero__textlink--light" href={textLink.href}>{textLink.label}</a> : null}
+            </div>
+          ) : null}
+        </>
+      ) : null}
+      {effective === 'compact' ? (
+        <>
+          <h1 class="ds-hero__title ds-hero__title--ink">{title}</h1>
+          {subtitle ? <p class="ds-hero__subtitle ds-hero__subtitle--ink-soft">{subtitle}</p> : null}
+        </>
       ) : null}
     </div>
-  </div>
+  )}
 </section>
+
+<script>
+  // Badge Ouvert/Ferme (variante A) — heure locale du visiteur, cote client.
+  // Maintient la SOURCE UNIQUE des jours dans utils/days.mjs (pas de doublon).
+  import { DAY_NAMES } from '../utils/days.mjs';
+
+  const badge = document.querySelector('[data-hero-status]') as HTMLElement | null;
+  if (badge) {
+    let schedule: any[] = [];
+    try { schedule = JSON.parse(badge.getAttribute('data-schedule') || '[]'); } catch { schedule = []; }
+    const now = new Date();
+    const todayName = DAY_NAMES[now.getDay()];
+    const entries = schedule.filter((s) => s && s.day === todayName && !s.closed);
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    let isOpen = false;
+    for (const e of entries) {
+      if (e && e.open && e.close) {
+        const [oh, om] = String(e.open).split(':').map(Number);
+        const [ch, cm] = String(e.close).split(':').map(Number);
+        const o = (oh || 0) * 60 + (om || 0);
+        const c = (ch || 0) * 60 + (cm || 0);
+        if (minutes >= o && minutes < c) { isOpen = true; break; }
+      }
+    }
+    const openLabel = badge.getAttribute('data-ui-open') || 'Ouvert';
+    const closedLabel = badge.getAttribute('data-ui-closed') || 'Ferme';
+    badge.innerHTML = isOpen
+      ? `<strong class="ds-hero__badge-state ds-hero__badge-state--open">${openLabel}</strong>`
+      : `<span class="ds-hero__badge-state ds-hero__badge-state--closed">${closedLabel}</span>`;
+  }
+</script>
 
 <style>
   .ds-hero {
     position: relative;
     display: flex;
-    align-items: center;
-    min-height: 340px;
-    padding: var(--space-10) 0;
-    background-color: var(--color-gray-100);
     overflow: hidden;
+    background-color: var(--color-surface-alt); /* variantes sans image */
   }
-  .ds-hero--centered { justify-content: center; text-align: center; }
-  .ds-hero--left { justify-content: flex-start; text-align: left; }
+
+  /* ---------------------------------------------------------------- A — full */
+  .ds-hero--full {
+    min-height: 92svh;
+    align-items: flex-end;
+    background-color: transparent; /* image plein cadre derriere */
+  }
   .ds-hero__img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center bottom; /* DA §6 : centre-bas pour le hero */
+    filter: brightness(0.8); /* voile homogene (DA §5.1) */
   }
-  .ds-hero__content { position: relative; width: 100%; }
-  .ds-hero__content--overlay {
-    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45));
+  .ds-hero__veil {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.12); /* voile noir 12 % */
+    pointer-events: none;
   }
+  .ds-hero--full .ds-hero__inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding-bottom: var(--space-16); /* 64px — DA §5.1 */
+    padding-top: var(--space-16);
+  }
+
+  /* Badge Ouvert/Ferme — haut gauche, surface-raised (DA §5.1) */
+  .ds-hero__badge {
+    position: absolute;
+    top: var(--space-6);
+    left: var(--container-padding);
+    display: none;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    z-index: 2;
+  }
+  @media (min-width: 768px) {
+    .ds-hero__badge { display: inline-block; }
+  }
+  .ds-hero__badge-state--open { color: var(--color-success-dark); }
+  .ds-hero__badge-state--closed { color: var(--color-ink-soft); }
+
+  /* ---------------------------------------------------------------- B — split */
+  .ds-hero--split {
+    background-color: var(--color-surface-alt);
+    align-items: stretch;
+  }
+  .ds-hero__split {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+  .ds-hero__split-text {
+    padding: var(--space-10) 0;
+  }
+  .ds-hero__split-figure {
+    margin: 0;
+    overflow: hidden;
+    max-height: 480px;
+  }
+  .ds-hero__img-figure {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 4 / 5;
+  }
+  @media (min-width: 1024px) {
+    .ds-hero__split { grid-template-columns: repeat(12, 1fr); }
+    .ds-hero__split-text { grid-column: span 7; padding: var(--space-28) 0; align-self: center; }
+    .ds-hero__split-text .ds-hero__inner { padding: 0 var(--space-8) 0 0; }
+    .ds-hero__split-figure { grid-column: span 5; max-height: none; }
+  }
+
+  /* ---------------------------------------------------------------- C — type */
+  .ds-hero--type {
+    background-color: var(--color-surface-dark);
+    min-height: 88svh;
+    align-items: flex-end;
+  }
+  .ds-hero__type { position: relative; z-index: 1; width: 100%; }
+  .ds-hero__monogram {
+    position: absolute;
+    right: var(--container-padding);
+    top: var(--space-16);
+    font-family: var(--font-heading);
+    font-size: 48px;
+    font-weight: 400;
+    color: var(--color-surface-raised);
+    opacity: 0.16;
+    pointer-events: none;
+    user-select: none;
+  }
+  .ds-hero--type .ds-hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding-bottom: var(--space-16);
+    padding-top: var(--space-24);
+    max-width: var(--content-max);
+  }
+
+  /* ---------------------------------------------------------------- Contenu commun */
+  .ds-hero__inner {
+    padding-block: var(--space-10); /* hero padding : 40/56/80 (DA §4.2) */
+  }
+  .ds-hero--compact { min-height: 0; align-items: center; justify-content: center; text-align: center; }
+  .ds-hero--compact .ds-hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-10);
+  }
+
+  /* Titre : Fraunces 400-500, 40->64px, 2 lignes max (DA §5.1) */
   .ds-hero__title {
     font-family: var(--font-heading);
-    font-size: var(--text-5xl);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: var(--color-gray-900);
-    max-width: 20ch;
-    margin: 0 0 var(--space-4);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 500;
+    line-height: 1.05;
+    color: var(--color-surface-raised); /* A sur image / C sur sombre */
+    max-width: 14ch;
+    margin: 0;
   }
-  .ds-hero--centered .ds-hero__title { margin-inline: auto; }
-  .ds-hero__content--overlay .ds-hero__title { color: var(--color-white); }
+  .ds-hero__title--ink { color: var(--color-ink); }
+
+  .ds-hero__eyebrow {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.25rem;
+    color: var(--color-accent-light); /* sur hero sombre */
+    margin: 0;
+  }
+  .ds-hero__eyebrow--plain {
+    font-family: var(--font-body);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent-dark); /* surtitre classique (DA §3.4) */
+  }
+  .ds-hero__eyebrow--light {
+    font-family: var(--font-body);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent-light);
+  }
+
   .ds-hero__subtitle {
     font-size: var(--text-lg);
     line-height: 1.6;
-    color: var(--color-gray-600);
-    max-width: 60ch;
-    margin: 0 auto var(--space-6);
+    margin: 0;
+    max-width: 52ch;
   }
-  .ds-hero__content--overlay .ds-hero__subtitle { color: var(--color-gray-100); }
-  .ds-hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: inherit; }
+  .ds-hero__subtitle--pale { color: var(--color-surface-raised); opacity: 0.7; }
+  .ds-hero__subtitle--ink-soft { color: var(--color-ink-soft); }
 
+  .ds-hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-2);
+  }
+
+  /* Lien texte de second plan : blanc souligne 1px (A), accent-light (C), ink-soft (B) */
+  .ds-hero__textlink {
+    font-size: var(--text-base);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .ds-hero__textlink--light { color: var(--color-surface-raised); }
+  .ds-hero__textlink--light:hover { color: var(--color-accent-light); }
+  .ds-hero__textlink--soft { color: var(--color-ink-soft); }
+  .ds-hero__textlink--soft:hover { color: var(--color-accent-dark); }
+
+  /* ---------------------------------------------------------------- Responsive (DA §5.6) */
+  /* Hero A : 88svh mobile, titre >= 40px (clamp), CTA pleine largeur < 480px */
+  @media (max-width: 479px) {
+    .ds-hero--full { min-height: 88svh; }
+    .ds-hero--full .ds-hero__cta .ds-btn { width: 100%; }
+  }
   @media (min-width: 768px) {
-    .ds-hero { min-height: 400px; padding: var(--space-16) 0; }
+    .ds-hero__inner { padding-block: var(--space-16); }
+    .ds-hero--full { min-height: 92svh; }
   }
   @media (min-width: 1024px) {
-    .ds-hero { min-height: 480px; }
-    .ds-hero--split .ds-hero__inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-10); }
+    .ds-hero__inner { padding-block: var(--space-20); }
+    .ds-hero--compact .ds-hero__inner { padding-block: var(--space-20); }
   }
 </style>

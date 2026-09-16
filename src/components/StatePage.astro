@@ -1,9 +1,10 @@
 ---
 /**
  * StatePage.astro — Etats speciaux : 404, 500, construction, confirmation, aucun creneau
- * (DESIGN_SYSTEM_SPECS.md §6, UX.md §4)
- * Layout : logo/texte + icone + titre + message + CTA + secondary CTA.
- * Accessibilite : role=alert pour erreurs, role=status pour confirmation.
+ * (DESIGN_SYSTEM_SPECS.md §6, DA §5.11)
+ * DA : 404 monogramme Fraunces 7xl (120px) --color-line + H1 narratif ;
+ * 500 idem ; confirmation icone success + 3 etapes numerotees.
+ * Header solide par defaut sur 404/500 (aucun hero). role=alert/status.
  * noindex pour les pages d'etat.
  */
 import Icon from './Icon.astro';
@@ -13,9 +14,10 @@ interface Props {
   ui: any;
   lang?: 'fr' | 'en';
   data?: any;
+  steps?: string[]; // confirmation : etapes numerotees (DA §5.11)
 }
 
-const { type, ui, lang = 'fr', data } = Astro.props;
+const { type, ui, lang = 'fr', data, steps = [] } = Astro.props;
 const prefix = lang === 'en' ? '/en' : '';
 const states = ui.states || {};
 const state = states[type] || states['404'] || {};
@@ -23,19 +25,27 @@ const phone = data?.phone || '';
 const email = data?.email || '';
 const e = (href: string) => (prefix ? `${prefix}${href}` : href);
 const role = type === 'confirmation' ? 'status' : 'alert';
+
+// Monogramme DA (§5.11) : le code d'etat lui-meme en Fraunces 120px
+const isMonogram = type === '404' || type === '500';
+const iconName =
+  type === '500' ? 'warning'
+  : type === 'construction' ? 'menu'
+  : type === 'noSlot' ? 'calendar'
+  : type === 'confirmation' ? 'check'
+  : 'pin';
 ---
 
 <div class="ds-state" role={role}>
   <div class="ds-container ds-state__inner">
-    <div class:list={['ds-state__icon', `ds-state__icon--${type}`]}>
-      <Icon name={
-        type === '404' ? 'pin'
-        : type === '500' ? 'warning'
-        : type === 'construction' ? 'menu'
-        : type === 'noSlot' ? 'calendar'
-        : 'check'
-      } size={48} />
-    </div>
+    {isMonogram ? (
+      <span class="ds-state__monogram" aria-hidden="true">{type}</span>
+    ) : (
+      <div class:list={['ds-state__icon', `ds-state__icon--${type}`]}>
+        <Icon name={iconName} size={48} />
+      </div>
+    )}
+
     <h1 class="ds-state__title">{state.title || ''}</h1>
     <p class="ds-state__msg">
       {type === '500' ? (
@@ -47,6 +57,18 @@ const role = type === 'confirmation' ? 'status' : 'alert';
         </Fragment>
       ) : state.message || state.text || ''}
     </p>
+
+    {type === 'confirmation' && steps.length > 0 ? (
+      <ol class="ds-state__steps">
+        {steps.map((s, i) => (
+          <li class="ds-state__step">
+            <span class="ds-state__step-num" aria-hidden="true">{i + 1}</span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ol>
+    ) : null}
+
     <div class="ds-state__actions">
       {state.cta ? <a href={state.cta.startsWith('/') ? e(state.cta) : e('/')} class="ds-btn ds-btn--primary">{state.cta_label || state.cta}</a> : null}
       {state.cta1 ? <a href={e('/')} class="ds-btn ds-btn--primary">{state.cta1}</a> : null}
@@ -57,25 +79,85 @@ const role = type === 'confirmation' ? 'status' : 'alert';
 </div>
 
 <style>
-  .ds-state { padding: var(--space-16) 0; text-align: center; }
-  .ds-state__inner { max-width: 32rem; margin-inline: auto; }
+  .ds-state { padding: var(--space-20) 0; text-align: center; }
+  .ds-state__inner { max-width: 34rem; margin-inline: auto; }
+
+  /* Monogramme : Fraunces, 120px, line (DA §5.11) */
+  .ds-state__monogram {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: var(--text-7xl); /* 120px */
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-line);
+    user-select: none;
+    margin-bottom: var(--space-4);
+  }
+
   .ds-state__icon {
-    width: 80px; height: 80px; border-radius: var(--radius-full);
-    display: inline-flex; align-items: center; justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: var(--space-6);
   }
-  .ds-state__icon--404 { background-color: var(--color-gray-100); color: var(--color-gray-500); }
-  .ds-state__icon--500 { background-color: var(--color-warning-light); color: var(--color-warning); }
-  .ds-state__icon--construction { background-color: var(--color-info-light); color: var(--color-info); }
-  .ds-state__icon--confirmation { background-color: var(--color-success-light); color: var(--color-success); }
-  .ds-state__icon--noSlot { background-color: var(--color-gray-100); color: var(--color-gray-600); }
+  .ds-state__icon--404 { background-color: var(--color-surface-alt); color: var(--color-ink-soft); }
+  .ds-state__icon--500 { background-color: var(--color-accent-light); color: var(--color-accent-dark); }
+  .ds-state__icon--construction { background-color: var(--color-secondary-light); color: var(--color-secondary-dark); }
+  .ds-state__icon--confirmation { background-color: var(--color-success-light); color: var(--color-success-dark); }
+  .ds-state__icon--noSlot { background-color: var(--color-surface-alt); color: var(--color-ink-soft); }
+
   .ds-state__title {
     font-family: var(--font-heading);
     font-size: var(--text-3xl);
-    font-weight: 700;
-    color: var(--color-gray-900);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-ink);
     margin: 0 0 var(--space-3);
   }
-  .ds-state__msg { color: var(--color-gray-600); line-height: 1.6; }
-  .ds-state__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-6); }
+  .ds-state__msg { color: var(--color-ink-soft); line-height: 1.6; }
+  .ds-state__msg a { color: var(--color-accent-dark); }
+
+  /* Etapes numerotees confirmation (DA §5.11) */
+  .ds-state__steps {
+    list-style: none;
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    text-align: left;
+    max-width: 24rem;
+    margin-inline: auto;
+  }
+  .ds-state__step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-base);
+    color: var(--color-ink);
+  }
+  .ds-state__step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-dark);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ds-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-8);
+  }
 </style>

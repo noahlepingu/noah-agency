@@ -1,6 +1,6 @@
 /* ==========================================================================
    utilities.css — Utilitaires de mise en page (grille, conteneur, sections)
-   Reference : DESIGN_SYSTEM_SPECS.md §2.6 (grille 4/8/12), UX.md §3.2
+   Reference : UX_REDESIGN_RESTAURANT.md §4.2 (rythme), §5.9 (ds-card)
    ========================================================================== */
 
 /* Conteneur centralise, mobile-first */
@@ -11,14 +11,43 @@
   padding-inline: var(--container-padding);
 }
 
-/* Conteneur de texte (lisible, 720-800px) */
+/* Conteneur de texte (UX_REDESIGN §3.5 : 680px) */
 .ds-container--content {
   max-width: var(--content-max);
 }
 
-/* Rythme vertical standard entre sections */
+/* ------------------------------------------------------------------ Rythme des sections (DA §4.2) */
+/* Section standard : 64 / 72 / 96 px */
 .ds-section {
-  padding-block: var(--space-12);
+  padding-block: var(--space-16);
+}
+@media (min-width: 768px) {
+  .ds-section { padding-block: 72px; }
+}
+@media (min-width: 1024px) {
+  .ds-section { padding-block: var(--space-24); }
+}
+
+/* Section d'ouverture (apres hero) : 64 / 88 / 112 px */
+.ds-section--open {
+  padding-block: var(--space-16);
+}
+@media (min-width: 768px) {
+  .ds-section--open { padding-block: 88px; }
+}
+@media (min-width: 1024px) {
+  .ds-section--open { padding-block: var(--space-28); }
+}
+
+/* CTA final : 96 / 128 / 160 px */
+.ds-section--cta {
+  padding-block: var(--space-24);
+}
+@media (min-width: 768px) {
+  .ds-section--cta { padding-block: var(--space-32); }
+}
+@media (min-width: 1024px) {
+  .ds-section--cta { padding-block: var(--space-40); }
 }
 
 .ds-section--tight {
@@ -26,60 +55,38 @@
 }
 
 .ds-section--alt {
-  background-color: var(--color-gray-50);
+  background-color: var(--color-surface-alt);
 }
 
-/* Grilles responsives (mobile 1 colonne -> desktop N colonnes) */
+/* ------------------------------------------------------------------ Grilles responsives */
 .ds-grid {
   display: grid;
   gap: var(--space-6);
 }
-
-.ds-grid--2 {
-  grid-template-columns: 1fr;
-}
-
-.ds-grid--3 {
-  grid-template-columns: 1fr;
-}
-
-.ds-grid--4 {
-  grid-template-columns: 1fr;
-}
-
+.ds-grid--2 { grid-template-columns: 1fr; }
+.ds-grid--3 { grid-template-columns: 1fr; }
+.ds-grid--4 { grid-template-columns: 1fr; }
 @media (min-width: 640px) {
-  .ds-grid--2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .ds-grid--3 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .ds-grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .ds-grid--3 { grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (min-width: 1024px) {
-  .ds-grid--3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .ds-grid--4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .ds-grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .ds-grid--4 { grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (min-width: 1280px) {
-  .ds-grid--4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  .ds-grid--4 { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* Carte generique */
+/* ------------------------------------------------------------------ Carte (DA §5.9) */
+/* Usage restreint : formulaire, badge Ouvert/Ferme, bloc infos en bi-colonne.
+   JAMAIS pour menu, avis, plats, FAQ. */
 .ds-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-sm);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xl); /* 16px — 2 ecarts max de la base */
+  padding: 28px;
+  box-shadow: none;
 }
 
 /* En-tete de section */
@@ -87,13 +94,11 @@
   margin-bottom: var(--space-8);
   max-width: var(--content-max);
 }
-
 .ds-section-head h2 {
   margin-bottom: var(--space-2);
 }
-
 .ds-section-head p {
-  color: var(--color-gray-600);
+  color: var(--color-ink-soft);
 }
 
 /* Alignment vertical simple pour blocs texte+image */
@@ -102,7 +107,6 @@
   gap: var(--space-6);
   align-items: center;
 }
-
 @media (min-width: 1024px) {
   .ds-media {
     grid-template-columns: 1fr 1fr;
@@ -113,27 +117,167 @@
 .ds-prose {
   max-width: var(--content-max);
 }
-
 .ds-prose p {
   margin-block: var(--space-4);
 }
-
 .ds-prose h2 {
   margin-top: var(--space-12);
   margin-bottom: var(--space-3);
 }
-
 .ds-prose h3 {
   margin-top: var(--space-8);
   margin-bottom: var(--space-2);
 }
-
 .ds-prose ul,
 .ds-prose ol {
   margin-block: var(--space-4);
   padding-left: var(--space-6);
 }
-
 .ds-prose li {
   margin-block: var(--space-1);
+}
+
+/* ------------------------------------------------------------------ Formulaires (DA §5.7) */
+/* Grille 7/5 : formulaire a gauche, infos a droite (DA §5.7) */
+.ds-layout-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .ds-layout-form { grid-template-columns: 7fr 5fr; }
+}
+
+/* Carte formulaire : SEUL usage ds-card sur formulaire (DA §5.7) */
+.ds-form-card {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+  padding: 32px;
+}
+@media (min-width: 768px) {
+  .ds-form-card { padding: 40px; }
+}
+
+/* Colonne infos (horaires, adresse, tel, note) */
+.ds-form-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.ds-form-side__note {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+/* Styles partagés contact + reservation : un seul composant formulaire
+  （ContactForm） ne definit plus les styles scoping — Evite le bug de
+   reservation.tsx qui n'avait pas de styles de champ. */
+.ds-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 768px) {
+  .ds-form__grid { grid-template-columns: 1fr 1fr; }
+  .ds-form__field--full { grid-column: 1 / -1; }
+}
+@media (max-width: 767px) {
+  /* ReservationForm mobile : colonne unique */
+  .ds-form__grid--reservation { grid-template-columns: 1fr; }
+}
+@media (min-width: 768px) {
+  .ds-form__grid--reservation { grid-template-columns: 1fr 1fr; }
+}
+
+.ds-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Labels : 14px ink-soft (DA §5.7) */
+.ds-form__label {
+  font-size: var(--text-sm); /* 14px */
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+/* Champs : border 1.5px line-strong, radius 8, surface-raised, 12px 14px (DA §5.7) */
+.ds-form__input,
+.ds-form__textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-ink);
+  background-color: var(--color-surface-raised);
+  border: 1.5px solid var(--color-line-strong);
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-height: 44px;
+  transition: border-color var(--transition-fast);
+}
+.ds-form__input:focus-visible,
+.ds-form__textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+.ds-form__textarea { resize: vertical; }
+.ds-form__select { appearance: auto; }
+
+/* Erreur champ : border error + message error-dark (DA §5.7) */
+.ds-form__input--invalid,
+.ds-form__textarea--invalid {
+  border-color: var(--color-error);
+}
+.ds-form__error {
+  color: var(--color-error-dark);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+/* Banniere erreur globale : bg #FDF0EE / border #F4C6BC (DA §5.7, tokens §4.1) */
+.ds-form__global-error {
+  color: var(--color-error-dark);
+  background-color: var(--color-error-soft);
+  border: 1px solid var(--color-error-border);
+  border-radius: 8px;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+}
+.ds-form__global-error[hidden] { display: none; }
+
+/* Confirmation succes */
+.ds-form__success {
+  color: var(--color-success-dark);
+  background-color: var(--color-success-light);
+  border-radius: 8px;
+  padding: var(--space-4);
+  margin: var(--space-4) 0 0;
+}
+.ds-form__success[hidden] { display: none; }
+
+.ds-form__note {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  margin: var(--space-4) 0 0;
+}
+.ds-form__submit-row { margin-top: var(--space-4); }
+.ds-form__honeypot {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-form__input,
+  .ds-form__textarea {
+    transition: none;
+  }
 }

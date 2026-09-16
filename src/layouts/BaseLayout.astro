@@ -14,6 +14,7 @@ import Header from '@components/Header.astro';
 import Footer from '@components/Footer.astro';
 import CookieBanner from '@components/CookieBanner.astro';
 import BackToTop from '@components/BackToTop.astro';
+import MobileStickyCTA from '@components/MobileStickyCTA.astro';
 
 interface Props {
   lang: 'fr' | 'en';
@@ -96,8 +97,9 @@ const headerData = data.components?.header || {
     <main id="contenu">
       <slot />
     </main>
-    <Footer lang={lang} ui={ui} data={data.components?.footer || {}} translatedRoutes={data.translated_routes || []} thirdParty={data.third_party || {}} />
+    <Footer lang={lang} ui={ui} data={data.components?.footer || {}} navItems={headerData.nav || []} translatedRoutes={data.translated_routes || []} thirdParty={data.third_party || {}} />
     <CookieBanner ui={ui} data={data.third_party || {}} lang={lang} />
     <BackToTop ui={ui} />
+    <MobileStickyCTA lang={lang} ui={ui} data={data.components || data} translatedRoutes={data.translated_routes || []} />
   </body>
 </html>

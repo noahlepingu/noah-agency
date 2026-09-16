@@ -97,7 +97,15 @@ menu:
         - { name: "Eau minerale", description: "Plate ou gazeuse (75cl)", price: 4.00 }
 
 gallery:
-  images: []   # a enrichir avec de vraies photos (dossier assets du client)
+  images:
+    - { src: "/images/demo/galerie-grande.jpg", alt: "Assiette du chef, plat signature de La Table d'Essai" }
+    - { src: "/images/demo/galerie-portrait.jpg", alt: "Salle du restaurant pendant le service du soir" }
+    - { src: "/images/demo/galerie-carre-1.jpg", alt: "Plat de saison, legumes du marche local" }
+    - { src: "/images/demo/galerie-carre-2.jpg", alt: "Bar du restaurant et mise en place du service" }
+    - { src: "/images/demo/galerie-pano.jpg", alt: "Vue panoramique de la table et de la vaisselle" }
+    - { src: "/images/demo/ambiance.jpg", alt: "Ambiance chaleureuse de la salle a manger" }
+    - { src: "/images/demo/cuisine.jpg", alt: "La brigade en cuisine, en plein service" }
+    - { src: "/images/demo/devanture.jpg", alt: "Devanture du restaurant La Table d'Essai a Lyon" }
 
 reviews:
   enabled: true
@@ -123,11 +131,25 @@ template:
   multilingual: true       # regle C-09 : fournir business.description_en + seo.meta_description_en
 
 branding:
-  primary_color: "#B91C1C"
-  secondary_color: "#F59E0B"
-  accent_color: "#DC2626"
+  # Palette DA 2.6/2.7 (RE_DESIGN) — variantes explicites fournies pour
+  # fidelite exacte ; generate-site les utilise telles quelles sinon les calcule.
+  primary_color: "#3A2E27"
+  primary_light: "#EFE5D8"
+  primary_dark: "#241B16"
+  primary_on: "#FBF7F0"
+  primary_on_dark: "#FBF7F0"
+  secondary_color: "#A67C52"
+  secondary_light: "#F0E4D3"
+  secondary_dark: "#7D5A36"
+  secondary_on: "#241B16"
+  secondary_on_dark: "#FBF7F0"
+  accent_color: "#B4542C"
+  accent_light: "#F2DCCF"
+  accent_dark: "#8F3E1F"
+  accent_on: "#FBF7F0"
+  accent_on_dark: "#FBF7F0"
   fonts:
-    heading: "Playfair Display"
+    heading: "Fraunces"
     body: "Inter"
 
 legal:
@@ -145,4 +167,6 @@ legal:
   email_pro: "contact@la-table-dessai-demo.example.com"
   phone_pro: "04 72 00 00 01"
 
-hero_image: null
+# Hero page d'accueil : image demo du template (ETAPE 6 du redesign).
+# Sur un vrai client : photo fournie par le client (dossier assets).
+hero_image: { src: "/images/demo/hero.jpg", alt: "Table dresse dans la salle du restaurant La Table d'Essai a Lyon" }

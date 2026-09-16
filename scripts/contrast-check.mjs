@@ -32,7 +32,7 @@ if (!existsSync(themePath)) {
 
 const theme = readFileSync(themePath, 'utf8');
 const colors = {};
-// Matche les hex 6 chiffres ET 8 chiffres (ex: #B91C1CCC genere a tort avant M6).
+// Matche les hex 6 chiffres ET 8 chiffres (alpha). Fallbacks = palette DA 2.6.
 for (const [, name, hex] of theme.matchAll(/--color-([\w-]+):\s*(#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?)/g)) {
   colors[name] = hex;
 }
@@ -40,16 +40,15 @@ for (const [, name, hex] of theme.matchAll(/--color-([\w-]+):\s*(#[0-9A-Fa-f]{6}
 const checks = [
   ['Text on white', colors['gray-900'] || '#111827', '#FFFFFF', 4.5],
   ['Text on white (secondary)', colors['gray-500'] || '#6B7280', '#FFFFFF', 4.5],
-  ['White on primary', '#FFFFFF', colors['primary'] || '#B91C1C', 4.5],
-  ['White on accent', '#FFFFFF', colors['accent'] || '#DC2626', 4.5],
-  // Tokens on-* reels : le texte choisi sur son fond (M6 : on-secondary = #1f2937,
-  // plus jamais #fff sur ambre). Remplace la paire naive "white-on-secondary".
-  ['On-primary token on primary', colors['on-primary'] || '#FFFFFF', colors['primary'] || '#B91C1C', 4.5],
-  ['On-secondary token on secondary', colors['on-secondary'] || '#1f2937', colors['secondary'] || '#F59E0B', 4.5],
-  ['On-accent token on accent', colors['on-accent'] || '#FFFFFF', colors['accent'] || '#DC2626', 4.5],
-  // Variantes -dark : ce sont elles du hover/skip-link (m8 : hex 8 chiffres acceptes).
-  ['On-primary-dark token on primary-dark', colors['on-primary-dark'] || '#FFFFFF', colors['primary-dark'] || colors['primary'] || '#B91C1C', 4.5],
-  ['On-accent-dark token on accent-dark', colors['on-accent-dark'] || '#FFFFFF', colors['accent-dark'] || colors['accent'] || '#DC2626', 4.5],
+  ['White on primary', '#FFFFFF', colors['primary'] || '#3A2E27', 4.5],
+  ['White on accent', '#FFFFFF', colors['accent'] || '#B4542C', 4.5],
+  // Tokens on-* reels : le texte choisi sur son fond (M6).
+  ['On-primary token on primary', colors['on-primary'] || '#FBF7F0', colors['primary'] || '#3A2E27', 4.5],
+  ['On-secondary token on secondary', colors['on-secondary'] || '#241B16', colors['secondary'] || '#A67C52', 4.5],
+  ['On-accent token on accent', colors['on-accent'] || '#FBF7F0', colors['accent'] || '#B4542C', 4.5],
+  // Variantes -dark : ce sont elles du hover/skip-link (m8).
+  ['On-primary-dark token on primary-dark', colors['on-primary-dark'] || '#FBF7F0', colors['primary-dark'] || colors['primary'] || '#3A2E27', 4.5],
+  ['On-accent-dark token on accent-dark', colors['on-accent-dark'] || '#FBF7F0', colors['accent-dark'] || colors['accent'] || '#B4542C', 4.5],
   // Badges horaires "Ouvert"/"Ferme" (D-A11Y-05, WCAG 1.4.3) : tokens fondationnels
   // definis dans src/styles/tokens.css (absents du theme.css client) — m8.
   // --color-success-dark (#047857) = 5.48:1 ; --color-gray-500 (#6B7280) = 4.83:1.

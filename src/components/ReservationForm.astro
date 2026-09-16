@@ -7,6 +7,7 @@
  * simulateur : la logique est reelle et pure (utils/reservation.js).
  * Envoi : endpoint tiers si configure, sinon mailto (FORMS_ARCHITECTURE.md §3).
  * CNIL : mention d'information sous le formulaire.
+ * Prop card=true : mode carte DA §5.7 (page 7/5), sans section ni en-tete.
  */
 import Icon from './Icon.astro';
 
@@ -14,9 +15,10 @@ interface Props {
   ui: any;
   data: any; // data.components.reservation_form
   lang: 'fr' | 'en';
+  card?: boolean;
 }
 
-const { ui, data, lang } = Astro.props;
+const { ui, data, lang, card = false } = Astro.props;
 const reserv = ui.reservation || {};
 const maxGuests = data.max_party_size || 8;
 const HONEYPOT = 'phone_confirm';
@@ -43,12 +45,14 @@ const scheduleJson = JSON.stringify(data.schedule || []);
 const closedJson = JSON.stringify(data.closed_periods || []);
 ---
 
-<section class="ds-section">
-  <div class="ds-container ds-form">
-    <div class="ds-section-head ds-section-head--centered">
-      <h2 class="ds-section-head__title">{reserv.title || 'Reservez votre table'}</h2>
-      {reserv.intro ? <p class="ds-section-head__subtitle">{reserv.intro}</p> : null}
-    </div>
+<section class:list={['ds-section', { 'ds-section--has-card': card }]}>
+  <div class:list={[card ? 'ds-form-card' : 'ds-container ds-form']}>
+    {!card ? (
+      <div class="ds-section-head ds-section-head--centered">
+        <h2 class="ds-section-head__title">{reserv.title || 'Reservez votre table'}</h2>
+        {reserv.intro ? <p class="ds-section-head__subtitle">{reserv.intro}</p> : null}
+      </div>
+    ) : null}
 
     <form
       method="post"
@@ -310,11 +314,49 @@ const closedJson = JSON.stringify(data.closed_periods || []);
 </script>
 
 <style>
-  .ds-form__grid--reservation { grid-template-columns: 1fr 1fr; }
-  .ds-form__select { appearance: auto; }
-  .ds-form__empty, .ds-form__success { text-align: center; padding: var(--space-8) 0; }
-  .ds-form__empty-title, .ds-form__success-title { font-family: var(--font-heading); font-size: var(--text-2xl); margin: var(--space-4) 0 var(--space-2); }
-  .ds-form__empty-msg, .ds-form__success-msg, .ds-form__success-modify { color: var(--color-gray-600); margin: 0 0 var(--space-2); }
-  .ds-form__empty-actions, .ds-form__success > .ds-btn { margin-top: var(--space-4); }
-  @media (max-width: 767px) { .ds-form__grid--reservation { grid-template-columns: 1fr; } }
+  /*
+    Base form styles now in src/styles/utilities.css (DA §5.7).
+    Only ReservationForm-specific overrides remain here.
+  */
+  /* Mode carte : pas de padding section superieur (la page fournit le rythme) */
+  .ds-section--has-card {
+    padding-block: var(--space-8);
+  }
+  @media (min-width: 1024px) {
+    .ds-section--has-card { padding-block: var(--space-8); }
+  }
+
+  .ds-form__empty,
+  .ds-form__success {
+    text-align: center;
+    padding: var(--space-8) 0;
+  }
+  .ds-form__empty[hidden],
+  .ds-form__success[hidden] { display: none; }
+
+  .ds-form__empty-title,
+  .ds-form__success-title {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    color: var(--color-ink);
+    margin: var(--space-4) 0 var(--space-2);
+  }
+  .ds-form__empty-msg,
+  .ds-form__success-msg,
+  .ds-form__success-modify {
+    color: var(--color-ink-soft);
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-base);
+  }
+  .ds-form__empty-actions,
+  .ds-form__success > .ds-btn {
+    margin-top: var(--space-4);
+  }
+  .ds-form__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+  }
 </style>
