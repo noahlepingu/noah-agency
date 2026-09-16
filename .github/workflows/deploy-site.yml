@@ -47,10 +47,10 @@ jobs:
             exit 1
           fi
 
-      - name: Installer Node.js 20 LTS
+      - name: Installer Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Installer les dependances (reproductible)
