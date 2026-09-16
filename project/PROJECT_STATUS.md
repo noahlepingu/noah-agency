@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 7 terminee — Final Review (A LIVRER AVEC RESERVES) + sprint qualite Q1-Q6 + sprints Gate 4 (infra + Astro 7 + cookies) ; Phase 8 Production en attente des prerequis Noah : GitHub, Cloudflare, Gate 3/4).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 8 Production en cours — depot GitHub cree et pousse, CI verte ; en attente des secrets Cloudflare et Gates 3/4 Noah).
 
 ## Vue d'ensemble
 
@@ -14,7 +14,7 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 7 ter
 | 5     | Code Review | FAIT (revue independante livree : base saine, 2 BLOCKER + 7 MAJEURS + 9 MINEURS documentes) | Code Reviewer |
 | 6     | Corrections | FAIT (toutes les corrections B1/B2, M1-M7, m1-m9 livrees et verifiees — build 16 pages OK, 30 tests OK) | Developpeurs |
 | 7     | Final Review + sprints Gate 4 | FAIT (Final Review = A LIVRER AVEC RESERVES ; Q1-Q6 corriges ; Gate 4 : Astro 7, _headers, security.txt, npm audit CI, dependabot, cookies) | Final Reviewer + DevOps + Frontend |
-| 8     | Production | EN ATTENTE (depend de l'URL GitHub + compte Cloudflare) | DevOps |
+| 8     | Production | PARTIEL (depot GitHub + push + CI verte ; en attente secrets Cloudflare + Gates 3/4) | DevOps |
 | 9     | Post-deploiement + maintenance | EN ATTENTE | QA / PM / DevOps |
 
 ## Historique des taches
@@ -22,6 +22,7 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 7 ter
 | Date | Tache | Agent | Statut | Detail |
 | ---- | ----- | ----- | ------ | ------ |
 | 2026-09-15 | Initialisation du depot et de la source de verite | Tech Lead | FAIT | README, PROJECT_STATUS, DECISIONS, structure /project, depot git initialise. 14 sous-agents crees conformes aux AGENT 01-14 du cahier des charges. |
+| 2026-09-16 | Phase 8 — Depot GitHub cree + push initial + correctif CI | Tech Lead / DevOps | FAIT | Depot `noahlepingu/noah-agency` cree par Noah, remote `origin` configure, push initial de `main` (24 commits), auth git stockee dans `~/.git-credentials` (600, jamais commitee), point ouvert 53 clos. CI GitHub Actions activee : 1er run en echec — cause : `npm run contrast` tournait avant `build:example` alors qu'il lit `src/sites/<slug>/theme.css` uniquement genere par le build. Correctif c5dc7e5 : etape contraste deplacee apres le build, verifie en local avec etat vierge (purges). **CI verte** (c5dc7e5 success) : 30/30 tests, audit 0 vuln, validate code 0, build 16 pages, contraste all pass. TODO_PRODUCTION §2.1 coche (depot, push, CI, etapes securite). |
 | 2026-09-15 | Phase 0 — Livrables Product Manager | PM | FAIT (PROPOSE) | REQUIREMENTS, USER_STORIES, SCOPE, ROADMAP, BUSINESS_PROCESS, KPIS livres dans product/ ; decisions D-PM-01 a 10 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1) sur : perimetre, prix packages, CLIENT_TYPE, cibles KPI, template flagship, budget.** |
 | 2026-09-15 | Phase 0 — Livrables UX Designer | UX | FAIT (PROPOSE) | SITEMAP_MASTER, UX, DESIGN_SYSTEM_SPECS, TEMPLATE_VISION livres dans design/ux/ ; decisions D-UX-01 a 14 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1/2) sur : sitemap, navigation, mobile UX, etats speciaux, accessibilite, design system (tokens, polices, palettes, composants), templates par secteur.** |
 | 2026-09-15 | Phase 0 — Livrables Legal/Compliance | Legal | FAIT (PROPOSE) | LEGAL_BUSINESS, CONTRACT_TEMPLATES, PRIVACY_REQUIREMENTS_TEMPLATE, LEGAL_SITE_TEMPLATES livres dans content/legal/ ; decisions D-LG-01 a 08 actees dans DECISIONS.md. **En attente de la validation Noah (Gate 1) sur : statut juridique (EI), CA previsionnel / regime TVA, CLIENT_TYPE formel, donnees d'identite, verification professionnelle des CGV.** |

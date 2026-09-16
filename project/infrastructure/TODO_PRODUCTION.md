@@ -22,10 +22,12 @@ et avant chaque livraison client.
 
 ### 2.1 Depot et CI/CD
 
-- [ ] Depot GitHub cree (prive recommande) et remote ajoute
+- [x] Depot GitHub cree (prive recommande) et remote ajoute
       (`git remote add origin <url>`)
-- [ ] Premier push effectue (`git push -u origin main`)
-- [ ] CI `ci.yml` verte sur `main` (tests + build exemple)
+- [x] Premier push effectue (`git push -u origin main`)
+- [x] CI `ci.yml` verte sur `main` (tests + build exemple)
+      (correctif 2026-09-16 : etape contraste deplacee apres le build,
+      le theme.css lu par le script est genere par build, pas commite)
 - [ ] Secrets GitHub configures :
   - [ ] `CLOUDFLARE_API_TOKEN`
   - [ ] `CLOUDFLARE_ACCOUNT_ID`
@@ -34,7 +36,7 @@ et avant chaque livraison client.
 - [ ] (Recommande) Environnement « production » avec reviewer « Noah »
 - [ ] Dependabot actif (`.github/dependabot.yml`, weekly, lim. 3 PR) — verifier
       qu'une alerte npm CVE cree bien une PR (Settings -> Code security)
-- [ ] CI `ci.yml` contient les etapes securite : `npm audit --audit-level=high`
+- [x] CI `ci.yml` contient les etapes securite : `npm audit --audit-level=high`
       + `npm run contrast` (Sprint Gate 4, C-09)
 
 ### 2.2 Hebergeur et domaine du systeme
