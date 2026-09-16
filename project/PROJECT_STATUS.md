@@ -1,6 +1,6 @@
 # Etat d'avancement du projet
 
-Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 8 Production en cours — depot GitHub cree et pousse, CI verte ; en attente des secrets Cloudflare et Gates 3/4 Noah).
+Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Refonte visuelle « Bistrot lyonnais » IMPLEMENTEE et poussee — depot GitHub a jour, CI verte ; en attente : Gate 2 sur la refonte, Gate 3, Gate 4).
 
 ## Vue d'ensemble
 
@@ -14,7 +14,7 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 8 Pro
 | 5     | Code Review | FAIT (revue independante livree : base saine, 2 BLOCKER + 7 MAJEURS + 9 MINEURS documentes) | Code Reviewer |
 | 6     | Corrections | FAIT (toutes les corrections B1/B2, M1-M7, m1-m9 livrees et verifiees — build 16 pages OK, 30 tests OK) | Developpeurs |
 | 7     | Final Review + sprints Gate 4 | FAIT (Final Review = A LIVRER AVEC RESERVES ; Q1-Q6 corriges ; Gate 4 : Astro 7, _headers, security.txt, npm audit CI, dependabot, cookies) | Final Reviewer + DevOps + Frontend |
-| 8     | Production | PARTIEL (depot GitHub + push + CI verte ; en attente secrets Cloudflare + Gates 3/4) | DevOps |
+| 8     | Production | PARTIEL (depot GitHub + push + CI verte + secrets Cloudflare configures ; **en attente : Gate 2 refonte visuelle, Gates 3/4 Noah**) | DevOps |
 | 9     | Post-deploiement + maintenance | EN ATTENTE | QA / PM / DevOps |
 
 ## Historique des taches
@@ -42,17 +42,19 @@ Mis a jour a chaque tache livree. Derniere mise a jour : 2026-09-16 (Phase 8 Pro
 | 2026-09-16 | Phase 7 — Final Review (AGENT 14) | Final Reviewer | FAIT (ACTE) | Verdict **A LIVRER AVEC RESERVES** (FINAL_REVIEW.md) : base structurellement saine, 30 tests OK, 285 liens internes 0 casse, 0 tiers par defaut. Constats : conditions Gate 4 C-01/C-04/C-05/C-06/C-07/C-08/C-09 non levees, 6 points qualite a corriger (Q1-Q6 : cuisine cuisine, contraste Ouvert/Ferme, 404/500 CSS, JSON-LD Restaurant absent, meta descriptions courtes, og:image). Recommendations : corriger Q1-Q4 avant Gate 3, B1-B7 avant Gate 4, P1-P5 (Noah) pour production. |
 | 2026-09-16 | Phase 7 — Sprint qualite Q1-Q6 (FINAL_REVIEW) | Frontend | FAIT (ACTE) | **6 corrections de qualite livrees** (commit 30bfc82) : Q1 reformule a-propos (0 « cuisine cuisine »), Q2 contraste horaires (success-dark #047857 + gray-500 #6B7280, 2 paires contrast-check ajoutees), Q3 bundle CSS globalise (buttons.css importe par BaseLayout — 404/500 ont `.ds-btn`), Q4 JSON-LD Restaurant emis sur l'accueil (schema.js + index.astro), Q5 meta descriptions 128-148 car. (template.yaml enrichi), Q6 og:image graceful (hero_image → URL absolue, aucune balise sans image). |
 | 2026-09-16 | Phase 7 — Sprint Gate 4 : Astro 7 + gestion cookies | Frontend | FAIT (ACTE) | **C-01 (CRITIQUE) : upgrade Astro 5.18.2 → 7.3.2** (commit 1f05b72) — `npm audit` passe de 3 vulnerabilites dont 1 critical RCE AVIF a 0 ; migration Node 20 → 22 (package.json + .nvmrc, `engines >= 22.12.0`) ; breaking changes v6/v7 (Vite 8, Rust compiler, compressHTML jsx) evalues et ecartes, pipeline ADR-002 fonctionne tel quel. **C-06 : lien « Gerer les cookies » dans Footer** (unique si third_party actif ; reouverture du bandeau via `ds-manage-consent` CustomEvent, cases pre-cochees, retrait persistant). Correctifs bugs latents CookieBanner (hidden initial, early-return). |
-| 2026-09-16 | Alignement deploy-site.yml sur Node 22 | Tech Lead | FAIT | Correctif apres le sprint Gate 4 : `deploy-site.yml` passait encore en `node-version: 20` alors qu'Astro 7 exige `>= 22.12.0`. Alignement avec ci.yml (commit 1e6b0aa). |
+| 2026-09-16 | Refonte visuelle — Direction artistique « Bistrot lyonnais » | UX + Frontend | FAIT (ACTE) | Suite au retour Noah (site « trop generique, effet IA ») : l'UX Designer livre **UX_REDESIGN_RESTAURANT.md** (9 sections : diagnostic P1-P14, palette creme/brun/terracotta `#FBF7F0/#2B2320/#B4542C`, typo Fraunces+Inter, rythme de sections, compositions anti-template, hero 3 variantes, menu carte typographique, galerie asymetrique, avis citations, footer surface-dark, etats narratifs 404/500, recette 10 images demo Picsum). Decisions **D-UX-15 a 21** actees (commit 1d54aca). Implémentation complète par le Frontend Engineer (commit be42a43, 54 fichiers) : Header transparent->solide au scroll, Hero 4 variantes + badge Ouvert/Ferme runtime, Menu 0-card, Gallery 6 cols asymetrique + lightbox dialog, Testimonials blockquote, Footer surface-dark, StatePage monogramme = code d'etat, MobileStickyCTA (nouveau), formulaires en grille 7fr/5fr avec carte standalone, images demo telechargees dans `templates/restaurant/public/images/demo/`, Fraunces ajoutee a fetch-fonts, styles de formulaires deplaces dans utilities.css (bug corrige D-FE-RE-03). Verification : 30/30 tests, validate code 0, build 16 pages, contraste 11/11 PASS, routes preview + images 200, 0 ancien hex rouge. Rapport : `project/docs/RE_DESIGN_IMPLEMENTATION.md`. **En attente : validation Noah Gate 2 (refonte) + QA/a11y/perf de la refonte avant Gate 3.** |
 
 ## Prochaine etape
 
+**Refonte visuelle — Gate 2 + validation** : la refonte « Bistrot lyonnais » est IMPLEMENTEE et poussee (be42a43). Noah doit :
+- **Gate 2 sur la refonte** : valider la direction artistique (D-UX-15 a 21) et les 3 ecarts documentes (header sombre uniquement sur heros A/C — D-FE-RE-01 ; variantes de marque explicites — D-FE-RE-02 ; Fraunces dans l'enum — D-FE-RE-05)
+- **Valider les images demo** (Picsum, a remplacer par les vraies photos client — D-UX-21)
+- Puis pousser le QA + audit accessibilite/performance de la refonte, avant le Gate 3
+
 **Phase 8 — Production** : depend de Noah (human gate, prerequis operationnels)
-- ~~**Final Review**~~ — **FAIT (FINAL_REVIEW.md : A LIVRER AVEC RESERVES, Q1-Q6 corriges, conditions Gate 4 levees)**
-- ~~**Sprint qualite Q1-Q6**~~ — **FAIT (FINAL_REVIEW.md section Sprint Qualite)**
-- ~~**Sprint Gate 4 infra**~~ — **FAIT (C-04/C-07/C-08/C-09 levees, D-DEVOPS-10..15)**
-- ~~**Sprint Gate 4 frontend**~~ — **FAIT (C-01 Astro 7 + C-06 cookies, D-FE-G4-01/02)**
 - **Noah : prerequis operationnels P1-P5** (voir FINAL_REVIEW.md §6) : `npm run setup` (fetch fonts), configurer les secrets GitHub, creer le repo GitHub et push, configurer l'environnement production, valider la checklist TODO_PRODUCTION
-- **Noah : Gate 3** (validation humaine visuelle dans un navigateur desktop + mobile)
+- ~~**Depot GitHub + push + CI + secrets Cloudflare**~~ — **FAIT** (points 53+ ; CI verte ; secrets CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID configures et verifies)
+- **Noah : Gate 3** (validation humaine visuelle dans un navigateur desktop + mobile — sur la refonte)
 - **Noah : Gate 4** (autorisation explicite du deploiement : `deploy-site.yml` avec slug)
 
 Les decisions en suspens (prix finaux, statut juridique reel, TVA reelle,
