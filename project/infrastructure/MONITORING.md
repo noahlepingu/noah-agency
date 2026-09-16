@@ -1,10 +1,11 @@
 # MONITORING.md — Surveillance et suivi des sites clients
 
-Version : 0.1 (Phase 3 — Infrastructure)
+Version : 0.2 (Phase 7 — Sprint Gate 4 Infrastructure securite)
 Porteur : DevOps Engineer (AGENT 12)
 Statut : ACTE — recommandation applicables des le 1er deploiement.
 Reference : ADR-008 (aucun analytics par defaut), MAINTENANCE_PLAN.md §2/§4,
-TECHNICAL_ARCHITECTURE.md §14 (dependances).
+TECHNICAL_ARCHITECTURE.md §14 (dependances), DEPLOYMENT.md §12 (en-tetes
+de securite, security.txt).
 
 ---
 
@@ -76,6 +77,25 @@ l'interface moderne est preferee. Les deux sont adaptes au budget 0 EUR.
 - **Checkly** : 50 checks gratuits, role plus technique (scripts).
 
 Recommandation : **UptimeRobot** (reference D-DEVOPS-03).
+
+### 2.5 Verification des en-tetes de securite et security.txt (mensuel)
+
+Les en-tetes de securite (C-04) et le security.txt (C-07) sont appliques par
+Cloudflare Pages via `_headers` (cf. DEPLOYMENT.md §12) : ils ne sont **pas**
+visibles en local (Astro preview ne les sert pas). Verification sur le site
+deploye :
+
+```bash
+# HSTS + CSP presents (reponse du edge Cloudflare)
+curl -sI https://<domaine-client>/ | grep -i 'strict-transport-security\|content-security-policy'
+
+# security.txt accessible et non expire (RFC 9116, Expires < 1 an)
+curl -s https://<domaine-client>/.well-known/security.txt | grep -i '^expires'
+```
+
+Un en-tete manquant ou une expiration proche (< 2 mois) declenche le cycle
+MAINTENANCE_PLAN.md §6.2 (checklist mensuelle) — et non necessairement un
+incident UptimeRobot.
 
 ## 3. Erreurs et 404
 
@@ -178,6 +198,8 @@ Dans le dashboard Cloudflare -> Pages -> [projet] :
 | Consulter les deploiements GitHub | Noah | Mensuel ou apres incident | GitHub -> Actions -> historique |
 | Audit de performance (Lighthouse) | Noah ou agent QA/performance | Mensuel | PageSpeed Insights ou `npx lighthouse` |
 | Audit des liens (404) | Agent QA | Mensuel | `npx lychee dist/<slug>/**/*.html` |
+| En-tetes de securite (HSTS/CSP/nosniff) | DevOps | Mensuel | `curl -sI https://<domaine> ...` (MONITORING.md §2.5) |
+| Expiration security.txt | Noah | Mensuel | `curl -s .../.well-known/security.txt \| grep ^expires` (RFC 9116) |
 | Revue mensuelle globale | Noah | Mensuel | Checklist MAINTENANCE_PLAN.md (section 11) |
 
 ## 9. Dependances et points ouverts
