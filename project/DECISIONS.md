@@ -382,6 +382,9 @@ BACKUP_ROLLBACK.md, MAINTENANCE_PLAN.md, TODO_PRODUCTION.md),
     recommande) et fournit l'URL -> `git remote add origin <url>` +
     `git push -u origin main`. Bloquant uniquement pour l'activation du
     CI/CD reelle (le travail local est complet).
+    --- **FAIT (2026-09-16)** : repo `noahlepingu/noah-agency` cree, remote
+    configure (`origin`), push initial effectue (branche `main`, 23 commits).
+    CI GitHub Actions activee (ci.yml sur push main). Point clos.
 54. **Compte Cloudflare + token** (PO-DEVOPS-02) : Noah cree le compte
     Cloudflare Pages (gratuit), le token API (`CLOUDFLARE_API_TOKEN`) et
     recupere `CLOUDFLARE_ACCOUNT_ID` -> secrets GitHub. Non bloquant pour
