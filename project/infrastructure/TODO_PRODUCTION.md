@@ -28,9 +28,10 @@ et avant chaque livraison client.
 - [x] CI `ci.yml` verte sur `main` (tests + build exemple)
       (correctif 2026-09-16 : etape contraste deplacee apres le build,
       le theme.css lu par le script est genere par build, pas commite)
-- [ ] Secrets GitHub configures :
-  - [ ] `CLOUDFLARE_API_TOKEN`
-  - [ ] `CLOUDFLARE_ACCOUNT_ID`
+- [x] Secrets GitHub configures :
+  - [x] `CLOUDFLARE_API_TOKEN` (permission Pages Edit verifiee : creation
+        + suppression d'un projet de test OK le 2026-09-16)
+  - [x] `CLOUDFLARE_ACCOUNT_ID` (recupere via API : compte Noahulilounoaso)
 - [ ] Workflow `deploy-site.yml` visible dans Actions (declencheur manuel)
 - [ ] (Recommande) Protection de branche `main` : PR requise
 - [ ] (Recommande) Environnement « production » avec reviewer « Noah »
@@ -43,6 +44,7 @@ et avant chaque livraison client.
 
 - [ ] Compte Cloudflare cree (Noah) ; identite clienthebergeur recuperee :
       Cloudflare, Inc. / 101 Townsend Street / San Francisco, CA 94107, USA
+      (compte operationnel : token Pages Edit valide, 0 projet)
 - [ ] Les mentions legales **du systeme** (site de presentation de l'agence,
       si ce site est produit par le systeme) mentionnent l'hebergeur, Noah
       comme editeur, et ses donnees d'identite (SIREN/SIRET reels — point
