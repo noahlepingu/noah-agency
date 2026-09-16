@@ -24,7 +24,7 @@ const cookie = ui.cookie || {};
 
 {hasThirdParty ? (
   <>
-    <div class="ds-cookie" id="ds-cookie-banner" role="dialog" aria-label={cookie.title || 'Cookies'} data-cookie-banner>
+    <div class="ds-cookie" id="ds-cookie-banner" role="dialog" aria-label={cookie.title || 'Cookies'} data-cookie-banner hidden>
       <div class="ds-cookie__inner">
         <p class="ds-cookie__title">{cookie.title || ''}</p>
         <p class="ds-cookie__msg">{cookie.message || ''}</p>
@@ -68,21 +68,16 @@ const cookie = ui.cookie || {};
         const STORAGE_KEY = 'ds_consent';
         const EXPIRY_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 
-        // Verifier si deja consenti
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
+        // Lecture robuste du consentement stocke (null si absent / expire / corrompu)
+        function readStored() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
             const d = JSON.parse(raw);
-            if (d && d.timestamp && (Date.now() - d.timestamp) < EXPIRY_MS) {
-              // Consenti, pas d'affichage
-              window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: d }));
-              return;
-            }
-          }
-        } catch (e) {}
-
-        // Afficher le bandeau
-        banner.hidden = false;
+            if (!d || !d.timestamp || (Date.now() - d.timestamp) >= EXPIRY_MS) return null;
+            return d;
+          } catch (e) { return null; }
+        }
 
         const acceptAll = banner.querySelector('[data-cookie-accept-all]');
         const rejectAll = banner.querySelector('[data-cookie-reject-all]');
@@ -90,6 +85,14 @@ const cookie = ui.cookie || {};
         const panel = banner.querySelector('[data-cookie-panel]');
         const save = banner.querySelector('[data-cookie-save]');
         const cbs = banner.querySelectorAll('[data-cookie-cb]');
+
+        // Pre-cochage des cases selon le consentement courant (retour "Gerer les cookies")
+        function syncCheckboxes(consent) {
+          if (!consent) return;
+          cbs.forEach(function (cb) {
+            if (typeof consent[cb.name] === 'boolean') cb.checked = consent[cb.name];
+          });
+        }
 
         const persist = function (data) {
           try {
@@ -99,6 +102,14 @@ const cookie = ui.cookie || {};
           banner.hidden = true;
         };
 
+        const show = function () {
+          banner.hidden = false;
+          const firstBtn = banner.querySelector('button');
+          if (firstBtn) firstBtn.focus();
+        };
+
+        // Boutons lies TOUJOURS (meme quand un consentement est deja stocke),
+        // pour que la modification du choix reste possible (C-06).
         acceptAll && acceptAll.addEventListener('click', function () { persist({ necessary: true, analytics: true, maps: true }); });
         rejectAll && rejectAll.addEventListener('click', function () { persist({ necessary: true, analytics: false, maps: false }); });
         customize && customize.addEventListener('click', function () { panel.hidden = false; customize.setAttribute('aria-expanded', 'true'); });
@@ -106,6 +117,23 @@ const cookie = ui.cookie || {};
           const data = { necessary: true };
           cbs.forEach(function (cb) { data[cb.name] = cb.checked; });
           persist(data);
+        });
+
+        // Au chargement : bandeau affiche SEULEMENT si aucun choix valide stocke.
+        const stored = readStored();
+        if (stored) {
+          syncCheckboxes(stored);
+          window.dispatchEvent(new CustomEvent('ds-consent-updated', { detail: stored }));
+        } else {
+          show();
+        }
+
+        // C-06 — reouverture depuis le lien "Gerer les cookies" (Footer.astro) :
+        // evenement ds-manage-consent -> bandeau reaffiche, choix courants pre-cochés.
+        window.addEventListener('ds-manage-consent', function () {
+          syncCheckboxes(readStored());
+          if (panel) { panel.hidden = true; customize && customize.setAttribute('aria-expanded', 'false'); }
+          show();
         });
 
         // Focus trap : tant que le bandeau est ouvert, la Tabulation reste dedans
@@ -119,10 +147,6 @@ const cookie = ui.cookie || {};
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
-
-        // Focus initial dans le bandeau (premier bouton)
-        const firstBtn = banner.querySelector('button');
-        if (firstBtn) firstBtn.focus();
       })();
     </script>
   </>

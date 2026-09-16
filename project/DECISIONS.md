@@ -568,3 +568,16 @@ MAINTENANCE_PLAN, FINAL_REVIEW).
     a executer au 1er client reel activant Formspree/Web3Forms.
 71. **Hashs/nonces CSP** : evolution future (post-build) pour retirer
     `unsafe-inline` de script-src — non bloquante Gate 4.
+
+## Decisions Phase 7 — Sprint Gate 4 — Frontend (2026-09-16)
+
+Statut : **ACTEES** — decisions prises par le Frontend Engineer pour lever
+les conditions bloquantes Gate 4 (B1/C-01, B3/C-06) du FINAL_REVIEW
+Phase 7. Reference : FINAL_REVIEW.md (section « Sprint Gate 4 — Upgrade
+Astro + gestion cookies »), guides de migration Astro v6/v7 officiels,
+CNIL (retrait/modification du consentement cookies a tout moment).
+
+| ID | Decision | Detail | A valider par Noah ? |
+| -- | -------- | ------ | --------------------- |
+| D-FE-G4-01 | **Migration runtime Node 20 -> 22 (Astro 7.3.2)** | Astro 7 exige Node >= 22.12.0 (engines officiel). `package.json` : `astro` ^5.0.0 -> ^7.3.2, `engines.node` >=22.12.0. Ajout de `.nvmrc` (22.12.0, recommandation du guide v6). Node 22.23.2 installe via nvm ; CI `ci.yml` deja passe en Node 22 par le sprint DevOps (D-DEVOPS-15). **Reste : `deploy-site.yml` en node-version 20 — hors perimetre frontend (workflows), a corriger par DevOps.** | — |
+| D-FE-G4-02 | **« Gerer les cookies » : reouverture du bandeau in-place, sans rechargement** | Le lien du footer (bouton `type="button"` aria-haspopup="dialog") reouvre le CookieBanner via `CustomEvent('ds-manage-consent')` ; consentement courant conserve et cases pre-cochées (`syncCheckboxes`). Retrait possible via « Tout refuser » (persiste false + `ds-consent-updated`). Affichage conditionnel : uniquement si `third_party.analytics || third_party.maps` (meme condition que le bandeau) — 0 script cookie emis sans tiers (verifie dans le build). Correctifs connexes : attribut `hidden` initial (bandeau visible a tort avec un choix stocke), boutons toujours lies (early-return cassait le retrait). Prouve par build (exemple + fixture avec tiers, supprimee) et tests runtime DOM (5 scenarios). | — |

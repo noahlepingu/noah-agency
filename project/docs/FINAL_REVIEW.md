@@ -685,3 +685,181 @@ justifié ci-dessus.
 4. **security.txt par client** : placeholders à remplir par Noah avant
    chaque mise en production réelle (le template fournit le squelette
    commun).
+
+---
+
+# Sprint Gate 4 — Upgrade Astro + gestion cookies
+
+Date : 2026-09-16
+Responsable : AGENT 05 — Frontend Engineer
+Portée : conditions bloquantes Gate 4 du verdict FINAL_REVIEW Phase 7 :
+**B1 / C-01** (upgrade Astro ≥ 7.3.2 — 3 vulnérabilités npm audit, dont
+1 critical) et **B3 / C-06** (lien « Gérer les cookies » pour retrait /
+modification du consentement — exigence CNIL).
+Périmètre respecté : `package.json`, `package-lock.json`, `.nvmrc`,
+`src/` (Footer, CookieBanner, BaseLayout, translations). **Aucune
+modification** de `.github/workflows/` ni des pages légales. Les
+corrections Q1-Q6 (sprint précédent) sont conservées et re-vérifiées.
+
+## B1 / C-01 — Upgrade Astro 5 → 7 (CRITIQUE — corrigé)
+
+### Constat initial
+
+```text
+astro@5.18.2 — npm audit : 3 vulnérabilités (1 low esbuild, 1 high sharp, 1 critical astro)
+critical : GHSA-26w7-cxv4-gfx2 — RCE via optimisation d'images AVIF (astro < 7.2.8)
++ XSS define:vars (GHSA-j687-52p2-xcff), SSRF Host (GHSA-2pvr-wf23-7pc7),
+auth bypass base (GHSA-376h-93r7-7g6f), XSS transitions/slot names...
+```
+
+Le correctif des advisories critiques (RCE AVIF, auth bypass, XSS View
+Transitions) **n'existe que dans la ligne 7.x** (>= 7.2.8 / 7.3.0) :
+Astro 6.4.8 resterait vulnérable. L'upgrade vers **astro@7.3.2** est donc
+obligatoire, et elle impose **Node >= 22.12.0** (`engines` d'astro 7 :
+`node >=22.12.0` — Node 20 LTS n'est plus supporté depuis Astro 6).
+
+### Décision D-FE-G4-01 — Migration runtime Node 20 → 22
+
+Astro 7.3.2 exige Node >= 22.12.0 ; le projet (ex Node 20.20.2, CI Node 20)
+devait migrer. Acté :
+
+1. `package.json` : `engines.node` `>=20.3.0` → `>=22.12.0` ;
+   `astro` `^5.0.0` → `^7.3.2`.
+2. Ajout de `.nvmrc` (`22.12.0`) — recommandation officielle du guide de
+   migration Astro v6 (documentation astro.build « Upgrade to v6 », § Node 22).
+3. CI : `ci.yml` passé en Node 22 par le sprint DevOps (commit 7fba9ed).
+   **Dépendance croisée restante** : `deploy-site.yml` encore en
+   `node-version: 20` — corrigé par le sprint DevOps (je ne touche pas à
+   `.github/workflows/`, périmètre mission).
+
+### Commandes de migration
+
+```bash
+# Avant : node v20.20.2, astro@5.18.2
+nvm install 22.23.2 && nvm use 22.23.2   # Node 22 LTS (Jod)
+npm install  # re-resout astro@7.3.2 + vite@8.3.0 + esbuild@0.28.2 + sharp@0.35.4
+```
+
+### Breaking changes Astro v6/v7 rencontrés et résolutions
+
+Aucun changement de code n'a été nécessaire pour ce projet (le pipeline
+`generate-site.mjs → astro build` multi-clients d'ADR-002 a fonctionné
+tel quel). Breakings évalués et écartés, avec la preuve :
+
+| Breaking change (guide v6/v7) | Impact projet | Résolution / preuve |
+|---|---|---|
+| Node 20 supprimé (v6) | **RÉEL** | `engines` + `.nvmrc` + CI Node 22 (D-FE-G4-01) |
+| Compilateur Rust (v7) : tags non fermés = erreur, HTML non auto-corrigé | Évalué | 23 templates `.astro` sans tag non fermé — build 16 pages OK |
+| `compressHTML: 'jsx'` (v7) : suppression des espaces entre éléments inline | Évalué | CSS `.ds-footer__legal-list` en flexbox (gap) — aucune régression visuelle de texte ; inspecté : labels et textes intacts dans le build |
+| Vite 8 (v7) : imports JSON | Évalué | `import uiStrings from '@translations/ui.json'` (alias Vite) fonctionne — build OK |
+| `Astro.glob()` supprimé (v6) | Aucun usage | grep 0 occurrence |
+| `<ViewTransitions />` / `astro:transitions` internals supprimés | Aucun usage | grep 0 occurrence |
+| `getStaticPaths()` / content collections | Aucun usage | pages statiques, data.json importé directement |
+| Flags expérimentaux supprimés (v7) | Aucun usage | config sans `experimental` |
+| `src/fetch.ts` réservé (v7) | Aucun usage | pas de fichier fetch.ts |
+| `@layer` / styles globaux / `is:inline` | Inchangés | `@layer ds-brand` (theme.css), 2 scripts `is:inline` (CookieBanner, Footer) émis correctement — vérifié dans le build |
+| Aliases `@components/@layouts/@styles/@utils/@translations` | Inchangés | résolution Vite intacte — build 16 pages OK |
+
+Les chemins dynamiques multi-clients d'`astro.config.mjs` (srcDir /
+publicDir / outDir selon `CLIENT`, ADR-002) et les routes générées
+`$$LANG$$` fonctionnent : build prouvé sur `exemple-restaurant` (16 pages,
+FR + EN) et sur une fixture `exemple-restaurant-cookies` (16 pages,
+supprimée après test).
+
+### Résultat npm audit avant / après
+
+```text
+AVANT  : 3 vulnérabilités (1 low esbuild, 1 high sharp, 1 critical astro)
+APRÈS  : 0 vulnérabilité  (npm audit ET npm audit --omit=dev)
+```
+
+## B3 / C-06 — Lien « Gérer les cookies » (MAJEUR — corrigé)
+
+### Problème
+
+Le CookieBanner persiste le choix dans `localStorage` (`ds_consent`, 6 mois)
+mais, une fois le choix fait, **aucun mécanisme** ne permettait de le
+modifier ou de retirer le consentement depuis le site. La CNIL exige un
+moyen de retrait/modification à tout moment.
+
+### Comportement implémenté (décision D-FE-G4-02)
+
+Le clic sur « Gérer les cookies » **réouvre le bandeau in-place** via
+l'événement `ds-manage-consent` (pas de rechargement — meilleure UX,
+aucune perte de contexte) :
+
+1. `Footer.astro` : lien (bouton `type="button"`, `aria-haspopup="dialog"`)
+   affiché **uniquement** si `third_party.analytics || third_party.maps`
+   (même condition que le CookieBanner).
+2. Un script `is:inline` (émis uniquement si tiers actifs) écoute le clic
+   et dispatch `window.CustomEvent('ds-manage-consent')`.
+3. `CookieBanner.astro` : écoute `ds-manage-consent` → réaffiche le
+   bandeau, **cases pré-cochées** selon le consentement courant
+   (`syncCheckboxes`), focus restauré sur le premier bouton. Le retrait
+   se fait via « Tout refuser » (persiste false + émet
+   `ds-consent-updated`).
+
+### Correctifs connexes (bugs latents corrigés)
+
+- **Attribut `hidden` manquant** sur le `<div data-cookie-banner>` : sans
+  lui, le bandeau était visible au chargement même avec un consentement
+  stocké (contradiction avec le commentaire « Consenti, pas d'affichage »).
+- **Boutons jamais liés quand un consentement existait** : l'ancien code
+  sortait tôt (`return`) si `ds_consent` valide → les boutons restaient
+  inopérants. Restructuration : les listeners sont toujours bindés, le
+  bandeau ne s'affiche au chargement que si **aucun** choix valide n'existe.
+- **Pré-cochage** : au chargement et à la réouverture, les checkboxes
+  reflètent le dernier consentement (avant : toujours décochées).
+
+### Clés i18n ajoutées (`src/translations/ui.json`)
+
+```json
+"footer": {
+  "manageCookies": "Gerer les cookies"   // fr
+  // "manageCookies": "Manage cookies"   // en
+}
+```
+
+### Condition d'affichage (vérifiée dans le build)
+
+- **Sans tiers** (`exemple-restaurant` : third_party analytics=false,
+  maps=false) : 0 occurrence de « Gerer les cookies », `ds-manage-consent`,
+  `data-manage-consent` ou `ds-cookie-banner` dans `dist/` — aucun script
+  cookie émis. ✅
+- **Avec tiers** (fixture temporaire `exemple-restaurant-cookies`,
+  analytics=true, maps=true, supprimée après test) : lien présent sur les
+  16 pages (FR « Gerer les cookies » / EN « Manage cookies »), bandeau avec
+  `hidden`, scripts `ds-manage-consent` et `ds-consent-updated` émis. ✅
+  Comportement prouvé par test runtime (mock DOM, 5 scénarios) :
+  affichage au chargement sans choix, « Tout accepter » persiste et masque,
+  rechargement avec choix → bandeau masqué, `ds-manage-consent` → bandeau
+  réouvert avec cases pré-cochées, « Tout refuser » (retrait) → false
+  persistant + événement émis.
+
+## Vérifications finales (post-sprint)
+
+```text
+npm test                : 30/30 PASS
+npm run validate:example: exit 0
+npm run build:example   : 16 pages, exit 0
+npm run contrast        : all pass (12 paires)
+npm audit --omit=dev    : 0 vulnérabilité
+npm audit               : 0 vulnérabilité
+
+Régressions Q1-Q6      : JSON-LD Restaurant présent (1),
+                         meta descriptions 120-160 (128-148),
+                         0 « cuisine cuisine », 0 placeholder HTML,
+                         404/500 avec ds-btn, 0 erreur render.
+```
+
+## Points ouverts transmis
+
+1. **`deploy-site.yml` Node 20 → 22** : à corriger par le sprint DevOps
+   (je ne modifie pas `.github/workflows/` par contrat de mission ; le CI
+   `ci.yml` est déjà en Node 22).
+2. **Scripts tiers réels** (analytics/maps) : le mécanisme de consentement
+   (bandeau + lien + événements) est prêt ; l'injection effective des
+   scripts tiers reste à poser lors de l'activation d'un tiers chez un
+   client réel (les points d'intégration lisent `ds_consent` /
+   `ds-consent-updated` avant injection — cf. commentaire « Blocage
+   effectif » du CookieBanner).

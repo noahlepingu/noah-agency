@@ -13,12 +13,18 @@ interface Props {
   ui: any;
   data: any; // data.components.footer
   translatedRoutes?: string[];
+  thirdParty?: any; // data.third_party — C-06 : conditionne le lien "Gerer les cookies"
 }
 
-const { lang, ui, data, translatedRoutes = [] } = Astro.props;
+const { lang, ui, data, translatedRoutes = [], thirdParty = {} } = Astro.props;
 const legal = data.legal || [];
 
 const hoursText = data.hours_list || '';
+
+// C-06 — la CNIL exige un mecanisme de retrait/modification du consentement.
+// Le lien "Gerer les cookies" n'apparait que si le site a des tiers actifs
+// (meme condition que le CookieBanner : third_party.analytics || third_party.maps).
+const hasThirdParty = !!(thirdParty.analytics || thirdParty.maps);
 ---
 
 <footer class="ds-footer">
@@ -58,6 +64,18 @@ const hoursText = data.hours_list || '';
           {legal.map((l: any) => (
             <li><a class="ds-footer__link ds-footer__legal-link" href={localizePath(l.href, lang, translatedRoutes)}>{l.label}</a></li>
           ))}
+          {hasThirdParty ? (
+            <li>
+              <button
+                type="button"
+                class="ds-footer__link ds-footer__legal-link ds-footer__cookie-link"
+                data-manage-consent
+                aria-haspopup="dialog"
+              >
+                {ui.footer?.manageCookies || 'Gerer les cookies'}
+              </button>
+            </li>
+          ) : null}
         </ul>
       </nav>
       <p class="ds-footer__copyright">
@@ -66,6 +84,25 @@ const hoursText = data.hours_list || '';
     </div>
   </div>
 </footer>
+
+{hasThirdParty ? (
+  /*
+    C-06 — lien "Gerer les cookies" : au clic, reouvre le bandeau de
+    consentement via l'evenement ds-manage-consent (ecoute par
+    CookieBanner.astro). Script emis UNIQUEMENT si le site a des tiers :
+    aucun script cookies sur les sites sans tiers.
+  */
+  <script is:inline>
+    (function () {
+      var links = document.querySelectorAll('[data-manage-consent]');
+      for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', function () {
+          window.dispatchEvent(new CustomEvent('ds-manage-consent'));
+        });
+      }
+    })();
+  </script>
+) : null}
 
 <style>
   .ds-footer {
@@ -105,6 +142,7 @@ const hoursText = data.hours_list || '';
   .ds-footer__address { margin: 0; }
   .ds-footer__hours { margin: 0; line-height: 1.6; }
   .ds-footer__legal-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  .ds-footer__cookie-link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
   .ds-footer__copyright { margin: var(--space-6) 0 0; font-size: var(--text-sm); color: var(--color-gray-400); }
 
   @media (min-width: 768px) {

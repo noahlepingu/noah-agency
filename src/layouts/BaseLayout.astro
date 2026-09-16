@@ -96,7 +96,7 @@ const headerData = data.components?.header || {
     <main id="contenu">
       <slot />
     </main>
-    <Footer lang={lang} ui={ui} data={data.components?.footer || {}} translatedRoutes={data.translated_routes || []} />
+    <Footer lang={lang} ui={ui} data={data.components?.footer || {}} translatedRoutes={data.translated_routes || []} thirdParty={data.third_party || {}} />
     <CookieBanner ui={ui} data={data.third_party || {}} lang={lang} />
     <BackToTop ui={ui} />
   </body>

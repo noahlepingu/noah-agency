@@ -9,7 +9,7 @@
     "breadcrumb": { "ariaLabel": "Fil d'Ariane" },
     "gallery": { "close": "Fermer", "dialogAria": "Galerie" },
     "language": { "label": "Changer de langue", "fr": "Francais", "en": "English" },
-    "footer": { "legalTitle": "Informations", "rights": "Tous droits reserves", "legal": "Mentions legales", "privacy": "Politique de confidentialite", "sitemap": "Plan du site" },
+    "footer": { "legalTitle": "Informations", "rights": "Tous droits reserves", "legal": "Mentions legales", "privacy": "Politique de confidentialite", "sitemap": "Plan du site", "manageCookies": "Gerer les cookies" },
     "form": {
       "name": "Nom complet", "nameError": "Veuillez renseigner votre nom.",
       "email": "Adresse email", "emailError": "Veuillez entrer un email valide (ex: jean@example.com).",
@@ -49,7 +49,7 @@
     "breadcrumb": { "ariaLabel": "Breadcrumb" },
     "gallery": { "close": "Close", "dialogAria": "Gallery" },
     "language": { "label": "Change language", "fr": "Francais", "en": "English" },
-    "footer": { "legalTitle": "Legal", "rights": "All rights reserved", "legal": "Legal notice", "privacy": "Privacy policy", "sitemap": "Sitemap" },
+    "footer": { "legalTitle": "Legal", "rights": "All rights reserved", "legal": "Legal notice", "privacy": "Privacy policy", "sitemap": "Sitemap", "manageCookies": "Manage cookies" },
     "form": {
       "name": "Full name", "nameError": "Please enter your name.",
       "email": "Email address", "emailError": "Please enter a valid email address.",
