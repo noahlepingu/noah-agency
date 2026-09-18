@@ -84,7 +84,7 @@ const ctaFinalPhrase = texts.cta_final_phrase || 'Envie de gouter ? Rejoignez-no
 
   <!-- 3. Menu preview (DA §5.2 : 3-4 plats signature + CTA "Voir toute la carte") -->
   {menuPreviewData && menuPreviewData.categories.length > 0 ? (
-    <Menu data={menuPreviewData} preview={true} />
+    <Menu data={menuPreviewData} preview={true} lang={lang} translatedRoutes={data.translated_routes || []} />
   ) : null}
 
   <!-- 4. Galerie (surface-alt, DA §5.4) -->

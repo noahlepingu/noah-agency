@@ -27,7 +27,19 @@ const { ui } = Astro.props;
   if (btn) {
     const toggle = () => { btn.classList.toggle('ds-back2top--show', window.scrollY > 300); };
     window.addEventListener('scroll', toggle, { passive: true });
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // A-MIN-02 : le defilement fluide est desactive quand l'utilisateur
+    // demande moins de mouvement (prefers-reduced-motion: reduce) —
+    // scrollTo('auto') sinon 'smooth'. Fallback scrollTo(0,0) pour les
+    // navigateurs sans support des options (compatibilite).
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    btn.addEventListener('click', () => {
+      try {
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      } catch {
+        window.scrollTo(0, 0);
+      }
+    });
   }
 </script>
 

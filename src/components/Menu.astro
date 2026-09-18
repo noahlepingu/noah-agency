@@ -5,14 +5,19 @@
  * Contenu centre (content-max) sur page menu ; grilles simples sur preview.
  */
 import MenuCard from './MenuCard.astro';
+import { localizePath } from '@utils/i18n';
 
 interface Props {
   data: any;
   preview?: boolean; // mode preview (accueil : 3-4 plats signature)
   maxItems?: number; // nombre max de plats à afficher en preview
+  lang?: 'fr' | 'en'; // langue courante (defaut : deduite du pathname)
+  translatedRoutes?: string[]; // routes traduites (data.translated_routes)
 }
 
-const { data, preview = false, maxItems } = Astro.props;
+const { data, preview = false, maxItems, lang: propLang, translatedRoutes = [] } = Astro.props;
+// Retro-compat : si lang non fourni (anciens appels), deduction depuis l'URL
+const lang = propLang || (Astro.url.pathname.startsWith('/en') ? 'en' : 'fr');
 const categories = data.categories || [];
 
 // En preview : limiter à 2-3 catégories, 1 plat chacune ; en page complète : tout afficher
@@ -43,8 +48,8 @@ const displayCategories = preview
 
     {preview && data.categories?.length > 0 ? (
       <div class="ds-menu__more">
-        <a href={`/${Astro.url.pathname.split('/')[1] === 'en' ? 'en/' : ''}menu`} class="ds-btn ds-btn--secondary">
-          {Astro.url.pathname.startsWith('/en') ? 'See the full menu' : 'Voir toute la carte'}
+        <a href={localizePath('/menu', lang, translatedRoutes)} class="ds-btn ds-btn--secondary">
+          {lang === 'en' ? 'See the full menu' : 'Voir toute la carte'}
         </a>
       </div>
     ) : null}

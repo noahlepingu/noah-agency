@@ -129,8 +129,10 @@ const closedJson = JSON.stringify(data.closed_periods || []);
         </button>
       </div>
 
-      <!-- Aucun creneau (UX.md §4.3) -->
-      <div class="ds-form__empty" hidden data-no-slot>
+      <!-- Aucun creneau (UX.md §4.3) — role="status" (aria-live implicite polite)
+           pour annoncer la bascule visible -> invisible aux lecteurs d'ecran.
+           Le bloc est hidden au depart puis affiche par le JS (refreshSlots). -->
+      <div class="ds-form__empty" hidden data-no-slot role="status" aria-live="polite">
         <Icon name="calendar" size={32} />
         <p class="ds-form__empty-title" data-no-slot-title>{ui.states?.noSlot?.title || 'Aucun creneau disponible'}</p>
         <p class="ds-form__empty-msg" data-no-slot-msg>{ui.states?.noSlot?.message || ''}</p>
