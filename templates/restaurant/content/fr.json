@@ -2,49 +2,49 @@
   "texts": {
     "index": {
       "hero_title": "[Nom]",
-      "hero_subtitle": "[Activite] a [Ville]. Savourez une experience culinaire unique, avec des produits frais et de saison.",
+      "hero_subtitle": "[Activite] à [Ville]. Savourez une expérience culinaire unique, avec des produits frais et de saison.",
       "intro_title": "Bienvenue",
-      "intro_text": "[Nom] est un restaurant [Activite] situe a [Ville]. Notre cuisine met a l'honneur des produits locaux et de saison, pour vous offrir une experience gourmande et authentique.",
-      "cta_reserve": "Reserver une table",
+      "intro_text": "[Nom] est un restaurant [Activite] situé à [Ville]. Notre cuisine met à l'honneur des produits locaux et de saison, pour vous offrir une expérience gourmande et authentique.",
+      "cta_reserve": "Réserver une table",
       "cta_menu": "Voir la carte"
     },
     "a-propos": {
-      "title": "A propos de [Nom]",
-      "content": "[Nom] est né de la passion de son fondateur pour la [Activite]. Depuis son ouverture a [Ville], notre restaurant s'engage a vous offrir des plats elaborés avec des produits frais et locaux.",
+      "title": "À propos de [Nom]",
+      "content": "[Nom] est né de la passion de son fondateur pour la [Activite]. Depuis son ouverture à [Ville], notre restaurant s'engage à vous offrir des plats élaborés avec des produits frais et locaux.",
       "values_title": "Nos valeurs",
       "values": ["Produits locaux et de saison", "Cuisine fait maison", "Accueil chaleureux"]
     },
     "menu": {
       "title": "La Carte",
-      "subtitle": "Nos plats sont realises avec des produits frais et locaux"
+      "subtitle": "Nos plats sont réalisés avec des produits frais et locaux"
     },
     "reservation": {
-      "title": "Reservez votre table",
-      "intro": "Quelques informations pour votre reservation."
+      "title": "Réservez votre table",
+      "intro": "Quelques informations pour votre réservation."
     },
     "galerie": {
       "title": "En images",
-      "subtitle": "Decouvrez [Nom] en images"
+      "subtitle": "Découvrez [Nom] en images"
     },
     "temoignages": {
       "title": "Avis de nos clients",
       "subtitle": "Ce que nos clients disent de nous"
     },
     "faq": {
-      "title": "Questions frequentes",
-      "subtitle": "Trouvez reponse a vos questions"
+      "title": "Questions fréquentes",
+      "subtitle": "Trouvez réponse à vos questions"
     },
     "contact": {
       "title": "Contact",
-      "subtitle": "N'hesitez pas a nous contacter"
+      "subtitle": "N'hésitez pas à nous contacter"
     },
     "mentions_legales": {
-      "title": "Mentions legales",
-      "content": "Editeur du site : [Nom_commercial], [Forme_juridique], SIREN [SIREN], SIRET [SIRET], [Adresse]. Directeur de la publication : [Nom_directeur]. Hebergeur : [Nom_hebergeur], [Adresse_hebergeur]."
+      "title": "Mentions légales",
+      "content": "Éditeur du site : [Nom_commercial], [Forme_juridique], SIREN [SIREN], SIRET [SIRET], [Adresse]. Directeur de la publication : [Nom_directeur]. Hébergeur : [Nom_hebergeur], [Adresse_hebergeur]."
     },
     "confidentialite": {
-      "title": "Politique de confidentialite",
-      "content": "Ce site web ne collecte aucune donnee personnelle a des fins commerciales. Les seules donnees collectees sont celles que vous nous transmettez volontairement via nos formulaires de contact ou de reservation. Ces donnees sont traitees uniquement pour repondre a votre demande. Elles ne sont jamais revendues ni transmises a des tiers. Conformement au RGPD, vous disposez d'un droit d'acces, de rectification et de suppression de vos donnees en contactant [Email_pro]."
+      "title": "Politique de confidentialité",
+      "content": "Ce site web ne collecte aucune donnée personnelle à des fins commerciales. Les seules données collectées sont celles que vous nous transmettez volontairement via nos formulaires de contact ou de réservation. Ces données sont traitées uniquement pour répondre à votre demande. Elles ne sont jamais revendues ni transmises à des tiers. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données en contactant [Email_pro]."
     },
     "plan_du_site": {
       "title": "Plan du site",

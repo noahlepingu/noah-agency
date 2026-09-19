@@ -1,9 +1,14 @@
 ---
 /**
  * MenuCard.astro → Section typographique d'une categorie (DA §5.3)
- * Sans ds-card. Presentation : nom + ligne pointillee + prix + description.
+ * Sans ds-card. Presentation : nom + ligne de points + prix + description.
+ * La ligne de points (--color-line-strong) RELIE le nom au prix ENTRE les
+ * deux (carte de restaurant « Nom .......... 9,50 € ») — ARIA cachee.
+ * Prix affiche en norme FR via formatPrice() (9,50 €), donnee = nombre.
  * Indicateurs (v)/(p)/(bio) en italique accent-dark (§8.17).
  */
+import { formatPrice } from '@utils/format';
+
 interface Props {
   category: string;
   items: any[];
@@ -34,7 +39,10 @@ const tagLabel = (t: string) => {
             ) : null}
           </div>
           {item.price !== undefined && item.price !== null ? (
-            <span class="ds-menucat__price">&euro;{item.price}</span>
+            <>
+              <span class="ds-menucat__dots" aria-hidden="true"></span>
+              <span class="ds-menucat__price">{formatPrice(item.price)}</span>
+            </>
           ) : null}
         </div>
         {item.description ? <p class="ds-menucat__desc">{item.description}</p> : null}
@@ -65,18 +73,30 @@ const tagLabel = (t: string) => {
     padding: 0;
   }
 
-  /* Item : nom -- ligne pointillee -- prix */
+  /* Item : nom -- ligne de points -- prix (DA §5.3, grid auto 1fr auto).
+     La ligne de points INTERNE relie le nom au prix ; aucun separateur
+     supplementaire sous l'item (la DA §5.3 ne prevoit pas de filet entre
+     plats : la separation vient du padding + description — carte typographique). */
   .ds-menucat__item {
     padding: var(--space-3) 0;
-    border-bottom: 2px dotted var(--color-line-strong);
   }
-  .ds-menucat__item:last-child { border-bottom: none; }
+  .ds-menucat__item:first-child { padding-top: 0; }
+  .ds-menucat__item:last-child { padding-bottom: 0; }
 
   .ds-menucat__row {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: baseline;
     gap: var(--space-2);
+  }
+
+  /* Ligne de points entre nom et prix : le span occupe la colonne 1fr
+     (vide) ; la bordure pointillee lie visuellement le nom au prix.
+     aria-hidden : purement decoratif. */
+  .ds-menucat__dots {
+    align-self: baseline;
+    border-bottom: 2px dotted var(--color-line-strong);
+    min-width: 12px;
   }
 
   .ds-menucat__name-group {

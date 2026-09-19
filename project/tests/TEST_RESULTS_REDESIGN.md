@@ -115,7 +115,7 @@ Source : `UX_REDESIGN_RESTAURANT.md`, bundle `_astro/seo.B6BUGasF.css` + `_astro
 | Anciens `#F1F5F9`, `#DC2626` etc. retires du fond | `#B91C1C`/`#F59E0B` **absents** ; `#DC2626` = token `--color-error` (volontaire, DA §2.4) ; `#111827` = token fondationnel `--color-gray-900` (pas un fond) | ✓ |
 | Typo Fraunces (headings) + Inter (body) self-hosted | `@font-face` + `--font-heading`/`--font-body` ; 6 woff2 presents | ✓ |
 | Hero pleine hauteur (A) avec image | `min-height:92svh` ; `data-hero-full data-hero-dark` ; `hero.jpg` (176 Ko) ; variante A conforme | ✓ |
-| Menu typographique (carte, pas de cards) | `border-bottom:2px dotted var(--color-line-strong)` ; **0 `.ds-card`** sur /menu ; categories `ds-menucat__item/__row` | ✓ |
+| Menu typographique (carte, pas de cards) | ligne de points `ds-menucat__dots` (`border-bottom:2px dotted var(--color-line-strong)`) ENTRE nom et prix (grid auto 1fr auto) ; **0 `.ds-card`** sur /menu ; categories `ds-menucat__item/__row` ; prix `9,50 €` via `formatPrice()` | ✓ |
 | Galerie asymetrique 6 colonnes | `grid-template-columns:repeat(6,1fr)` ; items span 4/2/2/2/6 | ✓ |
 | Footer sur fond encre chaud | `.ds-footer{background-color:var(--color-surface-dark)}` (pas `#111827`) | ✓ |
 | Boutons radius 4 px | `--radius-sm:4px` sur `.ds-btn` | ✓ |

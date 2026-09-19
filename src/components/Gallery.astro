@@ -64,7 +64,10 @@ const slot = (i: number) => i % 5;
     <Icon name="close" size={24} />
   </button>
   <figure class="ds-lightbox__figure">
-    <img class="ds-lightbox__img" src="" alt="" data-lightbox-img />
+    <!-- Pas de src initial : rempli par le JS a l'ouverture. Un attribut src
+         vide provoquait une icone d'image brisee chez certains navigateurs ;
+         sans attribut, le navigateur n'affiche rien. alt rempli aussi. -->
+    <img class="ds-lightbox__img" alt="" data-lightbox-img />
     <figcaption class="ds-lightbox__caption" data-lightbox-caption></figcaption>
   </figure>
 </dialog>

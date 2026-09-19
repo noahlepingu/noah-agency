@@ -2,7 +2,7 @@
 # Reference : TEMPLATE_VISION.md §3, SITEMAP_MASTER §3.1
 name: restaurant
 label: Restaurant
-description: Site vitrine pour restaurant avec menu, reservation, galerie, avis
+description: Site vitrine pour restaurant avec menu, réservation, galerie, avis
 
 # Pages actives par defaut
 pages:
@@ -10,49 +10,49 @@ pages:
     file: index.astro
     translate: true          # Version EN generee
     schema: Restaurant       # schema.org
-    seo_title: "[Nom] — Restaurant [Activite] a [Ville]"
-    seo_description: "Decouvrez [Nom], restaurant [Activite] au coeur de [Ville]. Reservez votre table en ligne et decouvrez notre carte de saison."
+    seo_title: "[Nom] — Restaurant [Activite] à [Ville]"
+    seo_description: "Découvrez [Nom], restaurant [Activite] au cœur de [Ville]. Réservez votre table en ligne et découvrez notre carte de saison."
   - route: /a-propos
     file: a-propos.astro
     translate: true
     schema: LocalBusiness
-    seo_title: "A propos — [Nom]"
-    seo_description: "Decouvrez l'histoire de [Nom], restaurant [Activite] au coeur de [Ville]. Produits locaux, cuisine fait maison et accueil chaleureux."
+    seo_title: "À propos — [Nom]"
+    seo_description: "Découvrez l'histoire de [Nom], restaurant [Activite] au cœur de [Ville]. Produits locaux, cuisine fait maison et accueil chaleureux."
   - route: /menu
     file: menu.astro
     schema: Menu
     seo_title: "La Carte — [Nom]"
-    seo_description: "Consultez la carte de [Nom] a [Ville] : entrees, plats, desserts et boissons prepares avec des produits frais et locaux de saison."
+    seo_description: "Consultez la carte de [Nom] à [Ville] : entrées, plats, desserts et boissons préparés avec des produits frais et locaux de saison."
   - route: /reservation
     file: reservation.astro
     schema: ReserveAction
-    seo_title: "Reservation — [Nom]"
-    seo_description: "Reservez votre table a [Nom] a [Ville] en quelques clics. Choisissez votre date, votre creneau et le nombre de convives."
+    seo_title: "Réservation — [Nom]"
+    seo_description: "Réservez votre table à [Nom] à [Ville] en quelques clics. Choisissez votre date, votre créneau et le nombre de convives."
   - route: /galerie
     file: galerie.astro
     seo_title: "Galerie — [Nom]"
-    seo_description: "Decouvrez [Nom], restaurant [Activite] a [Ville], en images : nos plats, notre salle et notre terrasse au coeur de la ville."
+    seo_description: "Découvrez [Nom], restaurant [Activite] à [Ville], en images : nos plats, notre salle et notre terrasse au cœur de la ville."
   - route: /temoignages
     file: temoignages.astro
     seo_title: "Avis clients — [Nom]"
-    seo_description: "Lisez les avis de nos clients sur [Nom], restaurant [Activite] a [Ville] : qualite des plats, service et ambiance sur place."
+    seo_description: "Lisez les avis de nos clients sur [Nom], restaurant [Activite] à [Ville] : qualité des plats, service et ambiance sur place."
   - route: /faq
     file: faq.astro
     schema: FAQPage
-    seo_title: "Questions frequentes — [Nom]"
-    seo_description: "Questions frequentes sur [Nom], restaurant [Activite] a [Ville] : reservation, menu enfant, animaux admis, paiement et plus encore."
+    seo_title: "Questions fréquentes — [Nom]"
+    seo_description: "Questions fréquentes sur [Nom], restaurant [Activite] à [Ville] : réservation, menu enfant, animaux admis, paiement et plus encore."
   - route: /contact
     file: contact.astro
     translate: true
     schema: ContactPoint
     seo_title: "Contact — [Nom]"
-    seo_description: "Contactez [Nom], restaurant [Activite] a [Ville], par telephone, email ou via notre formulaire en ligne. Reponse rapide garantie."
+    seo_description: "Contactez [Nom], restaurant [Activite] à [Ville], par téléphone, email ou via notre formulaire en ligne. Réponse rapide garantie."
   - route: /mentions-legales
     file: mentions-legales.astro
-    seo_title: "Mentions legales — [Nom]"
+    seo_title: "Mentions légales — [Nom]"
   - route: /confidentialite
     file: confidentialite.astro
-    seo_title: "Politique de confidentialite — [Nom]"
+    seo_title: "Politique de confidentialité — [Nom]"
   - route: /plan-du-site
     file: plan-du-site.astro
     seo_title: "Plan du site — [Nom]"
@@ -68,12 +68,12 @@ components:
     nav:
       - { label: "Accueil", href: "/" }
       - { label: "La Carte", href: "/menu" }
-      - { label: "Reservation", href: "/reservation" }
+      - { label: "Réservation", href: "/reservation" }
       - { label: "Contact", href: "/contact" }
-    cta: { label: "Reserver", href: "/reservation", variant: "primary" }
+    cta: { label: "Réserver", href: "/reservation", variant: "primary" }
   hero:
     title: "[Nom]"
-    subtitle: "Restaurant [Activite] a [Ville]. Savourez une experience culinaire unique."
+    subtitle: "Restaurant [Activite] à [Ville]. Savourez une expérience culinaire unique."
     layout: centered
     overlay: true
   gallery:
@@ -86,7 +86,7 @@ components:
     show_source: true
     reviews: []
   faq:
-    title: "Questions frequentes"
+    title: "Questions fréquentes"
     questions: []
   menu:
     title: "La Carte"
@@ -111,8 +111,8 @@ components:
     phone_href: "[Telephone_intl]"
     email: "[Email]"
     legal:
-      - { label: "Mentions legales", href: "/mentions-legales" }
-      - { label: "Politique de confidentialite", href: "/confidentialite" }
+      - { label: "Mentions légales", href: "/mentions-legales" }
+      - { label: "Politique de confidentialité", href: "/confidentialite" }
       - { label: "Plan du site", href: "/plan-du-site" }
   back_to_top: {}
 

@@ -72,7 +72,7 @@ const closedLabel = status?.closedLabel || 'Ferme';
         width="1200"
         height="800"
       />
-      <span class="ds-hero__veil" aria-hidden="true"></span>
+      <span class="ds-hero__scrim" aria-hidden="true"></span>
     </>
   ) : null}
 
@@ -198,12 +198,25 @@ const closedLabel = status?.closedLabel || 'Ferme';
     height: 100%;
     object-fit: cover;
     object-position: center bottom; /* DA §6 : centre-bas pour le hero */
-    filter: brightness(0.8); /* voile homogene (DA §5.1) */
+    filter: brightness(0.8); /* assombrissement homogene conserve (DA §5.1) */
   }
-  .ds-hero__veil {
+  /* Scrim fonctionnel WCAG 1.4.3 (contraste texte sur image) :
+     degrade vertical porte la lisibilite la OU se trouve le texte (bas du
+     hero, align-self flex-end, padding-bas 64 px) et laisse l'image claire
+     en haut. Deviation fonctionnelle assumee vs DA §5.1 « voile 12 % seul,
+     pas de gradient » : la DA interdit le gradient DECORATIF, celui-ci est
+     un scrim de CONTRASTE justifie par WCAG 1.4.3 — documente dans le
+     rapport frontend. Le badge Ouvert/Ferme (surface-raised) n'en depend pas. */
+  .ds-hero__scrim {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.12); /* voile noir 12 % */
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.4) 35%,
+      rgba(0, 0, 0, 0.12) 70%,
+      rgba(0, 0, 0, 0.05) 100%
+    );
     pointer-events: none;
   }
   .ds-hero--full .ds-hero__inner {

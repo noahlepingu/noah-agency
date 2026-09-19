@@ -7,7 +7,7 @@
 
 business:
   name: "La Table d'Essai"
-  description: "Restaurant de cuisine francaise avec des produits frais et locaux"
+  description: "Restaurant de cuisine française avec des produits frais et locaux"
   description_en: "French restaurant with fresh, local produce in the heart of Lyon"
   category: "restaurant"          # categorie = type de template (regle C-01)
   slogan: "La cuisine lyonnaise, simplement."
@@ -15,10 +15,10 @@ business:
 seo:
   city: "Lyon"
   domain: "la-table-dessai-demo.example.com"
-  meta_description: "Restaurant La Table d'Essai a Lyon : cuisine francaise de saison, produits frais et locaux. Reservez votre table en ligne en quelques clics."
+  meta_description: "Restaurant La Table d'Essai à Lyon : cuisine française de saison, produits frais et locaux. Réservez votre table en ligne en quelques clics."
   meta_description_en: "La Table d'Essai restaurant in Lyon: seasonal French cuisine, fresh and local produce. Book your table online in a few clicks."
-  activityLabel: "cuisine francaise"
-  keywords: ["restaurant Lyon", "cuisine francaise", "produits locaux", "reservation restaurant", "restaurant presqu'ile"]
+  activityLabel: "cuisine française"
+  keywords: ["restaurant Lyon", "cuisine française", "produits locaux", "réservation restaurant", "restaurant Presqu'île"]
 
 contact:
   phone: "04 72 00 00 01"
@@ -55,9 +55,9 @@ opening_hours:
   closed_periods: []   # ex: [{ start: "2026-12-24", end: "2026-12-26", reason: "Fetes de fin d'annee" }]
 
 services:
-  - { name: "Restaurant de cuisine francaise", description: "Carte de saison et menu du marche" }
-  - { name: "Reservation de table en ligne", description: "Creneaux disponibles en ligne" }
-  - { name: "Traiteur et evenements prives", description: "Sur devis" }
+  - { name: "Restaurant de cuisine française", description: "Carte de saison et menu du marché" }
+  - { name: "Réservation de table en ligne", description: "Créneaux disponibles en ligne" }
+  - { name: "Traiteur et événements privés", description: "Sur devis" }
 
 reservation:
   enabled: true
@@ -78,15 +78,15 @@ reservation:
 menu:
   enabled: true
   categories:
-    - name: "Entrees"
+    - name: "Entrées"
       items:
-        - { name: "Soupe a l'oignon gratinee", description: "Oignons caramélisés, crouton de pain au levain, gruyere", price: 9.50 }
-        - { name: "Salade Lyonnaise", description: "Laitue, lardons grillés, oeuf poche, vinaigrette moutardee", price: 11.00 }
+        - { name: "Soupe à l'oignon gratinée", description: "Oignons caramélisés, croûton de pain au levain, gruyère", price: 9.50 }
+        - { name: "Salade Lyonnaise", description: "Laitue, lardons grillés, œuf poché, vinaigrette moutardée", price: 11.00 }
     - name: "Plats"
       items:
         - { name: "Quenelle de brochet", description: "Sauce Nantua, riz basmati", price: 22.00 }
-        - { name: "Pavé de saumon", description: "Legumes de saison, jus citronne", price: 20.00 }
-        - { name: "Entrecôte grillée", description: "Pommes sautees, sauce au poivre", price: 26.00 }
+        - { name: "Pavé de saumon", description: "Légumes de saison, jus citronné", price: 20.00 }
+        - { name: "Entrecôte grillée", description: "Pommes sautées, sauce au poivre", price: 26.00 }
     - name: "Desserts"
       items:
         - { name: "Tarte tatin", description: "Pommes caramélisées, crème fraîche", price: 8.50 }
@@ -94,18 +94,18 @@ menu:
     - name: "Boissons"
       items:
         - { name: "Verre de vin rouge", description: "Beaujolais Villages", price: 5.50 }
-        - { name: "Eau minerale", description: "Plate ou gazeuse (75cl)", price: 4.00 }
+        - { name: "Eau minérale", description: "Plate ou gazeuse (75cl)", price: 4.00 }
 
 gallery:
   images:
     - { src: "/images/demo/galerie-grande.jpg", alt: "Assiette du chef, plat signature de La Table d'Essai" }
     - { src: "/images/demo/galerie-portrait.jpg", alt: "Salle du restaurant pendant le service du soir" }
-    - { src: "/images/demo/galerie-carre-1.jpg", alt: "Plat de saison, legumes du marche local" }
+    - { src: "/images/demo/galerie-carre-1.jpg", alt: "Plat de saison, légumes du marché local" }
     - { src: "/images/demo/galerie-carre-2.jpg", alt: "Bar du restaurant et mise en place du service" }
     - { src: "/images/demo/galerie-pano.jpg", alt: "Vue panoramique de la table et de la vaisselle" }
-    - { src: "/images/demo/ambiance.jpg", alt: "Ambiance chaleureuse de la salle a manger" }
+    - { src: "/images/demo/ambiance.jpg", alt: "Ambiance chaleureuse de la salle à manger" }
     - { src: "/images/demo/cuisine.jpg", alt: "La brigade en cuisine, en plein service" }
-    - { src: "/images/demo/devanture.jpg", alt: "Devanture du restaurant La Table d'Essai a Lyon" }
+    - { src: "/images/demo/devanture.jpg", alt: "Devanture du restaurant La Table d'Essai à Lyon" }
 
 reviews:
   enabled: true
@@ -115,15 +115,15 @@ reviews:
     value: 4.5
     count: 42
   items:
-    - { text: "Une excellente surprise ! Les plats sont delicieux et le service tres attentionne.", name: "Marie D.", rating: 5, source: "Google" }
-    - { text: "Cadre charmant, cuisine de qualite. Nous reviendrons surement.", name: "Thomas L.", rating: 4, source: "Google" }
-    - { text: "Bonne decouverture, rapport qualite-prix tres correct pour Lyon.", name: "Sophie M.", rating: 4, source: "TripAdvisor" }
+    - { text: "Une excellente surprise ! Les plats sont délicieux et le service très attentionné.", name: "Marie D.", rating: 5, source: "Google" }
+    - { text: "Cadre charmant, cuisine de qualité. Nous reviendrons sûrement.", name: "Thomas L.", rating: 4, source: "Google" }
+    - { text: "Bonne découverte, rapport qualité-prix très correct pour Lyon.", name: "Sophie M.", rating: 4, source: "TripAdvisor" }
 
 faq:
   questions:
-    - { q: "Faut-il reserver ?", a: "La reservation est recommandee, notamment le vendredi et samedi soir. Vous pouvez reserver en ligne ou par telephone." }
-    - { q: "Proposez-vous un menu enfant ?", a: "Oui, nous proposons un menu enfant a 12 euros avec un plat, un dessert et une boisson." }
-    - { q: "Acceptez-vous les animaux ?", a: "Les chiens sont bienvenus en terrasse. Pour l'interieur, merci de nous contacter au prealable." }
+    - { q: "Faut-il réserver ?", a: "La réservation est recommandée, notamment le vendredi et samedi soir. Vous pouvez réserver en ligne ou par téléphone." }
+    - { q: "Proposez-vous un menu enfant ?", a: "Oui, nous proposons un menu enfant à 12 euros avec un plat, un dessert et une boisson." }
+    - { q: "Acceptez-vous les animaux ?", a: "Les chiens sont bienvenus en terrasse. Pour l'intérieur, merci de nous contacter au préalable." }
 
 template:
   type: "restaurant"       # regle C-01 : == business.category
@@ -160,7 +160,7 @@ legal:
   capital: "20 000 EUR"
   director: "Jean Dupont"
   registration_number: "RCS Lyon 123 456 789"
-  mediator_name: "Centre de la Mediation de la Consommation de Concilieurs de Justice"
+  mediator_name: "Centre de la Médiation de la Consommation de Concilieurs de Justice"
   mediator_address: "14 Rue Saint-Amand, 75015 Paris"
   host_name: "OVH SAS"
   host_address: "2 Rue Kellermann, 59100 Roubaix"
@@ -169,4 +169,4 @@ legal:
 
 # Hero page d'accueil : image demo du template (ETAPE 6 du redesign).
 # Sur un vrai client : photo fournie par le client (dossier assets).
-hero_image: { src: "/images/demo/hero.jpg", alt: "Table dresse dans la salle du restaurant La Table d'Essai a Lyon" }
+hero_image: { src: "/images/demo/hero.jpg", alt: "Table dressée dans la salle du restaurant La Table d'Essai à Lyon" }
